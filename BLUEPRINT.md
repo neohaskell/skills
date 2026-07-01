@@ -58,7 +58,7 @@ NeoHaskell project **incrementally**, while respecting NeoHaskell's core philoso
 | Integration scope | **Inbound (timer/webhook via `withInbound`/`Timer`) + stateful lifecycle outbound (`withOutboundLifecycle`) are in scope**, alongside outbound-per-trigger. |
 | Command vs query auth | Auth is **off by default**; the `authenticatedAccess` default is enforced only when `Application.withAuth` wires JWT. A **query** must always declare `canAccess`+`canView` (`deriveQuery` won't compile otherwise). |
 | Dev process | **Outside-in TDD** (jwilger-style): design first, then per slice **RED → DOMAIN → GREEN → DOMAIN → REFACTOR** — tests written first, outside-in *order*, pyramid *shape*. Adds `neohaskell-outside-in-tdd` (Opus) + `neohaskell-domain-modeling` (Sonnet). See [§10](#10-build--review-process). |
-| Test suite | Full Haskell pyramid **assumes [neohaskell/neo#2](https://github.com/neohaskell/neo/issues/2)** (nearly landed; stock `neo` currently generates no `test-suite` stanza) — build as if in place. |
+| Test suite | Full Haskell pyramid **assumes [neohaskell/neo#2](https://github.com/neohaskell/neo/issues/2)** (nearly landed; stock `neo` currently generates no `test-suite` stanza) — build as if in place. **Haskell specs live under `tests/`** (the same directory as `.hurl` files) — that is where `neo` discovers them; never use a `test/` directory. |
 | PR review | Two review skills: `neohaskell-code-review` (diff-scoped reviewer, Opus) + `neohaskell-code-review-ci` (provider-agnostic CI wiring, Sonnet). |
 | Methodology grounding | The planning skills are grounded in a vendored, MIT-attributed `references/event-modeling-methodology.md` (Dilger's *Understanding Eventsourcing* / eventmodeling.org, adapted from jwilger's `event-modeling` skill, retargeted to `event-model.json`); `references/` is a standard convention. The SDLC-plugin machinery is **not** adopted. See [`SPEC.md` §5](./SPEC.md#event-modeling-methodology--event-modeljson--neohaskell). |
 | Domain discovery | `augment-feature-request` is **hybrid** — full-domain discovery once (new project → domain overview), feature-scoped thereafter (detects an existing overview). |
@@ -378,7 +378,7 @@ flat set chains without an orchestrator.
 | `implement-integration` | per-trigger outbound handler + `outboundIntegration ''H`, stubbed with `Integration.none` + `-- TODO:` | integration node → `Integrations/<H>.hs` → `wire-feature` |
 | `wire-feature` | register commands in `Service.hs`; add `withService`/`withQuery`/`withOutbound` to `App.hs` | new blocks → edited `Service.hs`/`App.hs` → tests |
 | `write-unit-tests` | Decider (command), Projection (query), Outbound (integration) Hspec specs | a building block → `test/<Layer>/…Spec.hs` |
-| `write-feature-tests` | Acceptance (in-domain flow) + Property (QuickCheck `update` replay) specs | a feature → `test/Acceptance/…`, `test/Property/…` |
+| `write-feature-tests` | Acceptance (in-domain flow) + Property (QuickCheck `update` replay) specs | a feature → `tests/Acceptance/…`, `tests/Property/…` |
 | `write-hurl-e2e` | hurl files (`[Captures]`/`[Asserts]`/`[Options] retry`) + run via `neo test` | a feature → `tests/**/*.hurl` + run result |
 
 ### 5.4 Review (PR-time)

@@ -264,7 +264,7 @@ Each block: **purpose** · **frontmatter description (condensed)** · **In → O
 
 ### 20 · `write-feature-tests` — Sonnet
 - **Purpose:** **Acceptance** spec (pure in-domain flow `decide → update → combine`, no HTTP) + **Property** spec (QuickCheck replay of the entity `update` fold via `Array.foldl update`).
-- **In:** a completed feature. **Out:** `test/Acceptance/<Feature>Spec.hs`, `test/Property/<Entity>ReplaySpec.hs`. **Next:** write-hurl-e2e.
+- **In:** a completed feature. **Out:** `tests/Acceptance/<Feature>Spec.hs`, `tests/Property/<Entity>ReplaySpec.hs`. **Next:** write-hurl-e2e.
 - **DO:** Acceptance via the `Test` wrapper; Property via `import Test.Hspec qualified as Hspec` + `Test.QuickCheck` + `GhcPrelude`-qualified list/bool ops. **DON'T:** boot the app (that's hurl); vanilla Hspec/QuickCheck idioms.
 - **Acceptance:** compile + pass once the suite exists; generated quantities non-negative (`makeNaturalOrPanic`).
 - **Notes/fixes:** same **neo#2** assumption (treated as available); acceptance spec is RED-first (outer loop, ② in §3); `Array.foldl update` (element-first left fold, oldest event first).

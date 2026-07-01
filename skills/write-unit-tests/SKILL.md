@@ -30,8 +30,11 @@ stubs are `panic "TODO: not implemented"`.
 - **In:** a verified command node, query node, or integration node from the
   event model; entity and event types from `neohaskell-domain-modeling` (or a
   type-error RED spec that drives the domain phase).
-- **Out:** spec files under `test/Decider/`, `test/Projection/`, or
-  `test/Outbound/` — one file per building block, one assertion per `it`.
+- **Out:** spec files under `tests/Decider/`, `tests/Projection/`, or
+  `tests/Outbound/` — one file per building block, one assertion per `it`.
+  All Haskell specs live under `tests/` (the *same* directory as the `.hurl`
+  e2e files); `neo test` compiles and runs the specs it discovers there. Never
+  use a `test/` directory — `neo` won't compile it.
 - **Next:** `neohaskell-domain-modeling` (if types are missing) then
   `implement-command`, `implement-query`, or `implement-integration`.
 
@@ -39,9 +42,9 @@ stubs are `panic "TODO: not implemented"`.
 
 | Building block | File location | What is asserted |
 |---|---|---|
-| Decider (command) | `test/Decider/<Name>Spec.hs` | `decide cmd (Maybe entity) ctx` returns the expected `CommandResult` |
-| Projection (query) | `test/Projection/<Name>Spec.hs` | `combine @E @Q entity Nothing` returns the expected `QueryAction Q` |
-| Outbound (integration) | `test/Outbound/<Name>Spec.hs` | `handleEvent entity event` produces the expected action count |
+| Decider (command) | `tests/Decider/<Name>Spec.hs` | `decide cmd (Maybe entity) ctx` returns the expected `CommandResult` |
+| Projection (query) | `tests/Projection/<Name>Spec.hs` | `combine @E @Q entity Nothing` returns the expected `QueryAction Q` |
+| Outbound (integration) | `tests/Outbound/<Name>Spec.hs` | `handleEvent entity event` produces the expected action count |
 
 ---
 
@@ -52,7 +55,7 @@ Grounded in `testbed/src/Testbed/Cart/Commands/AddItem.hs` and
 entity names.
 
 ```haskell
--- test/Decider/AddItemSpec.hs
+-- tests/Decider/AddItemSpec.hs
 module Decider.AddItemSpec where
 
 import Array qualified
@@ -115,7 +118,7 @@ Grounded in `testbed/src/Testbed/Cart/Queries/CartSummary.hs` and
 with your query and entity names.
 
 ```haskell
--- test/Projection/CartSummarySpec.hs
+-- tests/Projection/CartSummarySpec.hs
 module Projection.CartSummarySpec where
 
 import Array qualified
@@ -163,7 +166,7 @@ Grounded in
 with your handler, entity, and event names.
 
 ```haskell
--- test/Outbound/ReserveStockOnItemAddedSpec.hs
+-- tests/Outbound/ReserveStockOnItemAddedSpec.hs
 module Outbound.ReserveStockOnItemAddedSpec where
 
 import Array qualified

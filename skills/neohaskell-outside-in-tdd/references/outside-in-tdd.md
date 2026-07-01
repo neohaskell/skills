@@ -373,7 +373,7 @@ reflects the new item count.* Entity `CartEntity` already exists; command `AddIt
 1. **① outer RED** — `write-hurl-e2e` writes `tests/scenarios/add-item.hurl` (the §7 hurl). `neo test`
    boots the app; the `POST /commands/add-item` returns **404** (not wired). Red.
 
-2. **② acceptance RED** — `write-feature-tests` writes `test/Acceptance/AddItemSpec.hs` exercising
+2. **② acceptance RED** — `write-feature-tests` writes `tests/Acceptance/AddItemSpec.hs` exercising
    `decide → update → combine` for the happy path. It **won't compile** (`AddItem`/`ItemAdded` don't
    exist). Red.
 

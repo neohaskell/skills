@@ -101,7 +101,7 @@ Grounded in the framework testlib (`core/testlib/Test/Service/Command/Decide/Spe
 like `core/test/IntSpec.hs`:
 
 ```haskell
--- test/Decider/AddItemSpec.hs — ③ inner RED (write-unit-tests owns the full template)
+-- tests/Decider/AddItemSpec.hs — ③ inner RED (write-unit-tests owns the full template)
 module Decider.AddItemSpec where
 
 import Core
@@ -160,8 +160,8 @@ SLICE: <one user-meaningful step>            e.g. "AddItem to a cart"
   query   : <Query> (field touched)           CartSummary (itemCount)
 
 [ ] ① RED  outer   write-hurl-e2e        tests/scenarios/add-item.hurl   -> expect 404 (not wired)
-[ ] ② RED  accept. write-feature-tests   test/Acceptance/AddItemSpec.hs  -> compile error
-[ ] ③ RED  inner   write-unit-tests      test/Decider/AddItemSpec.hs     -> 1 assert, GWT, compile error
+[ ] ② RED  accept. write-feature-tests   tests/Acceptance/AddItemSpec.hs  -> compile error
+[ ] ③ RED  inner   write-unit-tests      tests/Decider/AddItemSpec.hs     -> 1 assert, GWT, compile error
 [ ] ④ DOMAIN       neohaskell-domain-modeling
                    - event payload Events/<Event>.hs (type `Event`) + variant in Event.hs
                    - entity field(s) in Entity.hs / expand-entity (add-only, replay-safe)

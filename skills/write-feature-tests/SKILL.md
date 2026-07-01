@@ -42,7 +42,7 @@ In Claude Code you may delegate this step to a sub-agent spawned with `model: so
 ## Inputs / Outputs / Next
 
 - **Input:** a completed feature slice with typed events, entity `update` fold, and query `combine`. The Acceptance spec needs the types to exist (from `neohaskell-domain-modeling`); the Property spec needs a compiling `update` fold.
-- **Output:** `test/Acceptance/<Feature>Spec.hs` (step ②) and `test/Property/<Entity>ReplaySpec.hs` (step ⑦).
+- **Output:** `tests/Acceptance/<Feature>Spec.hs` (step ②) and `tests/Property/<Entity>ReplaySpec.hs` (step ⑦). All Haskell specs live under `tests/` — the *same* directory as the `.hurl` e2e files — because `neo test` discovers and compiles specs there; never use a `test/` directory.
 - **Next:** `write-unit-tests` (after Acceptance spec is red) · `write-hurl-e2e` (outer loop companion)
 
 ---
@@ -54,7 +54,7 @@ Grounds in the public Counter test-project. Adapt module paths, entity type, eve
 The flow is always: **decide → AcceptCommand events → Array.foldl update → assert entity state**. No HTTP, no app boot, no database.
 
 ```haskell
--- test/Acceptance/CounterIncrementSpec.hs
+-- tests/Acceptance/CounterIncrementSpec.hs
 module Acceptance.CounterIncrementSpec where
 
 import Core
@@ -135,7 +135,7 @@ Grounds in `core/core/Array.hs` (`Array.foldl`) and `core/test/Service/Integrati
 `Array.foldl` signature: `(element -> accumulator -> accumulator) -> accumulator -> Array element -> accumulator`. The `update` function is `EventType -> EntityType -> EntityType`, which matches — event (element) is first.
 
 ```haskell
--- test/Property/CounterEntityReplaySpec.hs
+-- tests/Property/CounterEntityReplaySpec.hs
 module Property.CounterEntityReplaySpec where
 
 import Core
