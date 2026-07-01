@@ -80,8 +80,6 @@ Reference **language** skills (`neohaskell-core-prelude`, `-collections`, `-effe
 
 The design skills adapt the **Event Modeling** methodology (Adam Dymitruk / [eventmodeling.org](https://eventmodeling.org), Martin Dilger's *Understanding Eventsourcing*) and the **outside-in TDD** discipline, both drawn from [jwilger/claude-code-plugins](https://github.com/jwilger/claude-code-plugins) (MIT) — **retargeted** to emit `event-model.json` and NeoHaskell code. The surrounding SDLC-plugin machinery (its red/green/domain sub-agents, task manager, personality) is **not** adopted.
 
-## Design docs
+## `AGENTS.md`
 
-- [`BLUEPRINT.md`](./BLUEPRINT.md) — the ground-truth reference (Core prelude, event-model schema, immutability, the build/review process).
-- [`SPEC.md`](./SPEC.md) — the per-skill decomposition (Inputs/Outputs/Next, lenses, critique resolutions).
-- [`prompt.md`](./prompt.md) — the build directive that produced the skills.
+The repo ships a top-level [`AGENTS.md`](./AGENTS.md) — an always-on primer that `neo skills setup` injects into the consumer project's agent-instructions file (`CLAUDE.md` for Claude Code, `AGENTS.md` for others), inside a managed block. It gives an agent the baseline it needs *before* any specific skill triggers: this is NeoHaskell (not vanilla Haskell), start from `neohaskell-feature-pipeline`, and the non-negotiable invariants (immutability/V2, `tests/`, `import Core`).

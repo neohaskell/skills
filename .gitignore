@@ -1,6 +1,0 @@
-# Python caches (skill-creator scripts + optimize-descriptions.py)
-__pycache__/
-*.pyc
-# Transient skills the trigger-eval harness installs/removes per query
-.claude/skills/*-skill-*/
-.skill-eval/.preflight.json
