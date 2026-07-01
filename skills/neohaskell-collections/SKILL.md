@@ -218,6 +218,12 @@ Text.replace old new txt  :: Text
 Text.contains sub txt     :: Bool               -- isInfixOf
 Text.startsWith pre txt   :: Bool
 Text.endsWith suf txt     :: Bool
+Text.left n txt           :: Text               -- first n chars
+Text.right n txt          :: Text               -- last n chars
+Text.dropLeft n txt       :: Text               -- drop first n chars
+Text.dropRight n txt      :: Text               -- drop last n chars  (Data.Text.dropEnd)
+Text.slice from to txt    :: Text               -- substring by index
+Text.reverse txt          :: Text
 Text.toUpper / Text.toLower txt :: Text
 Text.trim / Text.trimLeft / Text.trimRight txt  :: Text
 Text.toInt txt            :: Maybe Int
@@ -226,7 +232,15 @@ Text.toFloat txt          :: Maybe Float
 Text.fromFloat f          :: Text
 Text.words txt            :: Array Text         -- split on whitespace
 Text.lines txt            :: Array Text         -- split on newlines
+Text.toBytes txt          :: Bytes             -- encode to Bytes
+Text.fromBytes bytes      :: Text              -- decode Bytes back to Text
 ```
+
+> **No `stripSuffix` / `stripPrefix` / `dropWhileEnd`** — those vanilla `Data.Text` names are not
+> exposed. You rarely need them: strip a known trailing affix with `endsWith` + `dropRight`. E.g. drop
+> a trailing slash with `if Text.endsWith "/" p then Text.dropRight 1 p else p`; strip a fixed suffix
+> with `Text.dropRight (Text.length suffix) p` (guarded by `endsWith`). `Text.trim` only removes
+> whitespace.
 
 ### String interpolation
 
@@ -276,6 +290,36 @@ Set.takeIf pred set    :: Set a
 Set.dropIf pred set    :: Set a
 Set.toArray set        :: Array a                 -- elements in ascending order
 ```
+
+---
+
+## Uuid — identifier values (`Uuid`)
+
+`Uuid` is a `newtype` over `Data.UUID`. `Core` re-exports the **type only** — every function is
+qualified, so always add `import Uuid qualified` (the full Core re-export table lives in
+`neohaskell-core-prelude`).
+
+```haskell
+import Uuid qualified          -- the FUNCTIONS; the Uuid type itself comes from Core
+```
+
+### Operations (pinned rev — `core/core/Uuid.hs`)
+
+```haskell
+Uuid.generate      :: Task _ Uuid    -- v4 RANDOM; effectful, must run inside a Task
+Uuid.nil           :: Uuid           -- all-zero UUID (also `def`, via Default)
+Uuid.fromText txt  :: Maybe Uuid     -- parse; Nothing on malformed input
+Uuid.toText u      :: Text
+Uuid.fromLegacy uu :: Uuid           -- from a Data.UUID.UUID
+Uuid.toLegacy u    :: UUID.UUID      -- to a Data.UUID.UUID
+```
+
+> **No deterministic / v5 helper in the pinned version.** `Uuid.generate` is v4 random only (and,
+> being a `Task`, cannot run inside a pure decider). A deterministic API —
+> `Uuid.generateV5 :: Uuid -> Text -> Uuid` and
+> `Decider.generateDeterministicUuid :: Uuid -> Text -> Decision Uuid` — exists ONLY on the unmerged
+> branch `feat/uuid-v5-decision` (neohaskell#596). Until it lands, a natural/deterministic key must
+> vendor `Data.UUID.V5` directly (isolate it in one helper module) and swap to the built-in later.
 
 ---
 

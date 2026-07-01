@@ -329,8 +329,9 @@ neutral illustrative: `BookTitle`/`Member`/`Loan`).
   present `null` is valid, an *omitted* key is the failure.
 - **A single command producing two events in one slice.** That is a legitimate State Change, not a
   missing automation — only flag *unconditional* `integration` nodes (section 4.9).
-- **`neo validate`.** It does not exist; do not recommend it. PASS 1 is offline against the vendored
-  schema.
+- **`neo validate` output.** It is real and is the **primary** PASS 1+2 tool (sections 1 and 2.6). A
+  clean run prints `[ok] event-model.json is valid` and exits **0** — that is a pass, not a finding.
+  The offline `check-jsonschema` route is only the fallback when `neo` is off PATH.
 
 ---
 

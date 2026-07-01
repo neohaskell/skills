@@ -39,6 +39,8 @@ Work **one step at a time**, and do not skip steps — the outside-in order (tes
 
 In **Claude Code**, delegate each step to a sub-agent spawned with that step's model tier (read each skill's `metadata.model` — Opus / Sonnet / Haiku). In hosts without sub-agents (Cursor, Codex), just follow each skill inline; the tier is advisory.
 
+Spawn each step as a **fresh agent with an explicit, self-contained brief** — not a fork spawned mid-narration. A fork inherits the parent's "I just launched a background agent" narration and may do nothing (0 tool uses), continuing to narrate instead of executing.
+
 ```mermaid
 flowchart TD
     R(["feature request"]) --> A["1 · augment-feature-request — Opus<br/>hybrid discovery → Feature Brief"]
@@ -78,10 +80,11 @@ The discipline itself (phase boundaries, one assertion per test, compiler-as-RED
 
 ## Edge cases and branches
 
-- **New project vs existing app** — `augment-feature-request` detects whether a domain overview exists and switches between full-domain discovery and feature-scoped.
+- **New project vs existing app** — before assuming greenfield, check for an existing `*.cabal` / `src/`: the project may already be `neo new`-scaffolded, so do **not** re-scaffold. `augment-feature-request` then detects whether a domain overview exists and switches between full-domain discovery and feature-scoped.
 - **Fixing a bug in DEPLOYED (locked) code** — you cannot edit a locked file under `Commands/`, `Events/`, or `Queries/`. Skip event-modeling; start at the relevant implementer skill in **V2 mode** (see **`neo-immutability-and-versioning`**): scaffold a `FooV2` sibling, drive it with a fresh outside-in TDD cycle, and wire it. Never edit the locked original.
 - **A new event needs a field the entity lacks** — run **`expand-entity`** first. Entities are **add-only** (never removed/renamed/retyped, never V2'd).
 - **Inbound / timer / webhook trigger (the Translation pattern)** — model it as an inbound integration; `implement-integration` covers the inbound branch (source built with `Integration.inbound` or `Timer.every`, wired with `Application.withInbound`).
+- **Integration-bearing feature (git worktree, file-watch, build-runner, CI)** — recommended slicing: build the **event-sourced core + read model first** (proven command/query pattern, green + testable over HTTP) and leave the real `Task`-based side effect as a documented `-- TODO:` / `Integration.none` stub. This keeps every feature shippable and hermetic; wire the real side effect in a later slice.
 - **An integration is not built yet** — stub the outbound handler with `Integration.none` and a `-- TODO:` comment. Never `panic` a pure `handleEvent` — it crashes the dispatcher when that event fires.
 - **Where tests live** — all tests go under `tests/` (Hspec specs *and* `.hurl` files); `neo test` compiles and runs both. Do not use a `test/` directory.
 

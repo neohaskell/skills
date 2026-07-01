@@ -58,6 +58,21 @@ Generate a new id inside the `decide` `do` block with `Decider.generateUuid` —
 
 ---
 
+## Accept constructors carry a stream-state requirement
+
+Each `Decider.accept*` constructor asserts a precondition on the event stream (from `core/service/Decider.hs`):
+
+| Constructor | Stream-state requirement |
+|---|---|
+| `Decider.acceptNew [..]` | `StreamCreation` — the stream must **not** already exist |
+| `Decider.acceptExisting [..]` | `ExistingStream` — the stream must already exist |
+| `Decider.acceptAny [..]` | `AnyStreamState` — no precondition |
+| `Decider.acceptAfter pos [..]` | optimistic concurrency — stream must be at expected position `pos` |
+
+Consequence: a creation command whose `getEntityId` resolves to an **already-existing** stream cannot `acceptNew` — it would violate `StreamCreation`. So an entity whose id is a natural key can never be re-created once its stream exists (see *Natural-key identity* below).
+
+---
+
 ## Template 1 — creation command (`CreateCounter`)
 
 Grounded in the public `neo` test-project (`Starter.Counter.Commands.CreateCounter`). Adapt `App`, `Context`, `Cmd`, `Entity`, `Event`, and field names to your domain.
@@ -186,6 +201,30 @@ command ''IncrementCounter
 
 ---
 
+## Natural-key identity — uniqueness by business key
+
+`decide` cannot read other aggregates, so to enforce "no duplicate by business key `x`" (e.g. unique project name) do **not** generate a random id — derive the entity's stream id deterministically from `x`, so a second create resolves to the *same* stream:
+
+`deriveId` here is **your own** helper — NeoHaskell has no built-in deterministic UUID in a pinned rev yet (pending neohaskell#596), so vendor `Data.UUID.V5` in one helper module and swap later; see `neohaskell-collections` (Uuid section).
+
+```haskell
+getEntityId :: RegisterProject -> Maybe Uuid
+getEntityId cmd = Just (deriveId cmd.name)   -- deterministic from the natural key, NOT random
+
+decide :: RegisterProject -> Maybe ProjectEntity -> RequestContext -> Decision ProjectEvent
+decide cmd entity _ctx = case entity of
+  Just _existing -> Decider.reject "A project with that name already exists"
+  Nothing        ->                          -- stream absent → this is the first create
+    Decider.acceptNew
+      [ ProjectRegistered ProjectRegistered.Event { entityId = deriveId cmd.name, name = cmd.name } ]
+```
+
+`getEntityId` returns `Just` (so the framework loads that deterministic stream), but `entity` is still `Nothing` until the stream has events — so the first create legitimately `acceptNew`s (no stream yet), and every subsequent create sees `Just` and rejects. Request/response shape is identical to a generated-id create. See `neohaskell-domain-modeling` for the design write-up (choosing the key, deriving the id).
+
+**Sharp edge:** because the id *is* the natural key, once the stream exists it can never be re-created (the `acceptNew`/`StreamCreation` requirement above) — even after "archiving" it. There is no "re-register as new"; reactivation must be a separate `acceptExisting` command (e.g. `Unarchive`) on the existing stream.
+
+---
+
 ## DOMAIN-phase stub (before GREEN)
 
 When `neohaskell-domain-modeling` creates the file and you need it to compile but not yet pass:
@@ -206,6 +245,7 @@ decide _cmd _entity _ctx =
 |---|---|---|
 | `import Prelude` or no `import Core` | `import Core` first | `NoImplicitPrelude` is always on |
 | `import Service.AccessControl (RequestContext)` | `import Service.Auth (RequestContext)` | `RequestContext` lives in `Service.Auth`; `Service.AccessControl` exports `AccessError`, `UserClaims`, `publicAccess` |
+| `import Decider (Decision)` or `Decider.Decision` in the signature | `Decision` unqualified — it's re-exported by `Core` | Only the smart-constructors (`acceptNew`/`acceptExisting`/`reject`/`generateUuid`) are qualified `Decider.*`; the `Decision` return type itself comes from `Core` |
 | `decide cmd entity ctx = pure [SomeEvent ..]` | `Decider.acceptNew [..]` or `Decider.acceptExisting [..]` | A `do` block or bare `pure` that ends without a `Decider.*` constructor throws at runtime |
 | `decide cmd entity ctx = [SomeEvent ..]` | Always end in a `Decider.*` constructor | Returning a list directly is a type error |
 | `IO a` inside `decide` | `decide` is pure — no `IO`, no `Task` | Commands run decide in a pure context |

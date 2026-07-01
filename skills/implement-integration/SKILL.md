@@ -70,6 +70,19 @@ Choose **one** per node from the event model. Outbound triggers are the most
 common; inbound and lifecycle are used when the event model has `kind: inbound`
 or a stateful automation node.
 
+**Decision rule — command vs. real side effect (read this first):**
+
+- **Emit a cross-aggregate command → Template 1 (pure).**
+  `Integration.batch [ Integration.outbound Command.Emit { command = … } ]`.
+- **Do a real side effect (run `git worktree add`, POST to an API, watch a
+  file) → Template 4 (Task-based lifecycle).** `processEvent :: state -> Event
+  Json.Value -> Task Text (Array CommandPayload)`.
+
+A real side effect **cannot** live in a per-trigger outbound `handleEvent`: its
+type `Entity -> Event -> Integration.Outbound` is **pure** and can only emit
+commands. If you find yourself wanting `IO`/`Task`/a shell call in `handleEvent`,
+you picked the wrong template — move it to Template 4.
+
 ---
 
 ## Template 1 — Outbound per-trigger

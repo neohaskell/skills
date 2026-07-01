@@ -52,6 +52,18 @@ neo [--verbose | -v] [--ci] <subcommand> …
 | `--verbose` / `-v` | Enable debug-level output |
 | `--ci` | Disable interactive prompts, animations, and colors. **Incompatible with `--watch`**; `neo --ci build --watch` is rejected. |
 
+**Always use `neo --ci <cmd>` in any agent, CI, or non-interactive (non-TTY) shell.** With no
+controlling terminal, bare `neo build` / `neo test` **panics before doing anything** — it tries to
+drive an interactive TTY progress animation for its `nix` subprocess and dies with:
+
+```
+thread 'main' panicked at src/subprocess/nix.rs:108: called `Result::unwrap()` on an `Err` value:
+Os { code: 6, kind: Uncategorized, message: "Device not configured" }
+```
+
+(errno 6 / ENXIO). `neo --ci build` / `neo --ci test` fixes it; the flag goes **before** the
+subcommand. This is the single highest-value fact for agent/CI use — it blocks the very first build.
+
 ---
 
 ### `neo new [<project-name>] [--library]`
@@ -81,6 +93,18 @@ neo build                       # standard build with lock check
 neo build --watch               # GHCi hot-reload session (incompatible with --ci)
 neo build --skip-lock-check     # bypass the pre-build lock gate (use sparingly)
 ```
+
+**Reconcile manages the cabal module lists.** The "Reconciling project artifacts" step
+**regenerates** `exposed-modules` (and each test suite's `other-modules`) from the filesystem and
+alphabetizes them. You do **not** need to hand-edit the `.cabal`: adding a `.hs` file under `src/`
+(or a `*Spec.hs` under `tests/`) is enough to register it — any manual edits are normalized on the
+next `neo build` / `neo test`.
+
+**Reconcile auto-bumps the `neohaskell` dependency.** Because `neo.json` sets
+`"neo-version": "main"`, every `neo build` / `neo test` tracks the latest `main` and may print e.g.
+`Updated input 'neohaskell': b5aa84d → e55fdf6`, rewriting `flake.nix` (`rev` + `neohaskellCommit`),
+`cabal.project` (`tag:`), and `flake.lock` **together**. The pinned rev drifting forward is **by
+design** — not corruption and not a dirty tree. Also covered by `neo-immutability-and-versioning`.
 
 **Requires:** `nix` on `PATH` + a flake-enabled directory (`flake.nix` present).
 
@@ -248,6 +272,7 @@ Supported tool IDs: `claude`, `codex`, `kiro`, `cursor`, `agents`.
 | assume `/ready` polls before hurl | `neo test` polls root `/` every ~250 ms (any HTTP response triggers hurl); `/ready` is ON by default (`useReadinessEndpoint` to customize) — see `neo-run-and-inspect` |
 | `neo inspect sync` to see the model | sync **clobbers** `event-model.json`; use `neo inspect` (no subcommand) to read |
 | global flags after the subcommand | global flags (`--verbose`, `--ci`) must come **before** the subcommand |
+| bare `neo build` / `neo test` in an agent/CI shell | use `neo --ci build` / `neo --ci test`; without a TTY, bare build panics at `nix.rs` with ENXIO ("Device not configured") |
 
 ---
 

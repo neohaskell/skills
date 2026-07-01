@@ -262,6 +262,30 @@ handleEvent _entity _event =
 
 ---
 
+## Event-sourced design patterns
+
+Four recurring decisions that shape the DOMAIN types. The *mechanics* live in the `implement-*` skills; the *design rationale* is here.
+
+### Natural-key identity — uniqueness without reading other aggregates
+
+A `decide` sees only its own aggregate (its entity `Maybe`, never another stream), so it cannot enforce "no duplicate by business key `x`" (e.g. unique project name) by looking around. Instead, derive the entity's **stream id deterministically** from `x` — `getEntityId cmd = Just (deriveId cmd.x)`, **not** a random `Uuid`. A second create then resolves to the *same* stream, so `decide` sees `Just entity` and rejects the duplicate. Request/response shape is identical to a generated-id create.
+
+**Sharp edge — this was the code-review finding.** Because the id *is* the natural key, once the stream exists it can **never** be re-created — even after "archiving" it. A creation command uses `acceptNew`, which requires the stream to *not* exist (`StreamCreation`), so there is no "re-register as new". Reactivation must be a **separate `Unarchive`-style command** acting on the *existing* stream (`acceptExisting`), not a re-create. → `implement-command` holds the `acceptNew`/`StreamCreation` mechanics.
+
+### Trusted / denormalized cross-aggregate references
+
+Because a `decide` cannot read another aggregate's state, a reference to another entity — `task.projectId`, `worktree.repoPath`, `session.worktreeId` — is **carried on the command (and event) and trusted**: the UI supplies a valid id, and the command stores it denormalized without confirming the referenced aggregate exists or is in a valid state. Strict cross-aggregate enforcement (reject a task whose project was deleted) is *not* expressible in `decide`; it would need a **saga / process manager** reacting to both streams. Model these references as plain `Uuid`/`Text` fields on the entity and event, and accept the trust boundary — do not try to validate them inside `decide`.
+
+### Status-as-ADT, expose-as-text
+
+Hold an entity's status as an **ADT** so illegal states are unrepresentable (the enum move above) — never a `Text` that could be `"bananas"`. But do **not** leak that ADT into a read model's JSON: the query's `combine` maps it to a **stable `Text` tag** (a small `statusToText` helper) so the wire contract survives the ADT later gaining constructors. Entity holds the ADT; read model exposes `Text`. → `implement-query` holds the `statusToText`-in-`combine` how.
+
+### Composed read models + count-via-id-set
+
+One read model can be fed by **several** entity streams keyed by a common id — e.g. `deriveQuery ''ProjectOverview [''ProjectEntity, ''TaskEntity, ''WorktreeEntity]`, one `QueryOf` instance per entity, each contributing its slice to the same `queryId` row (the dashboard / aggregate-view pattern). Caveat for **distinct counts**: `combine` fires on every event of a contributor and only ever sees *that* entity's current folded state, never the set of contributors — so `count = existing.count + 1` **over-counts**. Hold an **id-set** (a deduped `Array Uuid`, or a `Set`) in the read model and derive the count from its size. → `implement-query` holds the multi-entity `deriveQuery` mechanics.
+
+---
+
 ## DO / DON'T
 
 | Vanilla reflex — DON'T | NeoHaskell / domain-modeling — DO | Why |

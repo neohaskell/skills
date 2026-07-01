@@ -36,6 +36,28 @@ Command↔event ordering: create the event payload + ADT variant **before or alo
 
 ---
 
+## Two valid layouts — split vs single-file
+
+Two entity/event layouts are **valid and interchangeable**; pick one per context and mirror it consistently.
+
+- **Split scaffold** — what `neo new` generates, and what Steps 1–3 below describe: `Entity.hs`, `Event.hs`, a `Core.hs` barrel, and one `Events/<Name>.hs` payload module per event (in-file type always named `Event`).
+- **Single-file** — the authoritative testbed layout (e.g. `Testbed.Cart.Core`): one `Core.hs` holding the entity **and** the event ADT with **inline record constructors** — no separate `Events/` modules. Fewer files, one template to mirror.
+
+The single-file/inline layout is what triggers the ambiguous-fields caveat in Step 3: its inline event constructors share field names with the entity via `DuplicateRecordFields`.
+
+Import block for a single-file `Core.hs`:
+
+```haskell
+import Core                              -- Entity, NameOf/EventOf/EntityOf, Default, Text, Uuid (type), Generic
+import Json qualified                    -- FromJSON/ToJSON instances
+import Service.Command.Core (Event (..)) -- the Event class (getEventEntityIdImpl)
+import Uuid qualified                    -- Uuid.nil (the FUNCTIONS; the type comes from Core)
+```
+
+`getEventEntityId` and `update` are **not exported** — they are used only by the `Event`/`Entity` instances. Mirror `Testbed.Cart.Core`'s export list: `(CartEntity (..), CartEvent (..), initialState)`.
+
+---
+
 ## Step 1 — Create `Events/<Name>.hs` (payload) [LOCKABLE once deployed]
 
 The **in-file type is always `Event`**, regardless of the file name. `neo inspect` identifies payload files by looking for `data Event` inside any `Events/<Name>.hs` file; a differently named type will be invisible to tooling.
@@ -229,6 +251,8 @@ update event entity = case event of
   CounterIncremented ev ->
     entity { value = entity.value + ev.amount }
 ```
+
+**Ambiguous-fields caveat (most common in the inline/single-file layout).** Under `DuplicateRecordFields` + `NoFieldSelectors`, `-Werror=ambiguous-fields` (GHC-02256, *"Ambiguous record update with parent type constructor"*) fires on an `update` case whose record *update* `entity {f = .., g = ..}` sets **only** fields that also exist on the matched event constructor — there is no entity-only field to anchor the type. (Most cases are safe because they set an entity-only field such as `status`, or an id the events don't carry.) Two fixes: (a) include an entity-only field in the update, or (b) **reconstruct via the constructor** — `SessionEntity { … }` — since `-Wambiguous-fields` applies to record *update* only, not construction. Canonical detail in `neohaskell-records-and-json`.
 
 ---
 

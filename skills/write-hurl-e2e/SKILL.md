@@ -105,7 +105,7 @@ jsonpath "$.entityId" exists
 
 ## Template 3 — create command → capture → query with retry (lifecycle)
 
-Grounded in `testbed/tests/queries/cart-summary-after-create.hurl`. This is the standard two-step pattern: create an entity, then verify it appears in the query result. The `[Options] retry` is required because queries are eventually consistent — the query subscriber processes events asynchronously.
+Grounded in `testbed/tests/queries/cart-summary-after-create.hurl`. This is the standard two-step pattern: create an entity, then verify it appears in the query result. The `[Options] retry` is required because queries are eventually consistent — the query subscriber processes events asynchronously. The command (`POST`) step, by contrast, is **strongly consistent** — never add `retry` to it; the write path is synchronous. Only the query step needs retry while the projection catches up.
 
 ```hurl
 # Entity Lifecycle - Create and Verify Query State

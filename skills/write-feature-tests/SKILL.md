@@ -60,7 +60,7 @@ module Acceptance.CounterIncrementSpec where
 
 import Core
 import Array qualified
-import Decider (CommandResult (..), DecisionContext (..))
+import Decider (DecisionContext (..))
 import Decider qualified
 import Service.Auth (emptyContext)
 import Test
@@ -126,6 +126,11 @@ spec = do
         AcceptCommand _ _ -> fail "Expected reject"
         RejectCommand _   -> Task.yield unit  -- any rejection message is fine
 ```
+
+**Imports:** `CommandResult(..)` (`AcceptCommand`/`RejectCommand`) is re-exported
+by `Core`; `DecisionContext` is **not** — import only `DecisionContext` from
+`Decider`. Importing `CommandResult(..)` from `Decider` as well is redundant and
+fails under `-Wall -Werror=unused-imports`.
 
 ---
 

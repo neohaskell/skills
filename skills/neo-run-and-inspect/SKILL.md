@@ -69,6 +69,8 @@ All routes are implemented in `Service.Transport.Web.assembleTransport`. This is
 
 **Kebab-case conversion.** The router converts the URL path segment to PascalCase before looking up the handler. The URL `/commands/increment-counter` maps to the `IncrementCounter` command type. The URL `/queries/counter-value` maps to the `CounterValue` query type.
 
+**Response shapes.** A command returns `{"entityId":"<uuid>"}` (even creation commands); a query returns a paginated envelope `{items, total, hasMore}` and is **eventually consistent** — the projection lags the accepted command, so query assertions need retry (see [write-hurl-e2e](../write-hurl-e2e/)).
+
 ---
 
 ## 3. Copy-paste template

@@ -173,6 +173,35 @@ instance QueryOf StockEntity StockLevel where
 
 ---
 
+## Pattern — expose a status ADT as a stable text tag
+
+When the entity holds status as an **ADT** (illegal states unrepresentable), do **not** leak that ADT into the read model's JSON. Map it to a stable `Text` tag in `combine` via a small `statusToText` helper, so the JSON contract stays stable even if the ADT later gains constructors:
+
+```haskell
+-- Entity carries the ADT (in App.Context.Core):
+--   data TaskStatus = Open | InProgress | Done
+
+statusToText :: TaskStatus -> Text
+statusToText status = case status of
+  Open       -> "open"
+  InProgress -> "in-progress"
+  Done       -> "done"
+
+
+instance QueryOf TaskEntity TaskSummary where
+  queryId task = task.taskId
+
+  combine task _maybeExisting =
+    Update TaskSummary
+      { taskSummaryId = task.taskId
+      , status        = statusToText task.status   -- Text, not the ADT
+      }
+```
+
+The read model field is `status :: Text`; the entity keeps the ADT. Illegal states stay unrepresentable in the domain while API consumers get a stable string enum (`"open"`/`"in-progress"`/…). See `neohaskell-domain-modeling` for the entity-side ADT.
+
+---
+
 ## DOMAIN-phase stub (before GREEN)
 
 When `neohaskell-domain-modeling` creates the file and you need it to compile but not yet pass:
@@ -263,6 +292,23 @@ Rules:
 - `queryId` must return the **same Uuid key space** across all entities — the framework uses it to look up the stored query instance.
 - The entity that "creates" the query instance (here `MemberEntity`) should handle `Nothing` with `Update`; secondary entities (here `LoanEntity`) should return `NoOp` when `Nothing` so they do not create phantom instances.
 - Order of `instance QueryOf` declarations does not matter; `deriveQuery` uses the type-level list for subscription, not declaration order.
+
+> **⚠️ Counts caveat — naive `+ 1` over-counts.** `combine entity maybeExisting` fires on **every** event of a contributing entity and only ever sees **that** entity's *current* folded state — never the set of all contributors. So the `activeLoanCount = existing.activeLoanCount + 1` above increments on *every* loan event and **over-counts** (re-folds and repeated events all re-fire it). For an accurate **distinct** count, hold an **id-set** in the read model (a deduped `Array Uuid`, or a `Set`) and derive the count from its size:
+>
+> ```haskell
+> -- Read model carries the id-set; the count is derived, never incremented:
+> --   data MemberLoanSummary = ... { loanIds :: Array Uuid, activeLoanCount :: Int }
+> combine loan maybeExisting = case maybeExisting of
+>   Nothing       -> NoOp
+>   Just existing ->
+>     let loanIds = (existing.loanIds |> Array.dropIf (\i -> i == loan.loanId)) ++ [loan.loanId]
+>      in Update existing
+>           { loanIds         = loanIds                 -- drop-then-add ⇒ idempotent, deduped
+>           , activeLoanCount = loanIds |> Array.length -- count from size, not `+ 1`
+>           }
+> ```
+>
+> The broader design rationale for composed read models lives in `neohaskell-domain-modeling`.
 
 ---
 

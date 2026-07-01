@@ -33,7 +33,8 @@ names and edges right here and the implement-* skills just transcribe them into 
 - **Inputs:** a Feature Brief (from `augment-feature-request`) plus the existing `event-model.json` at
   the workspace root (or none yet).
 - **Outputs:** an updated `event-model.json` — a new `Submodel` (the feature) + `Chapter`(s) +
-  `Slice`(s) + `nodes` + `edges` + `layout` entries, with **all pre-existing content byte-preserved**.
+  `Slice`(s) + `nodes` + `edges` + `layout` entries, with **every pre-existing entry preserved**
+  (data unchanged; whitespace may be reformatted).
 - **Next skill:** `verify-event-model` (schema + referential + best-practice gate). Do **not** run
   `neo inspect sync` after — it regenerates `event-model.json` *from source* and would clobber your
   hand-authored design.
@@ -149,6 +150,29 @@ For an **inbound Translation** (e.g. a daily timer) add an `integration` with `"
 join it to its command with `integrationTriggersCommand`. See §6c of the methodology reference for a
 full inbound snippet (illustrative `Library`/`Loan` domain).
 
+**Append with a script, not by hand.** Hand-inserting objects and commas into the arrays is
+error-prone (a misplaced comma, a clobbered sibling, an accidental reorder). Load the file, push onto
+each array, and write it back instead:
+
+```python
+import json
+m = json.load(open("event-model.json"))
+m["nodes"] += [ { "id": "n-cmd-add", "type": "command", "name": "AddItem",
+                  "entityId": "e-cart", "sliceId": "s-add-item" } ]
+m["edges"] += [ { "id": "ed-produces", "type": "commandProducesEvent",
+                  "sourceId": "n-cmd-add", "targetId": "n-evt-added" } ]
+# ...same for submodels / chapters / entities / slices, and layout.nodePositions...
+json.dump(m, open("event-model.json", "w"), indent=2)
+```
+
+This preserves every existing entry (the point of *append*); it only reformats whitespace — the same
+benign diff described next.
+
+**`layout.nodePositions` will drift, and that's fine.** Opening the model in the in-browser IDE
+re-lays-out the node positions and pretty-prints the whole document, producing a large but benign
+diff. Don't mistake it for corruption and don't hand-fight it — positions are cosmetic and never
+affect `neo validate` or codegen.
+
 ### Node-shape reminders (the schema traps)
 
 - On `event` and `command` nodes, `entityId` and `sliceId` are **required even when `null`** — write
@@ -157,6 +181,10 @@ full inbound snippet (illustrative `Library`/`Loan` domain).
 - `integration.kind` must be exactly `"inbound"` or `"outbound"`.
 - The whole document forbids extra keys everywhere (`additionalProperties:false` on the root and every
   definition) — no `description`, `color`, `notes`, or node positions inside a node.
+- **`fields` is the one allowed optional key on a node** — an array of `{ "name": ..., "type": ... }`
+  entries (both required) on `command`/`event`/`query`/`integration` nodes that documents the payload;
+  `type` is a free-form string that becomes a downstream type hint (e.g. `{ "name": "itemId", "type":
+  "Uuid" }`). The template omits it, but populating it is valuable and stays schema-valid.
 
 ## DO / DON'T
 

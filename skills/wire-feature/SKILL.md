@@ -63,6 +63,10 @@ Add one `Service.command @Cmd` call per new command. The type application `@Cmd`
 is how the framework discovers the command's `decide` function, entity type, and
 HTTP transport.
 
+A new **command** is wired **only here** — it needs no `App.hs` edit. Only new
+**queries** (`withQuery @Q`) and **integrations** (`withOutbound @I` and friends)
+touch `App.hs` (Step 2).
+
 Grounded in `Testbed.Cart.Service` and `Testbed.Stock.Service` (public testbed).
 Replace `Starter`, `Counter`, and command names for your domain.
 
@@ -85,6 +89,12 @@ service =
     |> Service.command @CreateCounter
     |> Service.command @IncrementCounter
 ```
+
+`service :: Service _ _` is a **partial type signature** — the `_`s are filled by
+inference, which is allowed because `-fno-warn-partial-type-signatures` is on
+project-wide. It will **not infer with zero commands**: an empty `Service.new`
+leaves the type variables ambiguous and fails to compile, so a context always
+needs at least one `Service.command @X`.
 
 The `import Starter.Counter.Core ()` is an **instance-only import** — it brings
 the `Entity`, `Event`, `EntityOf`, and `EventOf` instances into scope without
@@ -155,6 +165,14 @@ matches the integration kind your `implement-integration` produced:
 Replace `@()` with `@YourConfig` if the integration reads from application
 config. The lambda receives the config value after `Application.run` loads it —
 this is the factory pattern that avoids reading config at wiring time.
+
+### Zero-domain app is valid
+
+An app with **no domain at all** compiles and runs. After removing the `Counter`
+starter, an `App.hs` whose wiring is just
+`withConfig |> withEventStore |> withTransport` — with no `withService` and no
+`withQuery` — compiles and runs. Useful when clearing the starter before adding
+your first context.
 
 ---
 

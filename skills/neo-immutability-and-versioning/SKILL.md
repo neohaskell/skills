@@ -70,6 +70,19 @@ src/Starter/Counter/Events/CounterIncremented.hs
 src/Starter/Counter/Queries/CounterView.hs
 ```
 
+**`.locked-files` does not exist until you run `neo lock`.** `neo build` and `neo test`
+**never lock** — they only *check* an already-present `.locked-files` (the pre-build gate
+below). Until you deliberately run `neo lock`, there is no manifest, nothing is frozen, and
+every file — including those under `Commands/`, `Events/`, `Queries/` — is freely editable.
+The immutability / V2 gate only bites **after** the deliberate `neo lock` step; edit freely
+during development.
+
+**Forward rev-drift is by design, not a dirty tree.** Because `neo.json` pins
+`"neo-version": "main"`, every `neo build`/`neo test` tracks `main` and auto-bumps the
+neohaskell rev — rewriting `flake.nix`, `cabal.project`, and `flake.lock` together (you'll see
+`Updated input 'neohaskell': …`); those modified files are expected drift, not corruption and
+not a lock violation (they aren't locked paths). See `neo-cli`.
+
 **Why locking exists:** NeoHaskell projects are event-sourced. Every deployed node replays
 its persisted event log on start, decoding it against the shapes these files define. Editing,
 renaming, or deleting a locked file silently breaks replay on every deployed node — a bug

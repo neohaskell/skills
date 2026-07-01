@@ -70,7 +70,7 @@ module Decider.AddItemSpec where
 
 import Array qualified
 import Core
-import Decider (CommandResult (..), DecisionContext (..))
+import Decider (DecisionContext (..))
 import Decider qualified
 import Service.Auth qualified as Auth
 import Test
@@ -119,6 +119,19 @@ reject (already exists)".
 UUID, epoch timestamp, and `trustedBypass = False`. It is fine for RED specs.
 Import it from `Service.Auth qualified as Auth`.
 
+**Imports:** `CommandResult(..)` (`AcceptCommand`/`RejectCommand`) is
+re-exported by `Core`; `DecisionContext` is **not** — import only
+`DecisionContext` from `Decider`. Importing `CommandResult(..)` from `Decider`
+as well is redundant and fails under `-Wall -Werror=unused-imports`.
+
+**Record update of a qualified command:** to tweak one field of an
+already-built command (e.g. to derive an invalid variant), the field label must
+be **qualified** — `cmd {AddItem.quantity = -1}`, not `{quantity = -1}` —
+because under `NoFieldSelectors` a bare label from a `qualified`-imported module
+isn't in scope for an update (`Not in scope: record field 'quantity'`).
+Construction via the qualified constructor `AddItem.AddItem {quantity = …}` is
+fine. See **neohaskell-records-and-json**.
+
 ---
 
 ## Template B — Projection (query combine)
@@ -133,7 +146,6 @@ module Projection.CartSummarySpec where
 
 import Array qualified
 import Core
-import Service.Query.Core (QueryAction (..), QueryOf (..))
 import Test
 import Uuid qualified
 -- REPLACE: import your query and entity types
@@ -164,7 +176,8 @@ spec = do
 `combine` is a method of the `QueryOf entity query` typeclass. Call it with
 explicit type applications `@Entity @Query` so the compiler can pick the right
 instance. `QueryAction` has three constructors: `Update q`, `Delete`, `NoOp`.
-Import `QueryAction (..)` and `QueryOf (..)` from `Service.Query.Core`.
+`QueryOf`, `QueryAction(..)`, and `Update` are re-exported by `Core` — do **not**
+import `Service.Query.Core` (redundant next to `import Core`, and `-Werror`).
 
 ---
 

@@ -62,6 +62,41 @@ import Result qualified    -- Result (..) is already in Core; import qualified f
 
 ---
 
+## What `Core` re-exports vs what you must import
+
+Don't grep `Core.hs` — use this table. Grounded in `NeoHaskell/core/core/Core.hs`.
+
+**Re-exported by `Core`** (use unqualified, no extra import line):
+
+| Symbol | Note |
+|---|---|
+| `Uuid` | **The TYPE ONLY** (`import Uuid as Reexported (Uuid)`). The FUNCTIONS `Uuid.nil` / `Uuid.generate` / `Uuid.fromText` / `Uuid.toText` still need `import Uuid qualified`. This split is the single most common trip-up. |
+| `CommandResult (..)` | constructors `AcceptCommand` / `RejectCommand` |
+| `Decision` | the type only — smart-constructors `Decider.acceptNew`/`reject`/`generateUuid`/… are NOT (import `Decider qualified`) |
+| `Entity`, `NameOf`, `EventOf`, `EntityOf` | entity type + type families |
+| `Default`, `def` | |
+| `QueryOf (..)`, `QueryAction (..)`, `Query (..)`, `EntitiesOf` | via `Service.Query` |
+| `ToSchema (..)`, `FieldSchema (..)`, `Schema (..)` | via `Schema` |
+| `Natural`, `Array`, `Text`, `Task`, `Maybe`, `otherwise`, `not`, `fmt`, … | the usual prelude surface |
+
+**NOT re-exported — must import explicitly:**
+
+| Symbol | Import line |
+|---|---|
+| `DecisionContext` | `import Decider (DecisionContext)` |
+| `Event (..)` (the class) | `import Service.Command.Core (Event (..))` |
+| `TransportsOf` | `import Service.Command.Core (TransportsOf)` |
+| `AccessError`, `UserClaims` | `import Service.AccessControl (AccessError, UserClaims)` |
+| `publicAccess`, `publicView` | `import Service.AccessControl qualified as AccessControl` |
+| `RequestContext` | `import Service.Auth (RequestContext)` |
+| `WebTransport` | `import Service.Transport.Web (WebTransport)` |
+| `command` | `import Service.CommandExecutor.TH (command)` |
+| `deriveQuery`, `outboundIntegration`, `Integration.*` | the TH macros — imported in `implement-query` / `implement-integration` |
+
+`Decision` (unqualified, from `Core`) vs its smart-constructors (qualified, from `Decider`) is the second most common trip-up — see `implement-command`.
+
+---
+
 ## Operators and built-ins (all from `Core` via `Basics`)
 
 Grounded in `NeoHaskell/core/core/Basics.hs`.

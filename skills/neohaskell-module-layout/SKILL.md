@@ -248,6 +248,8 @@ service =
     |> Service.command @IncrementCounter
 ```
 
+`service :: Service _ _` is a **partial type signature** (compiles under `-fno-warn-partial-type-signatures`) that **won't infer with zero commands** — every `Service.hs` needs ≥1 `Service.command @X`. A context with no commands needs no `Service.hs` at all; an app can even run with **zero domains** (`withConfig |> withEventStore |> withTransport`, no `withService`/`withQuery`) and still compile — see **wire-feature** for the App.hs wiring.
+
 ---
 
 ## instance Default rule
