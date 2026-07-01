@@ -1,0 +1,66 @@
+[
+  {
+    "query": "In our Stock context, the event model has an outbound node for ReserveCapacityOnOrderPlaced — it should emit a ReserveCapacity command to the Warehouse context whenever an OrderPlaced event fires. The Outbound spec is red. I need to create src/Store/Stock/Integrations/ReserveCapacityOnOrderPlaced.hs with the nullary marker type, the EntityOf instance, a total handleEvent, and close it with the TH macro. Walk me through the full file.",
+    "should_trigger": true
+  },
+  {
+    "query": "need a periodic timer in our cart context that fires a PurgeAbandonedCarts command every 10 minutes. where does the Integration.Timer value live and whats the exact syntax for Timer.every in neohaskell? should this go in Integrations.hs or a separate file",
+    "should_trigger": true
+  },
+  {
+    "query": "I have src/Library/Integrations/NotifyMemberOnBookReturned.hs that was scaffolded during domain modeling — handleEvent is just returning Integration.none with a TODO. The Outbound unit test is now red on the assertion. I need to fill in the real logic: when a BookReturned event fires, emit a SendMemberNotification command with the memberId and bookId from the entity and event. Show me what handleEvent should look like.",
+    "should_trigger": true
+  },
+  {
+    "query": "Our dispatcher keeps crashing on replay whenever any CartEvent comes through. I found the culprit: src/Store/Cart/Integrations/NotifyWarehouseOnItemAdded.hs has a `panic \"TODO\"` inside handleEvent. What is the safe way to stub this so it compiles and runs without crashing the dispatcher while we still have the unit test failing on the assertion?",
+    "should_trigger": true
+  },
+  {
+    "query": "The event model for our Library feature has an outbound kind node: when a LoanCreated event fires on a Member entity, we need to cross-aggregate dispatch a ReserveItem command into the Catalog context. I don't want to name the integration explicitly — just explain the full outbound per-trigger pattern: nullary data type, EntityOf type instance, pure handleEvent with the wildcard, and the closing macro.",
+    "should_trigger": true
+  },
+  {
+    "query": "I need a stateful lifecycle outbound integration for the Stock context that keeps a running adjustment log per StockEntity — it needs initialize to set up the initial state, processEvent to accumulate adjustments, and cleanup to flush. Looks like withOutboundLifecycle territory. How do I write the Lifecycle.OutboundConfig and what type does processEvent return exactly?",
+    "should_trigger": true
+  },
+  {
+    "query": "writing an inbound webhook integration for the Cart context — an external payment gateway will POST to trigger a ConfirmPayment command. i think this is Integration.Inbound not a timer. does it still go in Integrations.hs and how do i wire the toCommand lambda when theres no schedule involved",
+    "should_trigger": true
+  },
+  {
+    "query": "After implement-event-and-update-entity added ItemAddedToCart to our CartEvent ADT, the domain modeling phase stubbed out src/Store/Cart/Integrations/UpdateInventoryOnItemAdded.hs with Integration.none. The Outbound spec is now failing on the assertion — not a type error. I need to implement handleEvent so it emits a DecrementInventory command to the Stock context with stockId and quantity pulled from the ItemAddedToCart event fields and the CartEntity. What goes in the file?",
+    "should_trigger": true
+  },
+  {
+    "query": "I've finished writing the ReserveStockOnItemAdded integration and neo build passes. Now I need to register it in App.hs so the dispatcher actually picks it up — which application combinator do I use and what is the exact line to add to the pipeline for a per-trigger outbound handler?",
+    "should_trigger": false
+  },
+  {
+    "query": "The event model for our Stock context has a ReserveStock command coming in from the Cart context. I need to implement the command handler: the command type itself, the handleCommand function that validates available quantity and emits a StockReserved or InsufficientStock event, and any guard logic. Walk me through the NeoHaskell command implementation pattern.",
+    "should_trigger": false
+  },
+  {
+    "query": "After my unit test scaffold is red for the Cart context, I need to add the ItemAdded variant to the CartEvent ADT and update CartEntity — specifically the items list field. What does the updateEntity function look like for appending an item, and how do I pattern-match on the event ADT to extract stockId and quantity?",
+    "should_trigger": false
+  },
+  {
+    "query": "I have integration nodes in event-model.json for the Library context with kind: outbound on LoanCreated. Before I write any real logic I need to scaffold the stub files: the nullary marker types and Integration.none placeholders so the project compiles and I can start the TDD cycle. What does the domain modeling phase produce for integration stubs?",
+    "should_trigger": false
+  },
+  {
+    "query": "I need to write the Outbound unit test for ReserveStockOnItemAdded in the Stock context before implementing anything — the test should go red on the assertion, not a type error. How do I structure the OutboundSpec, what helpers do I use to simulate the event firing, and how do I assert on the emitted command payload?",
+    "should_trigger": false
+  },
+  {
+    "query": "We are designing the checkout feature for our Cart service and I need to figure out the event model: when the Cart context raises an OrderPlaced event, should the notification to the Stock context be an outbound integration node or an inbound one? And how do I represent the cross-aggregate command flow in event-model.json — what fields does an integration node need?",
+    "should_trigger": false
+  },
+  {
+    "query": "Can you walk me through the full outside-in TDD cycle for a new Cart feature in NeoHaskell from scratch — starting from writing the hurl e2e test, through feature tests, unit tests, domain modeling, filling in handlers, and finally wiring everything together? I want to understand all the steps before I start.",
+    "should_trigger": false
+  },
+  {
+    "query": "I need to add a reservedQuantity field to StockEntity so the ReserveStock command can track how much has been committed. What is the NeoHaskell pattern for adding a field to an existing entity record — do I need to update Core.hs, the event handler, and any snapshot serialization?",
+    "should_trigger": false
+  }
+]

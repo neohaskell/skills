@@ -1,0 +1,66 @@
+[
+  {
+    "query": "I need to define a CartItem record in NeoHaskell with productId, quantity, and unitPrice fields. How do I set up the Generic instance and the JSON serialization correctly? I'm not sure whether to use deriving or separate instance declarations.",
+    "should_trigger": true
+  },
+  {
+    "query": "getting a compile error in my stock entity — i think im using the wrong json import. the file has `import Data.Aeson` at the top and uses `field rec` style access everywhere. what do i change to make it neohaskell-idiomatic?",
+    "should_trigger": true
+  },
+  {
+    "query": "my neohaskell code won't compile, the error mentions something about field selectors not being in scope. I'm writing `itemId entity` to read the id off a CartItem but it says No instance for Selector. what's the correct syntax here?",
+    "should_trigger": true
+  },
+  {
+    "query": "Can you review `src/Library/Catalog/Core.hs`? I'm coming from vanilla Haskell and I'm worried I've used `deriving (FromJSON, ToJSON)` on the BookEntity and written `toJSON x = object [\"isbn\" .= x.isbn]` manually. Want to catch any Aeson reflexes before the code review.",
+    "should_trigger": true
+  },
+  {
+    "query": "I'm building a StockLevel query read model and need OpenAPI schema documentation for the response shape. Do I put ToSchema on the StockEntity or on the StockLevel read model? And what's the right deriving clause — does the query record need anything beyond Generic?",
+    "should_trigger": true
+  },
+  {
+    "query": "I added a `reservedUntil` field to CartEntity and now old JSON snapshots in the event store fail to decode because the field is missing. The empty Generic FromJSON rejects them. How do I write a custom parseJSON that makes the new field optional with a default?",
+    "should_trigger": true
+  },
+  {
+    "query": "I want to nest a ShippingAddress value object inside OrderEntity in NeoHaskell — street, city, postcode, countryCode fields. It's a pure value object, no identity. Do I need separate Json.FromJSON and Json.ToJSON instance declarations for it, and does it also need Generic?",
+    "should_trigger": true
+  },
+  {
+    "query": "neohaskell code review flagged my LibraryBook record for writing `instance Json.ToJSON LibraryBook where toJSON b = object [\"title\" Json..= b.title, \"author\" Json..= b.author]` — said I should use an empty body. why does the hand-written body cause a problem and what replaces it?",
+    "should_trigger": true
+  },
+  {
+    "query": "I need to add a `loyaltyPoints` field to my existing CartEntity that already has hundreds of events in the store. What's the safe process for expanding a NeoHaskell entity without breaking replay of old snapshots?",
+    "should_trigger": false
+  },
+  {
+    "query": "I need to implement the AddItemToCart command in NeoHaskell — productId, quantity, and cartId fields. What's the full structure: the command record, the `command` TH macro invocation, the handler function signature, and where the file lives in the module tree?",
+    "should_trigger": false
+  },
+  {
+    "query": "Where exactly do CartItem, StockLevel, and ShippingAddress files go in the NeoHaskell directory layout? I'm confused about the difference between Entity.hs, Core.hs, and Queries/ subdirectories and what the naming conventions are.",
+    "should_trigger": false
+  },
+  {
+    "query": "I need to implement the full StockLevel query in NeoHaskell — the canAccess and canView access-control functions, the QueryOf instance with combine, the deriveQuery macro, and how it subscribes to StockEntity events. Walk me through the complete wiring.",
+    "should_trigger": false
+  },
+  {
+    "query": "How do I define the ItemAddedToCart event payload in NeoHaskell and write the applyEvent handler that updates CartEntity when it arrives? I need the ADT, the event file placement, and the entity update function signature.",
+    "should_trigger": false
+  },
+  {
+    "query": "I have an `Array CartItem` inside CartEntity and I need to filter out items below a minimum quantity, map over the remainder to apply a discount, then fold to compute the total. What NeoHaskell collection functions should I reach for instead of vanilla Data.List?",
+    "should_trigger": false
+  },
+  {
+    "query": "I'm starting a Library context from scratch in NeoHaskell. Help me design the domain model: what should be an entity vs a value object, what commands and events make sense for a book-lending system, and how should aggregates be bounded?",
+    "should_trigger": false
+  },
+  {
+    "query": "Can you do a full NeoHaskell code review of `src/Counter/Core.hs` and `src/Counter/Commands/Increment.hs`? I want you to check the command structure, effect handling, imports, and overall module idioms — not just the record definitions.",
+    "should_trigger": false
+  }
+]

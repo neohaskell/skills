@@ -1,0 +1,66 @@
+[
+  {
+    "query": "I just scaffolded a NeoHaskell counter app and want to start it locally, then POST to the increment-counter command and GET the counter-value query to make sure they both respond — what exact commands and URLs do I use?",
+    "should_trigger": true
+  },
+  {
+    "query": "whats the default port neo runs on? i wanna curl my add-item command but not sure if its 8080 or something else, and do i POST to /commands/add-item or /command/add-item?",
+    "should_trigger": true
+  },
+  {
+    "query": "I keep navigating to /swagger-ui on my running NeoHaskell app and getting 404 — where is the interactive API docs UI actually served, and how do I download the OpenAPI spec as YAML?",
+    "should_trigger": true
+  },
+  {
+    "query": "How do I open the event-modeling IDE for my NeoHaskell library project? I tried `neo ide --host localhost` and got a parse error, so what's the correct invocation and what URL do I open in my browser?",
+    "should_trigger": true
+  },
+  {
+    "query": "Run `neo inspect commands` on my stock management project and explain what the output fields mean — especially what 'HTTP-reachable' means and how kebab-case URLs map to my PascalCase command types.",
+    "should_trigger": true
+  },
+  {
+    "query": "Before I start writing hurl e2e tests for the place-order and get-order-status endpoints in my cart service, I want to confirm the exact paths and port number the running app exposes — can you show me how to verify that?",
+    "should_trigger": true
+  },
+  {
+    "query": "My Kubernetes liveness and readiness probes are hitting /health and /ready on my NeoHaskell service. Do these endpoints need manual wiring in Service.hs, and what HTTP status codes should I expect when the app is still rebuilding after a hot reload?",
+    "should_trigger": true
+  },
+  {
+    "query": "I implemented two new commands and a query in Haskell source, then wired them, and now I want to refresh event-model.json to reflect the current code — walk me through `neo inspect sync` and warn me about anything I might lose.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write me a complete hurl test file for the Cart domain that POSTs add-to-cart with a productId and quantity, then GETs cart-total and asserts the response body contains a 'total' field — include the correct Content-Type headers.",
+    "should_trigger": false
+  },
+  {
+    "query": "I added a new PlaceOrder command and an OrderPlaced event to my stock domain — now wire them into Service.hs and App.hs so the POST /commands/place-order endpoint is actually reachable and the event handler is registered.",
+    "should_trigger": false
+  },
+  {
+    "query": "Give me a full reference for all neo CLI subcommands: build flags, test runner options, lock file management, and how to add a dependency — I need to set up CI for my NeoHaskell library project.",
+    "should_trigger": false
+  },
+  {
+    "query": "I'm event modeling a checkout feature for my e-commerce cart system — help me add the CheckoutInitiated trigger, the ReserveInventory command, the InventoryReserved event, and the ConfirmOrder read model to event-model.json.",
+    "should_trigger": false
+  },
+  {
+    "query": "Do a code review of my Service/Transport/Web.hs changes — I refactored how HTTP routes are assembled and I want to make sure the handler wiring is correct and there are no obvious bugs in the routing logic.",
+    "should_trigger": false
+  },
+  {
+    "query": "Implement the IncrementCounter command handler in my NeoHaskell counter domain: create Commands/IncrementCounter.hs with the correct record type, produce a CounterIncremented event, and validate that the amount field is positive.",
+    "should_trigger": false
+  },
+  {
+    "query": "Verify that my event model for the Library domain is internally consistent — check that every command produces at least one event that's consumed by an integration or read model, and flag any gaps or orphaned events.",
+    "should_trigger": false
+  },
+  {
+    "query": "I need to expand my CartItem entity to add a discountPercent field and a promotionCode optional field — update the record in Domain/Cart/Entities/CartItem.hs, add JSON instances, and adjust any pattern matches that construct CartItem.",
+    "should_trigger": false
+  }
+]

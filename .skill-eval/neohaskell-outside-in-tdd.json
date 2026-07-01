@@ -1,0 +1,66 @@
+[
+  {
+    "query": "We just got a GO verdict from verify-event-model for the AddItem slice in our cart service. Walk me through the full outside-in TDD cycle I need to follow before writing any src/ files in NeoHaskell — what comes first, what order do the skills run in, and where does the DOMAIN phase fit between the red tests and the green bodies?",
+    "should_trigger": true
+  },
+  {
+    "query": "whats the right order to write tests for a neohaskell feature slice? i keep jumping straight to implementing the decide function before any failing test and it always bites me later when i realise the test doesnt match what i built",
+    "should_trigger": true
+  },
+  {
+    "query": "My Library checkout feature has almost no unit tests — all the business rules are only covered by hurl e2e scenarios. neo test takes forever and when something breaks I get no line-level diagnosis. How do I reshape this into a proper test pyramid in a NeoHaskell event-sourced project, and in what order do I add the missing specs?",
+    "should_trigger": true
+  },
+  {
+    "query": "I already stubbed src/Commands/PlaceOrder.hs with `panic \"TODO: not implemented\"` and now want to add the real decide logic. A colleague says I should have written a failing test first. If that's right, which test do I write, and does it matter whether I write the hurl scenario or the decider spec first?",
+    "should_trigger": true
+  },
+  {
+    "query": "The Commands/ReserveStock.hs file in our stock service is deployed and locked in production. A business rule changed — we now need to enforce a minimum quantity of 1. I know I can't edit the existing file. What is the correct step-by-step process for making this change safely in NeoHaskell event sourcing, including which tests to write and in what phase?",
+    "should_trigger": true
+  },
+  {
+    "query": "Starting the CheckoutCart slice completely from scratch in a NeoHaskell project — event model is verified, node names are frozen as PlaceOrder command, OrderPlaced event, OrderSummary query. I'm not sure whether to write the hurl scenario or the unit decider spec first, and I don't understand how the DOMAIN stub phase fits in between RED and GREEN. Can you lay out the full ordered cycle?",
+    "should_trigger": true
+  },
+  {
+    "query": "For a brand-new NeoHaskell slice, which test do I write first — the .hurl e2e scenario, the in-domain acceptance spec, or the unit decider test? And why does the order matter for keeping the test pyramid the right shape instead of ending up with an ice-cream-cone?",
+    "should_trigger": true
+  },
+  {
+    "query": "A teammate on our NeoHaskell cart service jumped straight to writing the full decide and update bodies for the AddItem command with zero failing tests first. Now we have working code but no red-green history and the phase boundaries are blurred. How do I explain the correct outside-in discipline to them and what exactly did they skip?",
+    "should_trigger": true
+  },
+  {
+    "query": "Write me a decider spec for the AddItem command using the NeoHaskell testlib: given no cart is loaded, when we call decide with quantity 5, then the command should be rejected with the message 'Cart not found'. One assertion only, Given-When-Then structure, `spec :: Spec Unit`, `actual |> shouldBe expected` style.",
+    "should_trigger": false
+  },
+  {
+    "query": "The red test for the PlaceOrder command is now failing on the assertion rather than a compile error — the types exist and the stub panics. Write me the minimal decide body that makes this one test go green: given an existing order with status Open, when PlaceOrder is called, then emit an OrderPlaced event.",
+    "should_trigger": false
+  },
+  {
+    "query": "My acceptance spec references ItemAdded and CartEntity but they don't exist yet so neo test fails to compile. I need to create the ItemAdded event payload type, add the itemCount field to CartEntity, and stub the decide and update bodies with `panic \"TODO: not implemented\"` so the project compiles and the spec can fail on the assertion instead of a type error.",
+    "should_trigger": false
+  },
+  {
+    "query": "We finished the event-modeling session for the stock reservation feature and have a draft command-event-query chain: ReserveStock command emits StockReserved event, consumed by StockLevel query. Can you verify this event model for the ReserveStock slice — check the aggregate boundaries, confirm the query field touches are correct, and give us a GO or NO-GO before we start writing any code?",
+    "should_trigger": false
+  },
+  {
+    "query": "All the hspec unit tests for the AddItem slice are green — the decider, the projection, and the outbound handler all pass. But the hurl scenario still gets a 404 on POST /commands/add-item. I need to register Service.command @AddItem and wire up the CartSummary query handler with withQuery in App.hs. Walk me through exactly what to add to the service wiring.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write the outer hurl test for the AddItem slice that acts as the first RED test: it should POST to http://localhost:8080/commands/add-item with a cartId and stockId, then retry a GET to /queries/cart-summary up to 5 times asserting itemCount equals 5. The scenario should fail with 404 until the feature is wired.",
+    "should_trigger": false
+  },
+  {
+    "query": "Please review this AddItem implementation diff and flag any outside-in TDD process violations — specifically check whether any new types or fields were introduced during a GREEN phase commit, whether any real logic appears in a DOMAIN-phase commit, and whether any test asserts more than one behavior in a single `it` block.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write an in-domain acceptance spec for the CheckoutCart slice — no HTTP, no booted app. The spec should call decide with a CheckoutCart command on an existing cart, then call update with the OrderPlaced event, then call combine on the projection, and assert the resulting OrderSummary has status Placed. Use `spec :: Spec Unit` and the NeoHaskell testlib, not Test.Hspec.",
+    "should_trigger": false
+  }
+]

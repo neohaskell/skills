@@ -1,0 +1,66 @@
+[
+  {
+    "query": "Setting up a CI pipeline for a new NeoHaskell project called stock-service. I need to scaffold the project non-interactively and then run a build as part of the pipeline. What neo commands do I use and in what order, and are there flags I need to avoid in CI mode?",
+    "should_trigger": true
+  },
+  {
+    "query": "neo build is blowing up saying something about locked files being modified. i edited src/Counter/Domain.hs but that file was already there before i touched it. what is the lock gate exactly and is there a flag to skip it while i figure out whats going on?",
+    "should_trigger": true
+  },
+  {
+    "query": "tried `neo run --port 9090` to change the port my NeoHaskell app listens on but got an unknown flag error. is there a --port option on neo run, or do I have to set it some other way?",
+    "should_trigger": true
+  },
+  {
+    "query": "I need to open the NeoHaskell event-modeling IDE but I can't remember the default port — is it 2323 or 8080? Also I tried `neo ide --host localhost` and it rejected it, what format does the host flag expect?",
+    "should_trigger": true
+  },
+  {
+    "query": "want to install neohaskell skills for both claude code and cursor at the same time without being interactively prompted. what is the exact neo skills setup invocation for that, and does the --all-tools flag exist or do i need to repeat --tool?",
+    "should_trigger": true
+  },
+  {
+    "query": "running `neo test --watch` in my GitHub Actions workflow but it blocks the pipeline indefinitely. is --watch compatible with --ci mode, and what is the correct one-shot test command to use in CI?",
+    "should_trigger": true
+  },
+  {
+    "query": "Creating a shared NeoHaskell library package for domain types that will be used across two services, not an executable. Is there a neo new flag to scaffold a library project instead of an app, and does it change the cabal stanza that gets generated?",
+    "should_trigger": true
+  },
+  {
+    "query": "Before I start wiring a new feature I want a quick snapshot of everything neo has already discovered — commands, events, queries — without actually running the app. What neo subcommand gives me that breakdown and what does the output look like?",
+    "should_trigger": true
+  },
+  {
+    "query": "My NeoHaskell app is running via neo run and I want to verify that the /health and /ready endpoints are responding correctly. Is there a built-in OpenAPI route I can hit to see all registered HTTP endpoints without reading the source?",
+    "should_trigger": false
+  },
+  {
+    "query": "I have a locked domain file src/Library/Domain.hs and I need to add a new optional field to the Book record. Should I create a BookV2 type alongside it, or is there a different NeoHaskell convention for evolving an immutable domain type while keeping old event handlers working?",
+    "should_trigger": false
+  },
+  {
+    "query": "How do I configure my NeoHaskell stock-service to load a DATABASE_URL secret from the environment at startup without hardcoding it in neo.json? I want different values in dev vs production without changing any source files.",
+    "should_trigger": false
+  },
+  {
+    "query": "I've finished building and testing my AddToCart command. Now I need it to actually handle HTTP POST /cart/add requests. What do I do to register it with the NeoHaskell router so traffic reaches the handler?",
+    "should_trigger": false
+  },
+  {
+    "query": "I want to write end-to-end HTTP tests for my Library domain's BorrowBook endpoint using hurl. Where do the hurl files live in a NeoHaskell project, what naming convention should I follow, and how do I assert on the response body?",
+    "should_trigger": false
+  },
+  {
+    "query": "Starting a new Stock inventory feature from scratch using outside-in TDD in NeoHaskell. Should I begin with a failing hurl e2e test, a failing unit test for the command handler, or write the event model first? Walk me through the recommended sequence.",
+    "should_trigger": false
+  },
+  {
+    "query": "I've finished event modeling the checkout flow for my Cart domain and now need to implement the PlaceOrder command. What files do I create, what is the expected function signature for the handler, and how does the command wire to the events it produces?",
+    "should_trigger": false
+  },
+  {
+    "query": "Please review the NeoHaskell code I just wrote for the Counter domain — there are several GHC warnings in the neo build output about incomplete pattern matches and unused imports. Do these violate NeoHaskell conventions, and what is the idiomatic fix for each?",
+    "should_trigger": false
+  }
+]

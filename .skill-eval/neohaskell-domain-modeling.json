@@ -1,0 +1,66 @@
+[
+  {
+    "query": "After running write-unit-tests I'm getting 'Not in scope: type constructor or class `CartId`' — the test expects a Uuid-typed id but my entity still has `id :: Text`. The module won't compile at all. Walk me through what changes belong in the DOMAIN phase so the test fails on its assertion instead of a type error.",
+    "should_trigger": true
+  },
+  {
+    "query": "The acceptance spec for BorrowBook references `LoanStatus`, `Isbn`, and `MemberId` types that don't exist yet. None are imported in the command module. How do I introduce them with the right value-object discipline before I touch any implement- files?",
+    "should_trigger": true
+  },
+  {
+    "query": "My StockItem entity has `status :: Text` and the domain only allows three legal values: InStock, Reserved, Discontinued. I want to replace the Text field with something that makes illegal values unrepresentable. How do I model this in NeoHaskell and what deriving clauses and Json instances do I need?",
+    "should_trigger": true
+  },
+  {
+    "query": "price :: Float on my LineItem record is causing rounding errors in the cart total. i know neohaskell has a fixed-point money type but cant remember the import or how to build one from a raw float. what do i change on the record and how do i parse it from Text at the api boundary?",
+    "should_trigger": true
+  },
+  {
+    "query": "need to add an apiKey field to my integration config record but it absolutely cannot appear in logs or JSON serialization. what neohaskell wrapper do I use and what does Show print for it? also what happens if I accidentally add a ToJSON instance?",
+    "should_trigger": true
+  },
+  {
+    "query": "The unit test for AddItem uses `quantity :: Natural Int` on the command, but my current record declares `quantity :: Int`. neo build fails with a type mismatch. What exactly changes in the command record and do I need a smart constructor module too, or is makeNatural already in Core?",
+    "should_trigger": true
+  },
+  {
+    "query": "My stock reservation feature has two optional timestamp fields — `reservedAt :: Maybe Timestamp` and `fulfilledAt :: Maybe Timestamp` — but having both set simultaneously is an illegal state the business rules forbid. Red test is failing on a type error because the spec uses a sum type. How do I restructure this as a sum type in NeoHaskell so the compiler rejects the bad combination?",
+    "should_trigger": true
+  },
+  {
+    "query": "writing a Library lending slice. the red spec compiles but errors on 'No instance for Json.FromJSON Isbn' — i have the newtype declared but havent given it a FromJSON yet. the isbn has a 13-char invariant. do i use the empty generic instance or do i need to hand-write parseJSON, and why does it matter here?",
+    "should_trigger": true
+  },
+  {
+    "query": "The BorrowBook command's decide stub is in place and the test is now failing on a shouldBe assertion rather than a type error. How do I write the real decide logic that checks the member hasn't exceeded their loan limit and emits the BookBorrowed event on success?",
+    "should_trigger": false
+  },
+  {
+    "query": "LoanEntity and LoanEvent are both declared and compile cleanly. Now I need to implement the combine function that folds each LoanEvent variant into the entity state — specifically handling the BookBorrowed and BookReturned cases to update the activeLoans list.",
+    "should_trigger": false
+  },
+  {
+    "query": "CartItem record is already defined with the right domain types. How do I derive or hand-write the ToJSON and FromJSON instances in NeoHaskell? Do I use empty Generic instances or do I need to call Json.object manually for a nested record?",
+    "should_trigger": false
+  },
+  {
+    "query": "I want to write the red unit test for the AddToCart command before touching any implementation. What does the spec file look like, where does it live in the project layout, and how do I assert that decide rejects a zero quantity?",
+    "should_trigger": false
+  },
+  {
+    "query": "The getAvailableStock query handler needs to filter StockItem projections by status and return only InStock items sorted by quantity. All the types are already in place. How do I implement the projection function that reads from the read model in NeoHaskell?",
+    "should_trigger": false
+  },
+  {
+    "query": "BorrowBook command, LoanEvent, LoanStatus, and all the domain types are defined. How do I register the command handler and the outbound integration handler in the feature's wiring module so the router picks them up?",
+    "should_trigger": false
+  },
+  {
+    "query": "I'm kicking off a new Library borrowing feature from scratch and want to run an event-storming session before writing any code. Can you walk me through identifying the commands, events, and aggregates for borrowing and returning books, including what triggers each event and what read models we'd need?",
+    "should_trigger": false
+  },
+  {
+    "query": "Reviewing a PR that introduces a new CartItem record. I can see `price :: Float`, `id :: Text`, and `status :: Text` on the record, plus an empty FromJSON instance on a value object that has a length invariant. Which of these should I flag as violations and what's the correct fix for each?",
+    "should_trigger": false
+  }
+]

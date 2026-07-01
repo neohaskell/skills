@@ -1,0 +1,66 @@
+[
+  {
+    "query": "I have a failing Decider spec for `AddItemToCart` — the test asserts a `CartItemAdded` event is emitted but the decide body just panics. This is a creation command (cart item doesn't exist yet). Walk me through writing the full `src/Shop/Cart/Commands/AddItemToCart.hs` module: record, getEntityId returning Nothing, a decide that calls Decider.generateUuid and Decider.acceptNew, plus the EntityOf and TransportsOf type instances and the command macro.",
+    "should_trigger": true
+  },
+  {
+    "query": "can u help me write the decide function for a new CreateBook command in our library app? its a creation command so getentityid should return nothing and we need to emit a BookCreated event — also not sure if i should use acceptNew or acceptExisting here",
+    "should_trigger": true
+  },
+  {
+    "query": "My Decider unit test is RED — the `Nothing` branch in `decide` for `RemoveItemFromStock` isn't rejecting, it's panicking instead. I need to replace the panic stub with real logic: case-split on the entity, call Decider.reject with 'Stock item not found' when Nothing, and emit `StockItemRemoved` when Just. The file is at src/Warehouse/Stock/Commands/RemoveItemFromStock.hs.",
+    "should_trigger": true
+  },
+  {
+    "query": "Implement the full PlaceOrder command module at src/Store/Orders/Commands/PlaceOrder.hs. It is a creation command — the order doesn't exist beforehand. I need the record with `customerId :: Uuid` and `items :: [OrderItem]` fields, getEntityId returning Nothing, a decide that generates a new UUID and calls acceptNew with an OrderPlaced event, and both type instances plus the command splice.",
+    "should_trigger": true
+  },
+  {
+    "query": "In NeoHaskell I keep mixing up create commands and update commands. Can you explain the exact difference: what getEntityId returns in each case, which Decider constructor to use (acceptNew vs acceptExisting), what the framework does with the entity argument, and how to correctly reject a not-found entity in an update command without using Haskell's error function?",
+    "should_trigger": true
+  },
+  {
+    "query": "We're mid-GREEN phase — neohaskell-domain-modeling is done and write-unit-tests left us with a failing spec for `CheckOutBook`. The decide body is `panic \"TODO\"`. I need to fill it in: if the borrower already has the book checked out, reject; otherwise emit `BookCheckedOut` with a new UUID. It's a creation command (new loan record). Show me the complete Commands/CheckOutBook.hs.",
+    "should_trigger": true
+  },
+  {
+    "query": "add a neohaskell command for decrementing stock quantity — update command on an existing StockItem entity. need the full module: record with entityId and quantity fields, getEntityId returning Just cmd.entityId, decide that rejects when entity is Nothing or quantity would go negative, emits StockDecremented otherwise using acceptExisting. put it at src/Inventory/Stock/Commands/DecrementStock.hs",
+    "should_trigger": true
+  },
+  {
+    "query": "The `command ''RegisterMember` TH splice compiles but I'm seeing 'No instance for TransportsOf RegisterMember' at the splice site. Can you show me the complete Commands/RegisterMember.hs — specifically how TransportsOf and EntityOf type instances must be declared relative to the command splice, and whether EntityOf is re-exported from Core or needs its own import?",
+    "should_trigger": true
+  },
+  {
+    "query": "I need to implement the CounterIncremented event payload and the `update` function that applies it to a CounterEntity. Specifically, what goes in src/Starter/Counter/Events/CounterIncremented.hs — the Event record, the Json instances, and how the update function pattern-matches on the event union to increment the stored count?",
+    "should_trigger": false
+  },
+  {
+    "query": "My IncrementCounter command module compiles and the Decider spec is green. Now I need to register it in Service.hs so the HTTP endpoint actually goes live. Walk me through wiring the command into the NeoHaskell service — which import to add, where to call the command handler registration, and what the router entry looks like.",
+    "should_trigger": false
+  },
+  {
+    "query": "I need to write a failing Decider spec for a CreateBook command in my library app — the RED phase before I implement decide. What does the Hspec module look like? I need it to import the Command module, set up a test BookCreated event expectation, call decide with a Nothing entity, and assert the right events come back.",
+    "should_trigger": false
+  },
+  {
+    "query": "Add a NeoHaskell query to fetch a Cart by ID. I need the full module at src/Shop/Cart/Queries/GetCart.hs — the query record with cartId :: Uuid, a query function that loads the entity from the store, the QueryOf type instance, and the query macro. How does this differ structurally from a command module?",
+    "should_trigger": false
+  },
+  {
+    "query": "Before I implement the CheckOutBook command logic, I need to set up the DOMAIN-phase skeleton so the project compiles even though decide isn't real yet. What should Commands/CheckOutBook.hs look like at this stub stage — just enough types and a panic body — so the unit test can compile and fail on the panic rather than a type error?",
+    "should_trigger": false
+  },
+  {
+    "query": "My CounterEntity needs a new `description :: Text` field. How do I add it safely — updating the record in Entity.hs, adjusting the Default instance, making sure existing CounterCreated update handlers still compile, and avoiding breaking any event replay that doesn't include description in old events?",
+    "should_trigger": false
+  },
+  {
+    "query": "I need to add a Stripe webhook integration to NeoHaskell — an integration module that receives a payment-succeeded webhook payload, validates the signature, and emits an OrderPaid domain event so the command handler can pick it up. What does the integration module structure look like and how does it map to NeoHaskell's Integration type?",
+    "should_trigger": false
+  },
+  {
+    "query": "I want to model the checkout flow in event-model.json before writing any code. What fields does a command node need (name, entity, fields, intents), which event nodes should it link to, and how do I represent the create-vs-update distinction so that implement-command can later consume it correctly?",
+    "should_trigger": false
+  }
+]

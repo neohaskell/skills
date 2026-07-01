@@ -1,0 +1,66 @@
+[
+  {
+    "query": "I deployed `IncrementCounter.hs` to production last week and now the business wants to add a `reason: Text` field to that command. If I just open the file and add the field, what breaks — and what's the correct approach so existing event log replay doesn't silently corrupt?",
+    "should_trigger": true
+  },
+  {
+    "query": "neo build keeps blowing up with 'Build refused: 3 locked file(s) violate the lock'. I was fixing a display bug and accidentally touched `src/Library/Books/Queries/BookView.hs`. How do I get past this without losing my other changes?",
+    "should_trigger": true
+  },
+  {
+    "query": "We need PlaceOrder to also accept a `deliveryAddress` field — right now it only takes `cartId`. The command is already live. Do I edit the existing file, create a sibling, or what? Walk me through the safest path end to end.",
+    "should_trigger": true
+  },
+  {
+    "query": "Can I just rename `src/Stock/Commands/ReserveStock.hs` to `ReserveStockV2.hs` in-place (git mv) and update the type name inside? Will `neo lock check` be satisfied after that, or does the original file still need to exist?",
+    "should_trigger": true
+  },
+  {
+    "query": "git commit is being rejected by the pre-commit hook because I fixed a one-character typo in `ItemAdded.hs` under `Events/`. The typo is a real bug and I need this deployed. What is the proper procedure — can I bypass the hook or is there another way?",
+    "should_trigger": true
+  },
+  {
+    "query": "we have StockReservedV1.hs sitting in Events/ that nobody emits anymore. can i just delete the file and remove its line from .locked-files to clean up? or does deleting a locked event file also break replay somehow",
+    "should_trigger": true
+  },
+  {
+    "query": "`CounterIncrementedV2.hs` already exists in our project from a previous change. I now need to extend the payload again — add a `correlationId: Uuid` field. What should the new file be named, what does the type declaration look like, and do I have to add a new variant to the `Event.hs` ADT or can I reuse the existing `CounterIncrementedV2` variant?",
+    "should_trigger": true
+  },
+  {
+    "query": "Our team is arguing about whether `CartEntity.hs` needs to be versioned the same way Commands files do. One engineer wants to rename an existing field from `itemCount` to `lineItemCount`. How does NeoHaskell's locking model apply to Entity files, and what's safe versus what would silently corrupt old snapshot replay?",
+    "should_trigger": true
+  },
+  {
+    "query": "Now that `IncrementCounterV2.hs` is scaffolded as the sibling file, I need to write the actual `decide` function. The new business rule is: reject if amount > 500, and also reject if the counter is already at its maximum value stored in the entity. Show me the full module with imports, the data type, `getEntityId`, and the complete decision logic.",
+    "should_trigger": false
+  },
+  {
+    "query": "The `CounterEntity` currently has `count: Int` and `counterId: Uuid`. I need to add a `lastIncrementedAt: Maybe Timestamp` field so the read model can show when the counter was last touched. Walk me through every change needed in `Entity.hs` — the record, `initialState`, and the `update` fold cases — to keep it replay-safe for nodes that have old snapshots without this field.",
+    "should_trigger": false
+  },
+  {
+    "query": "I've finished writing `IncrementCounterV2.hs` and `neo lock check` comes back clean. Now I need to wire the new command so it actually gets an HTTP endpoint. Where exactly do I add the `Service.command @IncrementCounterV2` line in `Service.hs`, and is there anything else to register so the router picks it up?",
+    "should_trigger": false
+  },
+  {
+    "query": "What is the difference between `neo lock`, `neo lock --all`, `neo lock install`, and `neo lock check`? I'm onboarding a new developer and want to write a runbook for setting up the pre-commit hook correctly on a fresh clone, including what order to run these subcommands.",
+    "should_trigger": false
+  },
+  {
+    "query": "I've got `CounterIncrementedV2.hs` ready — it adds a `reason: Text` field. Now I need to wire it into the domain: add a `CounterIncrementedV2` constructor to the `CounterEvent` ADT in `Event.hs`, extend `getEventEntityId`, and add a new case to the `update` fold in `Entity.hs` that reads the reason field. Show me both file diffs.",
+    "should_trigger": false
+  },
+  {
+    "query": "I'm adding a completely new `CancelOrder` command to the Cart feature — this has never existed before, it's not replacing anything. Show me the full `Commands/CancelOrder.hs` module: the data type, `getEntityId`, the `decide` function that checks the order is in a cancellable state, and the TH splice at the bottom.",
+    "should_trigger": false
+  },
+  {
+    "query": "I've created `IncrementCounterV2.hs` with the new validation rule (reject if amount > 100). Before wiring it, I want full unit-test coverage on the `decide` function — happy path, amount == 0, amount == 101, and counter-not-found. How do I structure the test file and what test helpers does NeoHaskell provide for running a pure `decide` function without a real database?",
+    "should_trigger": false
+  },
+  {
+    "query": "I'm scaffolding a brand new `Checkout` bounded context from scratch. Where should I create the `Commands/`, `Events/`, and `Queries/` directories — directly under `src/Checkout/` or nested under a feature subfolder? What's the standard NeoHaskell folder layout and module naming convention I should follow before writing the first command?",
+    "should_trigger": false
+  }
+]

@@ -1,0 +1,66 @@
+[
+  {
+    "query": "In src/Library/Checkout/CheckoutService.hs I have a function that currently returns IO (Either String Book). I need to rewrite it to the NeoHaskell idiom — typed error ADT, Task instead of IO, Result instead of Either. Walk me through the correct type signatures, constructors to use, and how to chain two fallible steps together in a do-block.",
+    "should_trigger": true
+  },
+  {
+    "query": "neohaskell task.yield vs pure — my code compiles when i write pure x but my team says thats wrong. what should i use instead and why does neohaskell care if pure still compiles?",
+    "should_trigger": true
+  },
+  {
+    "query": "I'm writing a counter validation module in NeoHaskell. The validateAmount function should return a typed failure when the count is negative, and the calling function logs a message and returns a success value wrapped for the effect system. My do-block keeps getting ambiguity errors between IO and the effect type. How should I structure the return types?",
+    "should_trigger": true
+  },
+  {
+    "query": "How do I chain a pure Result-returning function into a Task pipeline in NeoHaskell? I have validateStock :: Int -> Result StockError Int and I want to log a message and then return the validated value in the effect context. What's the idiomatic way to lift the Result into the Task and thread errors through?",
+    "should_trigger": true
+  },
+  {
+    "query": "neohaskell fmt quasi-quoter — is the interpolation delimiter #{name} or just {name}? I found both in different reference files and my code fails to compile with bare braces. Also how do I embed a non-Text value like an Int inline without an explicit show call?",
+    "should_trigger": true
+  },
+  {
+    "query": "A colleague wrote a NeoHaskell do-block in src/Cart/Checkout/CheckoutHandler.hs with let total = computeTotal items in formatTotal total and then a where clause at the bottom for a small helper. My reviewer flagged both as style violations. What are the correct NeoHaskell replacements for let..in and where-clause bindings?",
+    "should_trigger": true
+  },
+  {
+    "query": "In NeoHaskell I want to attempt fetching a stock level from the primary store inside a Task, and if that Task fails I want to fall back to a cached value rather than propagating the error. What functions do I use to observe or recover from a Task error — something like try or catch but in the Task effect system?",
+    "should_trigger": true
+  },
+  {
+    "query": "My NeoHaskell REPL helper module needs to read a line from stdin and feed it into a Task-based processing pipeline. I tried calling Console.readLine directly in a Task do-block and got a type mismatch between IO and Task. What is the correct bridge pattern, which function wraps the IO action, and what qualified import does it live under?",
+    "should_trigger": true
+  },
+  {
+    "query": "What is the full list of operators that NeoHaskell's Core prelude exposes automatically, without an explicit import? I keep seeing |>, !, and a few others used in modules with only import Core and I want the complete operator trap table. Also when should I reach for panic versus letting the effect type carry the failure?",
+    "should_trigger": false
+  },
+  {
+    "query": "I'm building a stock management feature in NeoHaskell and need to filter an Array of StockItem records by category and then group them into a Map keyed by category name. What are the idiomatic Array and Map combinators I should use, and how do I import them without polluting the namespace?",
+    "should_trigger": false
+  },
+  {
+    "query": "I need to implement the AddToCart command handler in NeoHaskell end to end. The command carries an item ID and a quantity. I need help with the full function signature, the correct import list, how the handler produces a Decision, and how to wire it into the feature's command dispatch so events flow through the aggregate.",
+    "should_trigger": false
+  },
+  {
+    "query": "Can you review this NeoHaskell module for idiom violations before I submit the PR? I can already see pure, return, Either, Left, Right, and a where clause in there. I want a structured list of every violation with the correct NeoHaskell equivalent for each one so I can fix them all in one pass.",
+    "should_trigger": false
+  },
+  {
+    "query": "I have a CartItem record in NeoHaskell and I need it to round-trip through JSON cleanly for the REST API response. What derives do I add to the data type declaration, what is the correct import, and is there any special handling needed for Maybe fields so they serialize as null rather than being omitted?",
+    "should_trigger": false
+  },
+  {
+    "query": "I'm modeling the Library domain in NeoHaskell from scratch and need to define the Book aggregate with its ID, title, and availability status, plus a structured checkout-failure error type. What data type patterns and derives does NeoHaskell use for aggregate roots and their companion error ADTs, and how should the files be named?",
+    "should_trigger": false
+  },
+  {
+    "query": "I need to write a GetStockLevel query handler in NeoHaskell that looks up a stock item by ID from the read model and returns Nothing when the item doesn't exist. What is the correct function signature, how do I interact with the projection store, and what does the query handler type look like compared to a command handler?",
+    "should_trigger": false
+  },
+  {
+    "query": "What is the correct folder structure and module naming convention for a full NeoHaskell feature? I have a Counter domain with commands, queries, events, projections, and an integration layer. Where does each file live under src/, what should the module declaration at the top of each file look like, and is there a mandated suffix convention for integration modules?",
+    "should_trigger": false
+  }
+]

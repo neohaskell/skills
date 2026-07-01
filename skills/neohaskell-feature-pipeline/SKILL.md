@@ -61,7 +61,7 @@ flowchart TD
 2. **`event-modeling`** (Opus) — run the seven steps and the four patterns; append the feature (submodel → chapters → slices → command/event/query/integration nodes → edges) to `event-model.json`, additively.
 3. **`verify-event-model`** (Opus) — gate the model: JSON-Schema shape, referential integrity, and Event Modeling best practices. If it fails, loop back to step 2. Output: a set of verified vertical slices.
 
-### Phase B — Build each slice outside-in (RED → DOMAIN → GREEN → REFACTOR)
+### Phase B — Build each slice outside-in (RED → DOMAIN → GREEN → DOMAIN → REFACTOR)
 
 For **each** verified slice, in order:
 
@@ -80,7 +80,7 @@ The discipline itself (phase boundaries, one assertion per test, compiler-as-RED
 - **New project vs existing app** — `augment-feature-request` detects whether a domain overview exists and switches between full-domain discovery and feature-scoped.
 - **Fixing a bug in DEPLOYED (locked) code** — you cannot edit a locked file under `Commands/`, `Events/`, or `Queries/`. Skip event-modeling; start at the relevant implementer skill in **V2 mode** (see **`neo-immutability-and-versioning`**): scaffold a `FooV2` sibling, drive it with a fresh outside-in TDD cycle, and wire it. Never edit the locked original.
 - **A new event needs a field the entity lacks** — run **`expand-entity`** first. Entities are **add-only** (never removed/renamed/retyped, never V2'd).
-- **Inbound / timer / webhook trigger (the Translation pattern)** — model it as an inbound integration; `implement-integration` has the `withInbound` / `Integration.Timer` branch.
+- **Inbound / timer / webhook trigger (the Translation pattern)** — model it as an inbound integration; `implement-integration` covers the inbound branch (source built with `Integration.inbound` or `Timer.every`, wired with `Application.withInbound`).
 - **An integration is not built yet** — stub the outbound handler with `Integration.none` and a `-- TODO:` comment. Never `panic` a pure `handleEvent` — it crashes the dispatcher when that event fires.
 - **Where tests live** — all tests go under `tests/` (Hspec specs *and* `.hurl` files); `neo test` compiles and runs both. Do not use a `test/` directory.
 

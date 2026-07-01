@@ -1,0 +1,66 @@
+[
+  {
+    "query": "I just finished the augment-feature-request step for a Library loan-return flow. Can you run the full seven-step event-modeling workflow on the Feature Brief — brainstorm past-tense domain events, order them chronologically, identify the commands that trigger each, design the CartContents-style read models, find automations where one event conditionally triggers a follow-up command, and map external integrations — then append the resulting Submodel, Chapter, Slice, node, and edge entries to event-model.json without touching any existing content?",
+    "should_trigger": true
+  },
+  {
+    "query": "model the checkout feature for our stock app — i need all the domain events in past tense, the commands that drive them, and a read model for the order summary. append everything to event-model.json as a new submodel with proper slices and edges. the feature brief is already in the repo",
+    "should_trigger": true
+  },
+  {
+    "query": "we're adding a stock reservation system and the feature brief is ready. can you desing the events and comands chronologically, identify wich ones need an automation (e.g. StockReserved conditionally triggering a BackorderItem command when quantity drops below threshold), and updat event-model.json keeping all exisitng nodes intact? need commandProducesEvent and eventTriggersIntegration edges too",
+    "should_trigger": true
+  },
+  {
+    "query": "Add a remove-item slice to the Cart submodel in event-model.json. It needs a RemoveItem command node on the Cart entity, an ItemRemovedFromCart event node, a CartContents query node fed by that event via eventFeedsQuery, plus an outbound integration node ReleaseStockOnItemRemoved that triggers a ReleaseStock command on the Stock entity. Push onto the existing arrays, do not reorder anything already there.",
+    "should_trigger": true
+  },
+  {
+    "query": "the augment step is done, i have the feature brief for user registration. now do the event modeling — brainstorm domain events (UserRegistered, EmailVerified, etc.), order them oldest-first, identify the RegisterUser and VerifyEmail commands, design a UserProfile read model, look for any automations like sending a verification email, and write the whole thing into event-model.json preserving all current content",
+    "should_trigger": true
+  },
+  {
+    "query": "Can you take this Feature Brief for a Library overdue-fine flow and produce the full event model? I specifically need an inbound Translation pattern: a daily timer should drive a ChargeOverdueFine command via an inbound integration node, which produces an OverdueFineCharged event. Also add a State View showing outstanding fines per member. Append all Submodel, Chapter, Slice, node, and edge JSON to event-model.json.",
+    "should_trigger": true
+  },
+  {
+    "query": "Our payment gateway sends a webhook when a payment clears. I want to model this as a Translation pattern in event-model.json — an inbound integration node (PaymentWebhookReceived, kind inbound) that drives a RecordPayment command via an integrationTriggersCommand edge, which then produces a PaymentRecorded event. Can you design the full slice, choose NeoHaskell-style node names, and append it to the model?",
+    "should_trigger": true
+  },
+  {
+    "query": "design the events and commands for a simple counter feature and drop them into the event model file — IncrementCounter command producing CounterIncremented event, a CurrentCount read model fed by the event, and maybe an automation that triggers a ResetCounter command when count hits 1000. use proper past-tense event names and imperative command names, add commandProducesEvent and eventFeedsQuery edges",
+    "should_trigger": true
+  },
+  {
+    "query": "A teammate just pushed changes to event-model.json for the Cart feature. Before we move to implementation I want to validate it: check that every edge sourceId and targetId resolves to an actual node id, that all entityId and chapterId references are valid, that events are named in past tense and commands are imperative, and that no automations are fake (i.e. truly conditional). Can you run the verify-event-model checks and report any issues?",
+    "should_trigger": false
+  },
+  {
+    "query": "I have a rough product idea for a wishlist feature — users can save items, share the wishlist with friends, and get notified when a saved item goes on sale. Can you expand this into a proper Feature Brief with a clear user goal, acceptance criteria, domain vocabulary, edge cases, and open questions so we have something solid to hand off to event modeling?",
+    "should_trigger": false
+  },
+  {
+    "query": "The event model already has a PlaceOrder command node on the Order entity with a sliceId pointing to the checkout slice. Can you implement the NeoHaskell command handler for it — generate Commands/PlaceOrder.hs with the PlaceOrder record type, the decide function that validates the order and produces OrderPlaced, following the neohaskell naming conventions?",
+    "should_trigger": false
+  },
+  {
+    "query": "ItemAddedToCart is already a node in event-model.json. I now need the actual NeoHaskell implementation: generate Events/ItemAddedToCart.hs with the event record and its JSON instances, then update the Cart entity's evolve function in the entity module to handle this event and return the updated Cart state.",
+    "should_trigger": false
+  },
+  {
+    "query": "The event model for the checkout feature has been verified and all slices look good. I want to start the outside-in TDD RED phase for the first slice — please write the hurl end-to-end test for PlaceOrder first, then the feature-level test, then the unit tests for the command decide function, following the hurl → feature → unit → domain-modeling → implement order.",
+    "should_trigger": false
+  },
+  {
+    "query": "All the implement-* steps for the shopping cart feature are done — Commands/AddItem.hs, Events/ItemAddedToCart.hs, Queries/CartContents.hs, and the outbound integration are all coded and unit-tested. Can you now wire the feature together: register the command handlers, query handlers, and integration handlers in the app router so the full vertical slice is connected end to end?",
+    "should_trigger": false
+  },
+  {
+    "query": "The CartContents query node is in event-model.json with eventFeedsQuery edges from CartCreated and ItemAddedToCart. Can you implement the NeoHaskell query handler for it — generate Queries/CartContents.hs with the CartContents record, the project function that folds over those events, and the ToJSON instance — following the existing query module conventions in the repo?",
+    "should_trigger": false
+  },
+  {
+    "query": "I need the NeoHaskell domain types for the Cart entity before we start implementing anything: the Cart record with CartId and a list of CartItem, the CartItem record with fields for itemId, quantity, and unitPrice, plus the ToJSON/FromJSON instances and any smart constructors. Generate the domain model module following NeoHaskell record and JSON conventions.",
+    "should_trigger": false
+  }
+]

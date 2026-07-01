@@ -1,0 +1,66 @@
+[
+  {
+    "query": "We're building a NeoHaskell stock management app. The stakeholder said 'users need to be able to place stock orders and get notified when they ship.' That's all I have. Before writing any code, can you help me figure out exactly what events get recorded, what commands exist, who the actors are, and what automations might be triggered?",
+    "should_trigger": true
+  },
+  {
+    "query": "need to flesh out the 'member borrows book' feature for our library neohaskell app — no event model yet, just a rough idea. can you intervie me to figure out the commands, evnets, reject rules etc before i start coding",
+    "should_trigger": true
+  },
+  {
+    "query": "starting a brand new NeoHaskell project for a cart/order system — no event-model.json, no docs/domain-overview.md yet. want to map out the whole domain first before writing any slices",
+    "should_trigger": true
+  },
+  {
+    "query": "the feature request says 'let librarians mark items as lost' but /docs/domain-overview.md doesn't exist yet and event-model.json is empty — how do we approach this?",
+    "should_trigger": true
+  },
+  {
+    "query": "in our library system I'm not sure if 'send overdue notice' is an automation or just part of the return flow — can you help me think through what actually happens before I start the event model? specifically whether a condition is required or if it fires every time",
+    "should_trigger": true
+  },
+  {
+    "query": "I need to figure out all the ways a stock reservation can be rejected before we write the feature. Who can reserve, when should it fail, what if the item is already allocated, what if the requester doesn't have permission? Walk me through it.",
+    "should_trigger": true
+  },
+  {
+    "query": "can you run me through the 'and then what happens' interview for adding wishlists to our library app? we haven't touched event-model.json yet and i want to get the facts named properly before anything is coded",
+    "should_trigger": true
+  },
+  {
+    "query": "Our PM handed us a ticket: 'add a cancellation feature to cart checkout.' No acceptance criteria, no edge cases, nothing. We need to work out the events, commands, actors, reject rules, and any automations for this before we start writing NeoHaskell.",
+    "should_trigger": true
+  },
+  {
+    "query": "The Feature Brief for book reservations is done — actors, commands, events, reject rules, queries all specified. Now append the BookReservation submodel to event-model.json with the correct schema including the slice nodes and command/event/query entries.",
+    "should_trigger": false
+  },
+  {
+    "query": "audit our event-model.json for naming violations — I suspect ItemUpdated and ProcessCheckout are poorly named, and there may be automations missing their condition field. Check referential integrity too.",
+    "should_trigger": false
+  },
+  {
+    "query": "implement the PlaceOrder command in our NeoHaskell stock app — write the command type, the handler function, and the rejection logic for when available stock is insufficient",
+    "should_trigger": false
+  },
+  {
+    "query": "add the OrderCancelled event to the Order entity in our NeoHaskell project and update the entity's state transition function so it handles the new event correctly",
+    "should_trigger": false
+  },
+  {
+    "query": "kick off the outside-in TDD cycle for the cart checkout slice — write a failing hurl test first against the real HTTP API, then a feature test, then drive the unit tests from there",
+    "should_trigger": false
+  },
+  {
+    "query": "register the reservation feature's command handlers, event handlers, and query handlers in the NeoHaskell app entrypoint so all the new routes are actually reachable via the API",
+    "should_trigger": false
+  },
+  {
+    "query": "implement the BorrowedBooksByMember query for the library NeoHaskell app — write the projection, the read model record type, and the query handler",
+    "should_trigger": false
+  },
+  {
+    "query": "define the Haskell record type for the StockItem entity, including smart constructors with validation, a Quantity newtype, and the Update type alias for partial edits",
+    "should_trigger": false
+  }
+]
