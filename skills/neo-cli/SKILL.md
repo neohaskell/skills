@@ -194,6 +194,24 @@ HTTP endpoint inspection → `neo-run-and-inspect`.
 
 ---
 
+### `neo validate [<path>] [--json]`
+
+Lint `event-model.json` against the embedded JSON Schema **and** referential-integrity rules —
+**read-only** (never modifies the file). This is the CLI form of the check the `neo ide` runs.
+
+```sh
+neo validate                         # validates <cwd>/event-model.json
+neo validate path/to/event-model.json
+neo validate --json                  # emit the ValidationOutcome as JSON on stdout
+neo validate --json | jq -e '.status == "valid"'
+```
+
+Exit codes: **0** valid · **1** IO error · **2** invalid (schema/referential) · **3** malformed JSON ·
+**4** file missing. Used by `verify-event-model` for PASS 1 + PASS 2. (For best-practice/naming review
+— PASS 3 — see `verify-event-model`; `neo validate` does the mechanical passes only.)
+
+---
+
 ### `neo skills setup [flags]`
 
 Fetch `github.com/neohaskell/skills` and install skills into the project's AI tool folders.

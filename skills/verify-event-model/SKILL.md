@@ -55,42 +55,30 @@ this section is only the map). The vendored schema is **`references/event-model.
 
 | Pass | What | How | Failure |
 |---|---|---|---|
-| **1 · schema shape** | required keys, node/edge types, `additionalProperties:false`, `null`-but-required `entityId`/`sliceId` | offline JSON-Schema validation against the vendored schema (or by eye) | **NO-GO**; stop, report |
-| **2 · referential** | edge endpoints exist; `entityId`→entities, `chapterId`→chapters, `submodelId`→submodels; **+ duplicate ids + edge-endpoint types** | `jq` recipes (offline) | **NO-GO** |
+| **1 · schema shape** | required keys, node/edge types, `additionalProperties:false`, `null`-but-required `entityId`/`sliceId` | `neo validate` (schema pass) — or offline vs the vendored schema | **NO-GO**; stop, report |
+| **2 · referential** | edge endpoints exist; `entityId`→entities, `chapterId`→chapters, `submodelId`→submodels; **+ duplicate ids + edge-endpoint types** | `neo validate` (referential pass) — or the offline `jq` recipes | **NO-GO** |
 | **3 · best practices** | past-tense specific events, imperative commands, every event has a command, every query fed by an event, field traceability, true-vs-fake automation, no infra nodes, no ReadModel→Command, unique PascalCase, no orphans | judgment, by inspection | NO-GO **for coding**; fix model first |
 
-PASS 1 and 2 are mechanical and offline. PASS 3 is the reason this skill is Opus.
+PASS 1 and 2 are mechanical — **`neo validate` runs both**. PASS 3 is the reason this skill is Opus.
 
 ---
 
-## Copy-paste: run PASS 1 + PASS 2 offline
+## Copy-paste: run PASS 1 + PASS 2 with `neo validate`
 
-There is **no `neo validate` subcommand**, and `neo inspect sync` would **clobber** the hand-authored
-model (it regenerates `event-model.json` *from source*). So verify the file directly, offline:
+`neo validate` lints `event-model.json` against the embedded JSON Schema **and** the
+referential-integrity rules, read-only — it runs PASS 1 and PASS 2 for you. Do **not** use
+`neo inspect sync` to "check" the model: it regenerates `event-model.json` *from source* and
+**clobbers** your hand-authored edits.
 
 ```sh
-# PASS 1 — schema shape (pip install check-jsonschema; supports draft 2020-12).
-# Adjust the schema path to wherever `neo skills setup` installed this skill.
-check-jsonschema \
-  --schemafile .claude/skills/verify-event-model/references/event-model.schema.json \
-  event-model.json
-
-# PASS 2 — referential integrity (offline, jq). Each prints [] when CLEAN.
-jq -c '[.nodes[].id] | group_by(.) | map(select(length>1)) | map(.[0])' event-model.json          # duplicate node ids
-jq -c '[.nodes[].id] as $ids | [ .edges[]
-        | select((.sourceId|IN($ids[])|not) or (.targetId|IN($ids[])|not)) | .id ]' event-model.json  # dangling endpoints
-jq -c '[.entities[].id] as $e | [ .nodes[]
-        | select(.entityId!=null and (.entityId|IN($e[])|not)) | {node:.id, entityId:.entityId} ]' event-model.json
-jq -c '(reduce .nodes[] as $n ({}; .[$n.id]=$n.type)) as $t
-       | { commandProducesEvent:["command","event"], eventFeedsQuery:["event","query"],
-           eventTriggersIntegration:["event","integration"], integrationTriggersCommand:["integration","command"],
-           commandFromUI:["uiPlaceholder","command"], queryToUI:["query","uiPlaceholder"] } as $rule
-       | [ .edges[] | select( $t[.sourceId] != $rule[.type][0] or $t[.targetId] != $rule[.type][1] )
-           | {edge:.id, type:.type} ]' event-model.json                                            # edge-endpoint type mismatch
+neo validate                     # validates <cwd>/event-model.json (or: neo validate path/to/model.json)
+# exit: 0 valid · 2 invalid (schema/referential) · 3 malformed JSON · 4 file missing · 1 IO error
+neo validate --json | jq -e '.status == "valid"'    # machine-readable; same exit-code contract
 ```
 
-The full recipe set (slice/chapter/submodel dangling refs, orphan nodes, unknown edge types,
-event-without-command, query-without-event) is in the checklist, section 3.
+**If `neo` is not on PATH**, run the two passes offline instead: PASS 1 with
+`check-jsonschema --schemafile references/event-model.schema.json event-model.json`, PASS 2 with the
+`jq` recipes in `references/event-model-checklist.md` (section 3; each returns `[]` when clean).
 
 ---
 
@@ -126,7 +114,7 @@ blocker ⇒ NO-GO; a best-practice-only failure is NO-GO **for coding** until th
 
 | DO | DON'T |
 |---|---|
-| Run PASS 1 offline against the **vendored** `references/event-model.schema.json` | Run `neo validate` (no such subcommand) or `neo inspect sync` (it **clobbers** the model from source) |
+| Run PASS 1+2 with **`neo validate`** (read-only; `--json` for a machine result) | Use `neo inspect sync` to "check" the model — it **clobbers** it *from source* |
 | Treat `*Created`/`*Opened`/`*Registered`/`*Added` creation events as **good** | Flag creation facts as "CRUD" — the smell is present-tense/RPC-echo and *vague* names, not the word "Created" |
 | Reject present-tense/RPC-echo events (`IncrementCounter`, `AddItemToCart`, `CreateFooDTO`) and vague ones (`CartUpdated`, `DataUpdated`) | Reject a specific past-tense fact (`ItemRemovedFromCart`, `StockReserved`) |
 | Require every `event` to be a `commandProducesEvent` target, every `query` an `eventFeedsQuery` target | Demand a command for an inbound-triggered event chain differently — inbound Translation still ends in a command that produces the event |
@@ -142,13 +130,12 @@ blocker ⇒ NO-GO; a best-practice-only failure is NO-GO **for coding** until th
 
 ## Verify
 
-This skill's own "did it work" is the two offline checks above:
+This skill's own "did it work" check:
 
 ```sh
-check-jsonschema --schemafile <this-skill>/references/event-model.schema.json event-model.json  # PASS 1
-# then the jq recipes for PASS 2; each must print []
+neo validate     # exit 0 ⇒ PASS 1+2 clean  (offline fallback: check-jsonschema + the checklist jq recipes)
 ```
 
-PASS 1 clean **and** every PASS 2 recipe returns `[]` **and** PASS 3 raises no major finding ⇒ emit
-**GO** and hand off to `neohaskell-outside-in-tdd`. Any failure ⇒ **NO-GO** with the fix list back to
-`event-modeling`. Do not claim a downstream `neo build`; this skill runs entirely on the JSON, offline.
+`neo validate` exits **0** **and** PASS 3 raises no major finding ⇒ emit **GO** and hand off to
+`neohaskell-outside-in-tdd`. A non-zero `neo validate` (2/3/4/1) or a PASS 3 major ⇒ **NO-GO** with the
+fix list back to `event-modeling`. This skill runs on the JSON only — it never triggers a `neo build`.

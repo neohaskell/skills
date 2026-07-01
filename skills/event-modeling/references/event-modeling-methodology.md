@@ -131,8 +131,8 @@ Getting names right is most of the value. The `verify-event-model` skill rejects
 ## 5. `event-model.json` schema quick reference
 
 Authoritative copy is vendored alongside this file at
-[`event-model.schema.json`](./event-model.schema.json) (JSON Schema draft 2020-12). Validate against
-that copy offline — there is **no** `neo validate` CLI. Key facts (all enforced by the schema):
+[`event-model.schema.json`](./event-model.schema.json) (JSON Schema draft 2020-12). Validate with
+`neo validate` (schema + referential), or against that copy offline. Key facts (all enforced by the schema):
 
 **Root object** — required keys: `id`, `name`, `chapters`, `entities`, `nodes`, `edges`, `slices`,
 `layout`. Optional: `submodels`. `additionalProperties:false` **everywhere** (root and every `$def`) —

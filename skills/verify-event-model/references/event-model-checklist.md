@@ -36,10 +36,11 @@ and a fix list; the fixes go back through `event-modeling`.
   name and every read-model field and apply section 4. Naming smells and traceability gaps are
   usually **major** (fix before coding), not blockers.
 
-There is **no `neo validate` subcommand.** neo validates the model only internally when it loads or
-inspects it; do not tell the user to run `neo validate`. And never run `neo inspect sync` to "check" a
-hand-authored model — `sync` regenerates `event-model.json` *from source code* and will **clobber** the
-feature you just designed. PASS 1 is offline, on the file.
+Run `neo validate` (or `neo validate path/to/event-model.json`, `--json` for a machine result) to run
+PASS 1 (schema) + PASS 2 (referential) read-only — exit **0** valid, **2** invalid, **3** malformed
+JSON, **4** missing, **1** IO error. Never run `neo inspect sync` to "check" a hand-authored model —
+`sync` regenerates `event-model.json` *from source code* and will **clobber** the feature you just
+designed. If `neo` is not on PATH, run PASS 1 offline against the file (below).
 
 ---
 
@@ -106,10 +107,12 @@ failure.
 
 ### 2.6 Running PASS 1
 
-From the project root (adjust the schema path to wherever `neo skills setup` installed this skill):
+Primary: `neo validate` (runs PASS 1 + PASS 2). The commands below are the **offline fallback** when
+`neo` is unavailable — from the project root (adjust the schema path to wherever `neo skills setup`
+installed this skill):
 
 ```sh
-# Preferred: check-jsonschema (pip install check-jsonschema) — supports draft 2020-12
+# Offline fallback for PASS 1: check-jsonschema (pip install check-jsonschema) — supports draft 2020-12
 check-jsonschema \
   --schemafile .claude/skills/verify-event-model/references/event-model.schema.json \
   event-model.json

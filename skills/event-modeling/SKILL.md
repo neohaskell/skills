@@ -83,9 +83,9 @@ the schema, so it is structurally impossible — do not try.
 
 ## Copy-paste template
 
-The design lands as JSON. Validate against the vendored schema
-[`references/event-model.schema.json`](./references/event-model.schema.json) (draft 2020-12) — there is
-**no** `neo validate` CLI.
+The design lands as JSON. Validate it with `neo validate` (schema + referential, read-only), or offline
+against the vendored schema
+[`references/event-model.schema.json`](./references/event-model.schema.json) (draft 2020-12).
 
 **If `event-model.json` does not exist yet**, create this minimal-but-valid document first (all
 root-required keys present), then append into its arrays:
@@ -179,15 +179,13 @@ The reflexes to fight here are treating this like free-form JSON and slipping in
 
 There is no `neo` build step for the model itself — it is data. Check it two ways:
 
-1. **Schema (offline).** Validate `event-model.json` against the vendored draft-2020-12 schema. For
-   example, with any draft-2020-12 validator:
+1. **`neo validate`.** Run `neo validate` (or `neo validate path/to/event-model.json`, `--json` for a
+   machine result) — it lints the file against the embedded schema **and** referential-integrity rules,
+   read-only, and exits non-zero on any problem. Offline fallback, schema only:
 
    ```bash
    check-jsonschema --schemafile skills/event-modeling/references/event-model.schema.json event-model.json
    ```
-
-   (or `ajv validate -s …/event-model.schema.json -d event-model.json --spec=draft2020`). It must
-   report valid.
 2. **Hand off to `verify-event-model`** for referential integrity (every `edge.sourceId`/`targetId`
    resolves to a node; every string `entityId`/`chapterId`/`submodelId` resolves) plus the
    best-practice checks (past-tense specific events, imperative commands, no infrastructure nodes, true
