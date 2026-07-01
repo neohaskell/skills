@@ -3,7 +3,7 @@
 This project is built with **NeoHaskell** — an event-sourced / CQRS framework with a
 custom `Core` prelude, driven by the `neo` CLI. The `.hs` extension is shared with
 Haskell, but **this is NOT vanilla Haskell.** The `neohaskell-*` / `neo-*` skills
-installed in this repo carry the details; this primer is the baseline that always applies.
+installed in this project carry the details; this primer is the baseline that always applies.
 
 ## Start here
 

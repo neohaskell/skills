@@ -80,6 +80,14 @@ Reference **language** skills (`neohaskell-core-prelude`, `-collections`, `-effe
 
 The design skills adapt the **Event Modeling** methodology (Adam Dymitruk / [eventmodeling.org](https://eventmodeling.org), Martin Dilger's *Understanding Eventsourcing*) and the **outside-in TDD** discipline, both drawn from [jwilger/claude-code-plugins](https://github.com/jwilger/claude-code-plugins) (MIT) — **retargeted** to emit `event-model.json` and NeoHaskell code. The surrounding SDLC-plugin machinery (its red/green/domain sub-agents, task manager, personality) is **not** adopted.
 
-## `AGENTS.md`
+## The always-on primer (`neohaskell.md`)
 
-The repo ships a top-level [`AGENTS.md`](./AGENTS.md) — an always-on primer that `neo skills setup` injects into the consumer project's agent-instructions file (`CLAUDE.md` for Claude Code, `AGENTS.md` for others), inside a managed block. It gives an agent the baseline it needs *before* any specific skill triggers: this is NeoHaskell (not vanilla Haskell), start from `neohaskell-feature-pipeline`, and the non-negotiable invariants (immutability/V2, `tests/`, `import Core`).
+The repo ships [`neohaskell.md`](./neohaskell.md) — an always-on primer that gives an agent the
+baseline it needs *before* any specific skill triggers: this is NeoHaskell (not vanilla Haskell),
+start from `neohaskell-feature-pipeline`, and the non-negotiable invariants (immutability/V2,
+`tests/`, `import Core`, `Integration.none` stubs).
+
+It is deliberately **not** named `AGENTS.md`, so it isn't auto-loaded as agent instructions for
+anyone working *on the skills repo itself*. Instead, `neo skills setup` installs it into the consumer
+project (e.g. `.claude/neohaskell.md`) and wires it into the project's `CLAUDE.md` / `AGENTS.md` via a
+managed **`@`-import** — and the user can also `@`-import it manually. See the setup contract below.
