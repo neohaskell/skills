@@ -59,6 +59,8 @@ NeoHaskell project **incrementally**, while respecting NeoHaskell's core philoso
 | Command vs query auth | Auth is **off by default**; the `authenticatedAccess` default is enforced only when `Application.withAuth` wires JWT. A **query** must always declare `canAccess`+`canView` (`deriveQuery` won't compile otherwise). |
 | Test suite | Full Haskell pyramid depends on the fix for [neohaskell/neo#2](https://github.com/neohaskell/neo/issues/2) (stock `neo` generates no `test-suite` stanza); hurl e2e runs today. |
 | PR review | Two review skills: `neohaskell-code-review` (diff-scoped reviewer, Opus) + `neohaskell-code-review-ci` (provider-agnostic CI wiring, Sonnet). |
+| Methodology grounding | The planning skills are grounded in a vendored, MIT-attributed `references/event-modeling-methodology.md` (Dilger's *Understanding Eventsourcing* / eventmodeling.org, adapted from jwilger's `event-modeling` skill, retargeted to `event-model.json`); `references/` is a standard convention. The SDLC-plugin machinery is **not** adopted. See [`SPEC.md` §5](./SPEC.md#event-modeling-methodology--event-modeljson--neohaskell). |
+| Domain discovery | `augment-feature-request` is **hybrid** — full-domain discovery once (new project → domain overview), feature-scoped thereafter (detects an existing overview). |
 
 ### The "weak LLM" doctrine (applies to every skill)
 
@@ -333,12 +335,7 @@ is a `Submodel`.** Appending a new feature (the `event-modeling` skill's job) me
 
 ### 4.6 The `verify-event-model` skill's best-practice checks
 
-Beyond schema validity: events are **past-tense facts** (`ItemAdded`, not `AddItem`); the **CRUD-name
-smell is scoped to `Update*`/`Delete*` and imperative-echo names** — **creation facts are allowed**
-(`CounterCreated`, `CartCreated`, `*Opened`, `*Registered`), matching the public sources; commands
-are **imperative** (`AddItem`); every event is produced by a command (`commandProducesEvent`); every
-query is fed by ≥1 event; integrations connect via `eventTriggersIntegration` /
-`integrationTriggersCommand`; names are unique and PascalCase; no orphan nodes.
+These follow the vendored Event Modeling methodology (see [`SPEC.md` §5](./SPEC.md#event-modeling-methodology--event-modeljson--neohaskell)). Beyond schema validity: events are **past-tense, specific business facts** (`ItemRemovedFromCart`, `OrderPlaced`) — **creation facts are good** (`CounterCreated`, `CartCreated`, `*Registered`, `*Opened`); the smell is **present-tense / RPC-echo** names (`ProcessPayment`, `CreateOrderDTO`) and **vague** ones (`CartUpdated`, `DataUpdated`), not the word "Created". Commands are **imperative** (`AddItem`); every event is produced by a command (`commandProducesEvent`); every query is fed by ≥1 event; **every read-model field traces to an event** (information completeness); there is **no `ReadModel→Command` flow** (the schema has no such edge — assert it); **no infrastructure** (persistence/transport) is modeled as a node or as a Translation; a **true automation is conditional** (unconditional co-production of events is one State-Change slice); names are unique and PascalCase; no orphan nodes.
 
 ---
 
@@ -413,7 +410,9 @@ skills/
   augment-feature-request/SKILL.md
   event-modeling/
     SKILL.md
-    references/event-model.schema.json      # vendored copy of the v1 schema for offline validation
+    references/
+      event-model.schema.json               # vendored copy of the v1 schema for offline validation
+      event-modeling-methodology.md          # adapted, MIT-attributed methodology (shared by augment + verify)
   verify-event-model/SKILL.md
   implement-command/SKILL.md
   implement-event-and-update-entity/SKILL.md

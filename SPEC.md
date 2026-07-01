@@ -166,26 +166,27 @@ Each block: **purpose** · **frontmatter description (condensed)** · **In → O
 - **Notes/fixes:** **`/ready` is 404 unless `Application.withReadinessProbe` is wired** — say so.
 
 ### 10 · `augment-feature-request` — **Opus**
-- **Purpose:** a short multiple-choice interview turning a vague request into a concrete **Feature Brief**; no code, no `neo` commands.
-- **In:** a vague feature ask. **Out:** a written Feature Brief for `event-modeling`. **Next:** event-modeling.
-- **Interview covers:** which existing entity it extends · the past-tense business fact (event) · the imperative command · read-model/query · outbound **and inbound** (timer/webhook) triggers · who may run it · reject rules.
-- **DO:** ask 2-4 option questions; name events past-tense, commands imperative. **DON'T:** write Haskell, run `neo`, emit CRUD verbs.
+- **Purpose:** turn a vague request into a concrete **Feature Brief** via Event Modeling facilitation (the "and then what happens?" probing). **Hybrid discovery:** on a **new project** (empty/absent `event-model.json`, no domain overview) run the full Phase-1 domain discovery once and write a domain overview; on later features, **feature-scoped** discovery onto the existing entities.
+- **In:** a vague feature ask (+ whether a domain overview already exists). **Out:** a Feature Brief for `event-modeling` (plus, first run, a domain overview). **Next:** event-modeling.
+- **Interview covers:** which existing entity it extends · the past-tense business fact (event) · the imperative command · read-model/query · outbound **and inbound** (timer/webhook) triggers · actors/who may run it · reject + edge-case rules (probe "what if it fails / is cancelled?").
+- **DO:** ask 2-4 option questions; keep business language; name events past-tense/specific, commands imperative. **DON'T:** write Haskell, run `neo`, make architecture/tech decisions, emit present-tense/RPC verbs.
 - **Acceptance:** brief is event-modeling-ready; terminal check is downstream build (no code here).
-- **Notes/fixes:** **add an inbound-trigger question** (timer/webhook/external source) so inbound integrations are representable.
+- **Notes/fixes:** grounded in `references/event-modeling-methodology.md`; **inbound-trigger question added** (enables the Translation pattern); hybrid discovery detects an existing overview.
 
 ### 11 · `event-modeling` — **Opus**
-- **Purpose:** append one feature — `Submodel` → `Chapter`(s) → `Slice`(s) → command/event/query/integration nodes → edges → `layout` — to `event-model.json`, additively, schema-compliant.
+- **Purpose:** run the **seven-step** workflow design (User Goal → Brainstorm Events → Order chronologically → Identify Commands → Design Read Models → Find Automations → Map External Integrations) and append the result — `Submodel` → `Chapter`(s) → `Slice`(s) → command/event/query/integration nodes → edges → `layout` — to `event-model.json`, additively, schema-compliant. Grounded in `references/event-modeling-methodology.md`.
 - **In:** a Feature Brief. **Out:** an updated `event-model.json` (existing content byte-preserved). **Next:** verify-event-model.
-- **DO:** additive append; required-even-when-null `entityId`/`sliceId` on event/command nodes; `integration.kind ∈ {inbound,outbound}`. **DON'T:** add keys (`additionalProperties:false`); reorder/rewrite existing nodes; run `neo inspect sync` after (it clobbers from source).
+- **Four patterns → schema (the vocabulary it emits):** **State Change** = command→event (`commandProducesEvent`); **State View** = event→query (`eventFeedsQuery`); **Automation** = event→integration→command (`eventTriggersIntegration` + `integrationTriggersCommand`; the conditional lives in the handler/`decide`); **Translation** = inbound integration→command (`kind:"inbound"`). Full mapping at the [end of §5](#event-modeling-methodology--event-modeljson--neohaskell).
+- **DO:** additive append; one vertical slice per user-meaningful step; required-even-when-null `entityId`/`sliceId` on event/command nodes; `integration.kind ∈ {inbound,outbound}`. **DON'T:** add keys (`additionalProperties:false`); reorder/rewrite existing nodes; model infrastructure (persistence/transport) as nodes; `neo inspect sync` after (clobbers from source).
 - **Acceptance:** validates against the **vendored** `references/event-model.schema.json` + referential checks.
-- **Notes/fixes:** **vendor the schema** into `references/`; add a **"create `event-model.json` if absent"** path (no committed model exists to append to); node names must equal the identifiers the implement-* skills will emit.
+- **Notes/fixes:** **vendor the schema AND the methodology** into `references/`; **"create `event-model.json` if absent"** path; node names must equal the identifiers the implement-* skills will emit.
 
 ### 12 · `verify-event-model` — **Opus**
 - **Purpose:** gate a freshly-appended feature: (1) JSON-Schema shape, (2) referential integrity (mirrors `validate.rs` + a duplicate-id check), (3) best practices neo never machine-checks.
 - **In:** the updated `event-model.json`. **Out:** go/no-go verdict + concrete fixes. **Next:** the implement-* skills (or back to event-modeling).
-- **Best-practice checks:** past-tense events · imperative commands · **no `Update*`/`Delete*`/imperative-echo event names** · every event produced by a command · every query fed by an event · integrations connected · unique PascalCase names · no orphans.
-- **DO:** run PASS 1 offline against the vendored schema; PASS 2/3 by inspection. **DON'T:** flag creation facts.
-- **Notes/fixes:** **allow creation events** (`*Created`/`*Opened`/`*Registered`) — the CRUD smell is scoped to `Update*`/`Delete*`/imperative echoes (fixes the self-contradiction); **allow (don't orphan-flag) `uiPlaceholder`/`commandFromUI`/`queryToUI`**; **inbound integrations are in scope** (validate `kind:"inbound"`); no `neo validate` CLI exists — PASS 1 is offline.
+- **Best-practice checks (from the methodology):** events are **past-tense, specific business facts** (`OrderPlaced`, `ItemRemovedFromCart`) — reject **present-tense / RPC-echo** (`ProcessPayment`, `CreateOrderDTO`) and **vague** names (`CartUpdated`, `DataUpdated`); imperative commands; every event produced by a command; every query fed by ≥1 event; **information completeness** (every read-model field traces to an event); **no `ReadModel→Command` flow** (structurally impossible in the schema — assert it holds); **no infrastructure read models / no infra modeled as Translation**; **true vs fake automation** (a real automation is conditional; unconditional co-production is a single State-Change slice); unique PascalCase names; no orphans.
+- **DO:** run PASS 1 offline against the vendored schema; PASS 2/3 by inspection. **DON'T:** flag creation facts (`*Created`/`*Registered`/`*Opened` are good).
+- **Notes/fixes:** naming rule follows the methodology (past-tense **specific fact** vs present/vague), not a blanket "no CRUD"; **inbound integrations in scope** (validate `kind:"inbound"`); **allow `uiPlaceholder`/`commandFromUI`/`queryToUI`**; no `neo validate` CLI — PASS 1 offline.
 
 ### 13 · `implement-command` — Sonnet
 - **Purpose:** a `Commands/<Name>.hs` — record + `getEntityId` + three-arg `decide` + `EntityOf`/`TransportsOf` instances + `command ''Cmd`.
@@ -249,6 +250,21 @@ Each block: **purpose** · **frontmatter description (condensed)** · **In → O
 - **DO:** capture `entityId`, reuse it, `[Options] retry` for eventually-consistent queries; assert `400`/`Rejected` for reject paths. **DON'T:** emit `.hs`; assume auth (default happy-path is unauthenticated → 200).
 - **Acceptance:** `neo test` boots the app and the hurl files pass.
 - **Notes/fixes:** **query response shape varies** — bare array (`$[?…]`) vs `{items:[…]}` (`$.items[?…]`); teach both, detect from the query (unlike Haskell tests, hurl runs today).
+
+### Event Modeling methodology → `event-model.json` → NeoHaskell
+
+The three planning skills (10–12) are grounded in a vendored, adapted `references/event-modeling-methodology.md` (Martin Dilger's *Understanding Eventsourcing* / eventmodeling.org, adapted from jwilger's MIT-licensed `event-modeling` skill — attributed, retargeted from markdown docs to `event-model.json`). The methodology's **four patterns** map cleanly onto our schema and implementers:
+
+| Pattern (methodology) | `event-model.json` | NeoHaskell code (skill) |
+| --- | --- | --- |
+| **State Change** — Command → Event | command → event (`commandProducesEvent`) | `implement-command` (`decide` emits) + `implement-event-and-update-entity` |
+| **State View** — Events → Read Model | event → query (`eventFeedsQuery`) | `implement-query` (`QueryOf`/`combine`) |
+| **Automation** — Event → [conditional] → Command → Event | event → integration (`eventTriggersIntegration`) → command (`integrationTriggersCommand`) | `implement-integration` (conditional `handleEvent`) + the emitted command's `decide` |
+| **Translation** — External → Internal Event | inbound integration → command (`integrationTriggersCommand`, `kind:"inbound"`) | `implement-integration` (inbound `withInbound`/`Timer`) + `implement-command` + `implement-event` |
+
+Two structural validations fall out: (a) the methodology's rule **"commands never depend on read models — check the event stream"** is *enforced by the schema* (there is no `ReadModel→Command` edge type); (b) the **Translation pattern requires inbound integrations** — which is why they're in scope. The methodology's "read-model-consulted (todo list) + conditional" step in an Automation has **no separate node** in neo — that conditional lives in the integration's `handleEvent` (sees entity state) or the emitted command's `decide` (sees the event stream), consistent with command-independence.
+
+**Not adopted from the source repo:** the SDLC plugin machinery (TDD red/green agents, `dot` CLI task management, ADR/story workflow, GitHub-PR orchestration, "Marvin" personality) and the markdown-doc output convention. We take the portable methodology, not the framework.
 
 ---
 
