@@ -61,10 +61,12 @@ before Phase 1 (drafting the `SKILL.md` files). Companion to [`BLUEPRINT.md`](./
 - **Sonnet** (`claude-sonnet-4-6`) — template-driven implementers, test-writers, domain-modeling, and CI-config generation (incl. `neohaskell-domain-modeling`).
 - **Haiku** (`claude-haiku-4-5`) — cheatsheet + tooling reference lookup.
 
-**Mechanism.** Each skill declares its tier in frontmatter (`model:`) where honored, and — per the
-`skill-audit` invocation-pattern convention — a skill step that delegates its work to a sub-agent
-**spawns that Agent with the matching `model:`** (`opus`/`sonnet`/`haiku`). Planning skills therefore
-run their reasoning on Opus regardless of the consumer's session model.
+**Mechanism.** SKILL.md frontmatter allows only `name`, `description`, `license`, `allowed-tools`,
+`metadata`, `compatibility` (skill-creator's `quick_validate.py`) — **`model` is not a valid top-level
+key**. So the tier lives in **`metadata.model`** (documentation/tooling) *plus* the **body's invocation
+pattern**: per the `skill-audit` convention, a tiered skill delegates its heavy reasoning to an Agent
+**spawned with the matching `model:`** (`opus`/`sonnet`/`haiku`). In hosts without sub-agents
+(Cursor/Codex), `metadata.model` is advisory and the skill runs inline (graceful degradation).
 
 **Portability (cross-tool) & graceful degradation.** The set is installed by `neo skills setup` into
 Claude Code (`.claude/skills/`), Codex (`.agents/skills/`), Kiro, Cursor (a single `.cursor/rules/<name>.mdc`),

@@ -600,10 +600,13 @@ critique-resolution log live in [`SPEC.md`](./SPEC.md).
 
 ### 10.1 Model-tier policy
 
-Each skill runs its reasoning on a tier matched to its cognitive load. A skill declares `model:` in
-frontmatter where honored and — per the `skill-audit` invocation-pattern convention — **delegates its
-work to a sub-agent spawned with the matching `model:`** (`opus`/`sonnet`/`haiku`), so the tier holds
-regardless of the consumer's session model.
+Each skill runs its reasoning on a tier matched to its cognitive load. SKILL.md frontmatter allows
+only `name`, `description`, `license`, `allowed-tools`, `metadata`, `compatibility` (skill-creator's
+`quick_validate.py`) — `model` is **not** a valid top-level key. The tier therefore lives in
+**`metadata.model`** *plus* the **body's invocation pattern**: per the `skill-audit` convention, a
+tiered skill **delegates its heavy reasoning to a sub-agent spawned with the matching `model:`**
+(`opus`/`sonnet`/`haiku`). In hosts without sub-agents (Cursor/Codex), `metadata.model` is advisory
+and the skill runs inline (graceful degradation).
 
 | Tier | Model | Skills |
 | --- | --- | --- |
