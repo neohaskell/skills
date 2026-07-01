@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neohaskell.org/schemas/event-model.v1.json",
+  "title": "NeoHaskell Event Model (v1)",
+  "description": "Vendored copy of the neo repo's event-model schema (assets/ide/src/model/event-model.schema.json, mirrored by types.ts, validated by src/ide/validate.rs). Reconstructed faithfully from BLUEPRINT.md section 4. Keep in lockstep with the neo repo. Used by verify-event-model PASS 1 (offline schema-shape check). It is deliberately a superset where BLUEPRINT is silent, so it never fails a valid neo-generated model.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "chapters", "entities", "nodes", "edges", "slices", "layout"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "name": { "type": "string" },
+    "submodels": { "type": "array", "items": { "$ref": "#/$defs/submodel" } },
+    "chapters": { "type": "array", "items": { "$ref": "#/$defs/chapter" } },
+    "entities": { "type": "array", "items": { "$ref": "#/$defs/entity" } },
+    "slices": { "type": "array", "items": { "$ref": "#/$defs/slice" } },
+    "nodes": { "type": "array", "items": { "$ref": "#/$defs/node" } },
+    "edges": { "type": "array", "items": { "$ref": "#/$defs/edge" } },
+    "layout": { "$ref": "#/$defs/layout" }
+  },
+  "$defs": {
+    "submodel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "order"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "order": { "type": "number" }
+      }
+    },
+    "chapter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "order", "submodelId"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "order": { "type": "number" },
+        "submodelId": { "type": ["string", "null"] }
+      }
+    },
+    "entity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "order"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "order": { "type": "number" }
+      }
+    },
+    "slice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "chapterId", "order"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "chapterId": { "type": ["string", "null"] },
+        "order": { "type": "number" }
+      }
+    },
+    "field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string" }
+      }
+    },
+    "node": {
+      "oneOf": [
+        { "$ref": "#/$defs/eventNode" },
+        { "$ref": "#/$defs/commandNode" },
+        { "$ref": "#/$defs/queryNode" },
+        { "$ref": "#/$defs/integrationNode" },
+        { "$ref": "#/$defs/uiPlaceholderNode" }
+      ]
+    },
+    "eventNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "name", "entityId", "sliceId"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "const": "event" },
+        "name": { "type": "string", "minLength": 1 },
+        "entityId": { "type": ["string", "null"] },
+        "sliceId": { "type": ["string", "null"] },
+        "fields": { "type": "array", "items": { "$ref": "#/$defs/field" } }
+      }
+    },
+    "commandNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "name", "entityId", "sliceId"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "const": "command" },
+        "name": { "type": "string", "minLength": 1 },
+        "entityId": { "type": ["string", "null"] },
+        "sliceId": { "type": ["string", "null"] },
+        "fields": { "type": "array", "items": { "$ref": "#/$defs/field" } }
+      }
+    },
+    "queryNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "name", "sliceId"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "const": "query" },
+        "name": { "type": "string", "minLength": 1 },
+        "sliceId": { "type": ["string", "null"] },
+        "fields": { "type": "array", "items": { "$ref": "#/$defs/field" } }
+      }
+    },
+    "integrationNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "name", "kind", "sliceId"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "const": "integration" },
+        "name": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["inbound", "outbound"] },
+        "sliceId": { "type": ["string", "null"] }
+      }
+    },
+    "uiPlaceholderNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "name", "sliceId"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "const": "uiPlaceholder" },
+        "name": { "type": "string", "minLength": 1 },
+        "sliceId": { "type": ["string", "null"] }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "sourceId", "targetId"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": {
+          "enum": [
+            "commandProducesEvent",
+            "eventFeedsQuery",
+            "eventTriggersIntegration",
+            "integrationTriggersCommand",
+            "commandFromUI",
+            "queryToUI"
+          ]
+        },
+        "sourceId": { "type": "string", "minLength": 1 },
+        "targetId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "position": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      }
+    },
+    "viewport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y", "zoom"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "zoom": { "type": "number" }
+      }
+    },
+    "layout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nodePositions", "viewport"],
+      "properties": {
+        "nodePositions": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/position" }
+        },
+        "viewport": { "$ref": "#/$defs/viewport" },
+        "bySubmodel": { "type": "object" }
+      }
+    }
+  }
+}
