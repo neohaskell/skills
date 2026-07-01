@@ -1,19 +1,17 @@
 ---
 name: implement-integration
 description: >-
-  Implements NeoHaskell integration modules under Integrations/ for a context.
-  Use in the GREEN phase of the outside-in TDD cycle when a verified integration
-  node (kind: outbound or inbound) needs code. Covers three patterns: (1)
-  outbound per-trigger -- a nullary marker type, EntityOf instance, pure
-  handleEvent, and the outboundIntegration macro, stubbed with Integration.none
-  plus a TODO comment when unbuilt; (2) inbound timer or webhook via
-  Integration.Inbound and Integration.Timer; (3) stateful lifecycle outbound via
-  withOutboundLifecycle. Also use when asked to fire a cross-aggregate command
-  from an event, wire a periodic timer, add a stateful worker, or stub an
-  outbound handler safely. Never panic inside handleEvent -- that crashes the
-  dispatcher on every matching event; use Integration.none instead. This is
-  NeoHaskell -- the reader defaults to IO, Either, pure, and dollar-sign
-  application; all of those are wrong here.
+  Implements NeoHaskell INTEGRATION modules under Integrations/ for a context, in the GREEN
+  phase when a verified integration node (outbound or inbound) needs code. Covers three
+  patterns: outbound per-trigger (nullary marker type, EntityOf instance, pure handleEvent,
+  outboundIntegration macro, stubbed with Integration.none plus a TODO); inbound timer or
+  webhook via Integration.Inbound and Integration.Timer; and stateful lifecycle outbound via
+  withOutboundLifecycle. Use when asked to fire a cross-aggregate command from an event,
+  wire a periodic timer, add a stateful worker, or safely stub an outbound handler. Never
+  panic inside handleEvent — use Integration.none. Do NOT use for a command's decide
+  (implement-command), event payload (implement-event-and-update-entity), query/combine
+  (implement-query), or registering the integration in App.hs (wire-feature). This is
+  NeoHaskell — IO, Either, pure, and dollar-sign application are all wrong here.
 metadata:
   model: sonnet
 ---

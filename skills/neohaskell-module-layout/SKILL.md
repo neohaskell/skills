@@ -1,17 +1,16 @@
 ---
 name: neohaskell-module-layout
 description: >-
-  Provides the per-bounded-context folder and module skeleton for a NeoHaskell
-  event-sourced project. Use whenever creating a new context, adding a file to
-  an existing context, or before calling implement-command,
-  implement-event-and-update-entity, implement-query, implement-integration, or
-  wire-feature. Also use when asked "where does this file go", "what modules
-  does a context need", or "show me the folder structure". Covers the thin
-  Core.hs barrel, Entity.hs aggregate, Event.hs ADT, per-payload Events/ files
-  (type literally named Event), lockable vs unlockable directories, the
-  instance Default rule, and Service.hs command registration. Flags the legacy
-  fat-barrel Core.hs pattern (testbed Cart/Stock) versus the correct split
-  layout from the Counter starter.
+  The NeoHaskell per-bounded-context FOLDER and MODULE SKELETON for an event-sourced
+  project: the thin Core.hs barrel, Entity.hs aggregate, Event.hs ADT, per-payload Events/
+  files (type literally named Event), lockable vs unlockable directories, the instance
+  Default rule, and Service.hs command registration. Use when creating a new context,
+  deciding WHERE a file goes, what modules a context needs, or migrating a legacy fat-barrel
+  Core.hs (testbed Cart/Stock) to the split layout (Counter starter) — 'where does this file
+  go', 'what modules does a context need', 'show me the folder structure'. Do NOT use to
+  write the code inside those files (the implement-* skills), to register endpoints in
+  App.hs (wire-feature), to diagnose why neo inspect shows no domains (neo-run-and-inspect),
+  or for the import-Core header inside a module (neohaskell-core-prelude).
 metadata:
   model: haiku
 ---

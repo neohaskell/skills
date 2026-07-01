@@ -1,16 +1,17 @@
 ---
 name: implement-command
 description: >-
-  Implements a NeoHaskell command module at Commands/Name.hs with a record,
-  getEntityId, a three-argument decide function, EntityOf and TransportsOf type
-  instances, and the command macro. Use in the GREEN phase of the outside-in TDD
-  cycle, after neohaskell-domain-modeling has stubbed the types and
-  write-unit-tests has a failing Decider spec. Also use when asked to add a
-  command, implement decide logic, handle a verified command node from
-  event-model.json, or distinguish a create command (getEntityId returns Nothing,
-  acceptNew) from an update command (getEntityId returns Just, acceptExisting).
-  This is NeoHaskell — the reader defaults to IO, pure, Either, and dollar-sign
-  application; all of those are wrong here.
+  Implements a NeoHaskell COMMAND module at Commands/Name.hs — the record, getEntityId, a
+  three-argument decide function, EntityOf and TransportsOf type instances, and the command
+  TH macro. Use in the GREEN phase after neohaskell-domain-modeling stubbed the types and
+  write-unit-tests left a failing Decider spec. Also use when asked to add a command,
+  implement or fill in decide logic, replace a decide panic stub, handle a verified command
+  node, or distinguish a create command (getEntityId Nothing, acceptNew) from an update
+  command (getEntityId Just, acceptExisting). Do NOT use for the EVENT payload module or
+  entity update fold (implement-event-and-update-entity), the query/combine module
+  (implement-query), the integration handler (implement-integration), or registering the
+  endpoint (wire-feature). This is NeoHaskell — the reader defaults to IO, pure, Either, and
+  dollar-sign application; all of those are wrong here.
 metadata:
   model: sonnet
 ---

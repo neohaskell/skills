@@ -1,19 +1,18 @@
 ---
 name: neohaskell-code-review
 description: >-
-  Diff-scoped pull-request reviewer for NeoHaskell event-sourced (ES/CQRS)
-  projects. Scopes to git diff base..head, classifies each changed file, then
-  emits severity-ranked file:line findings (blocker, major, minor, nit) with the
-  violated rule and a concrete fix. Catches vanilla-Haskell leakage (String,
-  list, IO, Either, dollar, pure, error), event-sourcing bugs (decide must end
-  in a Decider constructor, exhaustive update fold, past-tense events, total
-  combine, pure handleEvent, queries declaring canAccess and canView),
-  immutability and V-bump violations on locked Commands/Events/Queries files,
-  unsafe entity evolution, records/JSON, wiring, and secrets. Use whenever asked
-  to review a PR, review a diff, review my changes, look over this branch, do a
-  code review, or check code before merging a NeoHaskell project, even if the
-  user never says the words NeoHaskell or review. Read-only: never edits code,
-  never claims code compiles without a real neo build.
+  Diff-scoped PR REVIEWER for NeoHaskell event-sourced (ES/CQRS) projects. Scopes to git
+  diff base..head, classifies each changed file, and emits severity-ranked file:line
+  findings (blocker/major/minor/nit) with the violated rule and a fix. Catches vanilla-
+  Haskell leakage (String, list, IO, Either, dollar, pure, error), ES bugs (decide ends in a
+  Decider constructor, exhaustive update fold, past-tense events, total combine, pure
+  handleEvent, queries declaring canAccess and canView), immutability/V-bump violations on
+  locked files, unsafe entity evolution, records/JSON, wiring, secrets. Use whenever asked
+  to review a PR/diff/branch, look over changes, or check code before merging a NeoHaskell
+  project — even without the words NeoHaskell or review. Read-only. Do NOT use to SCAFFOLD
+  the CI that runs this review (neohaskell-code-review-ci), to validate event-model.json
+  (verify-event-model), or to implement/fix the flagged code (implement-*, expand-entity,
+  neo-immutability-and-versioning).
 metadata:
   model: opus
 ---

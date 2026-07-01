@@ -1,16 +1,17 @@
 ---
 name: neohaskell-records-and-json
 description: >-
-  Use when defining a NeoHaskell record type, adding JSON serialization, or
-  reviewing .hs code for vanilla-Aeson or field-selector reflexes. Covers the
-  'data X = X { ... } deriving (Generic)' pattern, empty
-  'instance Json.FromJSON X' and 'instance Json.ToJSON X' (never
-  deriving/TH/anyclass), 'instance ToSchema X' on query read models only, and
-  dot-access syntax for NoFieldSelectors. Also use when a field is referenced as
-  a function (field rec) instead of dot access (rec.field), or when
-  'import Data.Aeson' appears instead of 'import Json qualified'. Load before
-  implement-event-and-update-entity, expand-entity, implement-command, and
-  implement-query.
+  The NeoHaskell RECORDS and JSON cheatsheet: the 'data X = X { ... } deriving (Generic)'
+  pattern, EMPTY 'instance Json.FromJSON X' / 'instance Json.ToJSON X' (never
+  deriving/TH/anyclass, never hand-written toJSON/parseJSON), 'instance ToSchema X' on query
+  read models only, dot-access (rec.field) under NoFieldSelectors instead of selector-as-
+  function (field rec), and 'import Json qualified' instead of 'import Data.Aeson'. Use when
+  defining a record, adding JSON serialization, or reviewing code for vanilla-Aeson or
+  field-selector reflexes. Do NOT use for the full backward-compatible ADD-A-FIELD-to-an-
+  existing-entity operation with a snapshot-tolerant decoder (expand-entity owns that),
+  Array/Map/Text ops (neohaskell-collections), the import-Core header/operators (neohaskell-
+  core-prelude), or designing domain value objects (neohaskell-domain-modeling). Load before
+  implement-event-and-update-entity, expand-entity, implement-command, and implement-query.
 metadata:
   model: haiku
 ---

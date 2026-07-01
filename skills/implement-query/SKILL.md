@@ -1,17 +1,17 @@
 ---
 name: implement-query
 description: >-
-  Implements a NeoHaskell query (read-model) module at Queries/Name.hs with a
-  record, Json and ToSchema instances, canAccess and canView auth functions,
-  the deriveQuery macro, and a hand-written QueryOf instance whose combine
-  returns Update, NoOp, or Delete. Use in the GREEN phase of the outside-in
-  TDD cycle, after neohaskell-domain-modeling has stubbed the types and
-  write-unit-tests has a failing Projection spec. Also use when asked to add a
-  read model, implement combine logic, handle a verified query node from
-  event-model.json, or set up per-instance access control for a query. Both
-  canAccess and canView are required — deriveQuery fails at compile time if
-  either is missing. This is NeoHaskell — the reader defaults to IO, Data.Aeson,
-  Either, and unqualified list functions; all of those are wrong here.
+  Implements a NeoHaskell QUERY / read-model module at Queries/Name.hs — the record, Json
+  and ToSchema instances, canAccess and canView auth functions, the deriveQuery macro, and a
+  hand-written QueryOf instance whose combine returns Update, NoOp, or Delete. Use in the
+  GREEN phase after neohaskell-domain-modeling stubbed the types and write-unit-tests left a
+  failing Projection spec. Also use when asked to add a read model, implement or fill in
+  combine logic, replace a projection panic stub, handle a verified query node, or set up
+  per-instance access control. Both canAccess and canView are required — deriveQuery fails
+  to compile if either is missing. Do NOT use for the command/decide module (implement-
+  command), the event payload (implement-event-and-update-entity), the integration handler
+  (implement-integration), or wiring (wire-feature). This is NeoHaskell — IO, Data.Aeson,
+  Either, and unqualified list functions are all wrong here.
 metadata:
   model: sonnet
 ---

@@ -1,17 +1,17 @@
 ---
 name: neo-immutability-and-versioning
-description: >
-  Explains NeoHaskell's deployed-code immutability model and how to change a frozen
-  domain file: the `.locked-files` manifest, how `neo lock` and the `neo build`
-  pre-build gate freeze every file under a `Commands/`, `Events/`, or `Queries/`
-  directory, and the exact `V`-bump rule (change `Foo.hs` by creating a new sibling
-  `FooV2.hs` whose type is `FooV2`, leaving the original byte-identical). Also covers
-  add-only entity evolution (entities are never locked and never versioned). Use
-  whenever you need to change, fix, rename, or delete a command, event payload, or
-  query in a NeoHaskell project; whenever `neo build` or a git commit fails with a
-  lock violation ("Build refused: N locked file(s) violate the lock"); or whenever you
-  are tempted to edit a file under Commands/Events/Queries — even if the user never
-  says the words "lock" or "versioning".
+description: >-
+  Explains NeoHaskell's DEPLOYED-CODE IMMUTABILITY model and how to change a frozen domain
+  file: the .locked-files manifest, how neo lock and the neo build pre-build gate freeze
+  every file under Commands/ Events/ Queries/, and the exact V-BUMP rule (change Foo.hs by
+  creating a byte-new sibling FooV2.hs whose type is FooV2, leaving the original untouched),
+  plus add-only entity evolution (entities are never locked/versioned). Use whenever you
+  need to change, fix, rename, or delete a command, event payload, or query; when neo build
+  or a git commit fails with a lock violation ('Build refused: N locked file(s) violate the
+  lock'); or when tempted to edit a file under Commands/Events/Queries — even without the
+  words 'lock' or 'versioning'. Do NOT use to write the V2 file's decide/wire it (implement-
+  command / wire-feature), to add a field to an entity record (expand-entity), or for the
+  neo lock SUBCOMMAND flag reference (neo-cli).
 metadata:
   model: haiku
 ---

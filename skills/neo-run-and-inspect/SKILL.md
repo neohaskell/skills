@@ -1,7 +1,17 @@
 ---
 name: neo-run-and-inspect
-description: |
-  Tells an AI coding agent how to run a NeoHaskell application and work with its live HTTP surface. Use whenever the user asks to start the app, run the server, hit an endpoint, post a command, read a query, view or download the OpenAPI spec, open the Scalar docs UI, open the event-modeling IDE, run neo inspect, or sync the event model. Also use before writing hurl e2e tests to confirm endpoint paths and ports, and when the user asks about health checks, readiness probes, or port numbers. Grounds every URL, subcommand, and port in neo/src/cli.rs and Service/Transport/Web.hs so the agent never invents nonexistent CLI subcommands or wrong endpoint paths.
+description: >-
+  Tells an agent how to RUN a NeoHaskell app and work with its LIVE HTTP surface. Use
+  whenever asked to start the app / run the server, hit or POST to an endpoint, read a
+  query, view or download the OpenAPI spec, open the Scalar docs UI, open the event-modeling
+  IDE, run neo inspect (commands/queries/domains/wiring) and interpret its output, or run
+  neo inspect sync to refresh event-model.json from code. Also use before writing hurl e2e
+  tests to confirm real endpoint paths and ports, and for health/readiness probes and port
+  numbers. Grounds every URL, subcommand, and port in neo/src/cli.rs and
+  Service/Transport/Web.hs. Do NOT use for the full `neo` subcommand/flag catalog or
+  scaffolding/build/test flags (neo-cli), for writing the hurl files themselves (write-
+  hurl-e2e), for registering endpoints in code (wire-feature), for where source files go
+  (neohaskell-module-layout), or for validating event-model.json (verify-event-model).
 metadata:
   model: haiku
 ---

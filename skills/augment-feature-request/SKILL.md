@@ -1,17 +1,17 @@
 ---
 name: augment-feature-request
-description: >
-  Turns a vague NeoHaskell feature ask into a concrete, event-modeling-ready Feature
-  Brief by running an Event Modeling discovery interview (the "and then what happens?"
-  probing) — naming past-tense business facts (events), imperative commands, read
-  models, automations, and inbound timer/webhook triggers, plus actors and reject
-  rules. Use this FIRST, before any coding or event-model.json editing, whenever a
-  request is underspecified, hand-wavy, or phrased as a solution ("add a reservations
-  feature", "let users cancel", "we need a dashboard for X") — even if the user does
-  not say "event modeling" or "brief". Also use to run one-time full-domain discovery
-  on a greenfield NeoHaskell project (no event-model.json / no domain overview yet) and
-  to write the domain overview. Produces a Feature Brief for the event-modeling skill;
-  writes no Haskell and runs no neo commands.
+description: >-
+  Turns a vague NeoHaskell feature ask into a concrete, event-modeling-ready Feature Brief
+  by running an Event Modeling DISCOVERY INTERVIEW (the 'and then what happens?' probing) —
+  naming past-tense business facts (events), imperative commands, read models, automations,
+  inbound timer/webhook triggers, actors, and reject rules. Use FIRST, before any coding or
+  event-model.json editing, whenever a request is underspecified, hand-wavy, or phrased as a
+  solution ('add a reservations feature', 'let users cancel', 'we need a dashboard') — even
+  if the user never says 'event modeling' or 'brief'. Also use for one-time full-domain
+  discovery on a greenfield project (no event-model.json / domain overview yet) and to write
+  the domain overview. Produces a Feature Brief for event-modeling. Do NOT use to build the
+  event-model.json itself (that is event-modeling) or to validate one (verify-event-model).
+  Writes no Haskell and runs no neo commands.
 metadata:
   model: opus
 ---

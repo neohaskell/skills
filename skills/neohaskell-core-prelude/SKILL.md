@@ -1,15 +1,17 @@
 ---
 name: neohaskell-core-prelude
 description: >-
-  Use when writing any NeoHaskell module header, reviewing .hs code for
-  vanilla-Haskell leakage, or correcting operator/import reflexes in a
-  NeoHaskell project. Provides the canonical import Core header, all
-  Core-exported pipe, compose, and append operators plus panic, Unit/unit,
-  and fmt, the #{expr} string interpolation syntax, the Int vs Float
-  math split, the Console.print/log/readLine Task-vs-IO distinction, and the
-  full vanilla-Haskell trap table. Load before neohaskell-collections,
-  neohaskell-effects-and-errors, neohaskell-records-and-json, or
-  neohaskell-module-layout.
+  The NeoHaskell CORE PRELUDE cheatsheet: the canonical 'import Core' module header, the
+  Core-exported pipe / compose / append operators and their vanilla-Haskell dollar-dot
+  equivalents, panic / Unit / unit / pass, the #{expr} fmt string-interpolation SYNTAX, the
+  Int vs Float math split (division, integer division, powers), and the Console.print / log
+  / readLine Task-vs-IO distinction — plus the full vanilla-Haskell trap table. Use when
+  writing a NeoHaskell module header, correcting operator/import muscle-memory reflexes, or
+  fixing 'Module not found: Prelude'. Load BEFORE the other cheatsheets. Do NOT use for
+  Array/Map/Text/Set operations (neohaskell-collections), Task/Result/Maybe control flow and
+  error recovery (neohaskell-effects-and-errors), record/JSON instances (neohaskell-records-
+  and-json), folder/module placement (neohaskell-module-layout), designing domain value
+  objects (neohaskell-domain-modeling), or reviewing a whole diff (neohaskell-code-review).
 metadata:
   model: haiku
 ---

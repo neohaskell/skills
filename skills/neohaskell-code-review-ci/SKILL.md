@@ -1,17 +1,17 @@
 ---
 name: neohaskell-code-review-ci
 description: >-
-  Scaffolds the CI pipeline file that runs neohaskell-code-review on every
-  pull request or merge request without any third-party review SaaS. Use when
-  setting up automated PR review for a NeoHaskell project, when asked to wire
-  code review into CI, or when neohaskell-code-review needs to run headlessly
-  in GitHub Actions, GitLab CI, Azure DevOps, or Bitbucket Pipelines.
-  Auto-detects the CI provider from the repo layout (.github/ directory for
-  GitHub Actions, .gitlab-ci.yml for GitLab CI, azure-pipelines.yml for Azure
-  DevOps, bitbucket-pipelines.yml for Bitbucket Pipelines) and emits the
-  native pipeline config. Documents required secrets (ANTHROPIC_API_KEY) and
-  PR-write permissions for each provider. This is a one-time setup skill; it
-  does not run on every commit. No third-party review SaaS is involved.
+  SCAFFOLDS the one-time CI pipeline file that runs neohaskell-code-review on every
+  pull/merge request headlessly, with no third-party review SaaS. Use when SETTING UP
+  automated PR review for a NeoHaskell project, wiring code review into CI, or making
+  neohaskell-code-review run in GitHub Actions, GitLab CI, Azure DevOps, or Bitbucket
+  Pipelines. Auto-detects the provider from repo layout (.github/, .gitlab-ci.yml, azure-
+  pipelines.yml, bitbucket-pipelines.yml) and emits the native pipeline config, documenting
+  ANTHROPIC_API_KEY and PR-write permissions. Do NOT use to actually RUN a review on the
+  current diff right now (neohaskell-code-review), to set up general build/test CI or
+  hurl/test-running workflows (neo-cli plus the provider's own docs), or to configure code
+  review for a non-NeoHaskell (e.g. TypeScript) repo. One-time setup; does not run per
+  commit.
 metadata:
   model: sonnet
 ---

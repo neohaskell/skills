@@ -1,14 +1,17 @@
 ---
 name: expand-entity
 description: >-
-  Adds a new field to an existing NeoHaskell entity module backward-compatibly:
-  record declaration, initialState value, update fold case, and a JSON decoder
-  that still loads old snapshots missing the new field. Use whenever a feature
-  slice needs a field that does not yet exist on an entity, when implement-event-and-update-entity
-  identifies a missing field, or when asked to "add a field to the entity", "extend
-  the aggregate", or "add state to the entity". This is NeoHaskell — the reader
-  defaults to vanilla Haskell; every identifier here is grounded in the public
-  testbed Cart and Stock entities plus the Json module source.
+  Adds a NEW FIELD to an EXISTING NeoHaskell entity module backward-compatibly: the record
+  declaration, initialState value, update fold case, and a JSON decoder that still loads OLD
+  snapshots missing the new field. Use whenever a slice needs a field that does not yet
+  exist on an entity, when implement-event-and-update-entity finds a missing field, or when
+  asked to 'add a field to the entity', 'extend the aggregate', or 'add state to the entity'
+  — especially with replay-safety concerns over historical events. Do NOT use to implement a
+  whole new event plus its variant (implement-event-and-update-entity), to design brand-new
+  value objects/ADTs from a failing test (neohaskell-domain-modeling), for general JSON-
+  instance patterns unrelated to entity evolution (neohaskell-records-and-json), or to
+  scaffold a new context (neohaskell-module-layout). This is NeoHaskell; every identifier is
+  grounded in the public testbed Cart and Stock entities plus the Json module source.
 metadata:
   model: sonnet
 ---

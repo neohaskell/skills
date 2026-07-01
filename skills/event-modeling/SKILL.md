@@ -1,16 +1,18 @@
 ---
 name: event-modeling
 description: >-
-  Designs an Event Modeling blueprint for a NeoHaskell feature and appends it — a submodel, chapters,
-  slices, and command/event/query/integration nodes plus their edges — additively to the project's
-  event-model.json, creating the file if absent and staying schema-compliant against the vendored JSON
-  Schema draft 2020-12. Runs the seven-step workflow (user goal, brainstorm events, order
-  chronologically, identify commands, design read models, find automations, map external integrations)
-  and the four patterns (State Change, State View, Automation, Translation). Use whenever a Feature
-  Brief needs to become an event model, or when the user says "model this feature", "add a slice",
-  "design the events and commands", "do the event modeling", or "update event-model.json" — even if
-  they never mention event-model.json by name. Runs after augment-feature-request and hands off to
-  verify-event-model.
+  Designs an Event Modeling blueprint for a NeoHaskell feature and appends it ADDITIVELY to
+  the project's event-model.json — a submodel, chapters, slices, and
+  command/event/query/integration nodes plus edges — creating the file if absent and staying
+  compliant with the vendored JSON Schema 2020-12. Runs the seven-step workflow (goal,
+  brainstorm events, order chronologically, identify commands, design read models, find
+  automations, map integrations) and the four patterns (State Change, State View,
+  Automation, Translation). Use to CREATE or EXTEND the model: 'model this feature', 'add a
+  slice', 'design the events and commands', 'do the event modeling', or 'update event-
+  model.json' — even without naming the file. Runs after augment-feature-request. Do NOT use
+  to CHECK an existing model (schema/referential/naming audit) — that is verify-event-model
+  — and do NOT use to run the discovery interview or write a Feature Brief — that is
+  augment-feature-request.
 metadata:
   model: opus
 ---

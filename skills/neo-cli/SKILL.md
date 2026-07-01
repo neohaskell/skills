@@ -1,14 +1,17 @@
 ---
 name: neo-cli
-description: >
-  Use when the user needs to know the correct `neo` subcommand for any tooling intent:
-  building, running, testing, scaffolding, locking domain files, inspecting the domain
-  layout, opening the IDE, or installing skills. Maps every intent to the exact
-  `neo` subcommand invocation and flags, explains the Nix wrapping (build/run/test
-  are NOT plain cabal), and states the real ports (IDE port 2323 vs app port 8080).
-  Also use when a `neo` invocation fails, to confirm the correct flag name/order, or
-  to clarify what is and is not a real subcommand (e.g. there is no `neo serve`,
-  `neo deploy`, or `neo openapi`).
+description: >-
+  The NeoHaskell `neo` CLI subcommand-and-flag reference. Use when the user needs to know
+  WHICH `neo` subcommand and flags to run for a tooling intent: building, running, testing,
+  scaffolding (neo new, library vs app), locking domain files, opening the IDE, or
+  installing skills. Maps each intent to the exact invocation, explains the Nix wrapping
+  (build/run/test are NOT plain cabal), states the real ports (IDE 2323 vs app 8080), and
+  confirms flag names/order or that a subcommand is fake (no neo serve/deploy/openapi). Also
+  use when a `neo` invocation fails with an unknown flag or subcommand. Do NOT use to
+  actually RUN the app and interpret neo inspect output, hit endpoints, or check health
+  probes (neo-run-and-inspect owns the live HTTP surface and inspect results); to explain
+  the lock/V2 versioning RULE (neo-immutability-and-versioning); to declare config fields or
+  secrets (neo-config-and-secrets); or to review code (neohaskell-code-review).
 metadata:
   model: haiku
 ---

@@ -1,14 +1,16 @@
 ---
 name: neohaskell-collections
 description: >-
-  Use when writing any NeoHaskell code that needs sequences, key-value lookups,
-  text manipulation, or sets. Covers Array (the default sequence — no filter,
-  use takeIf/dropIf; get returns Maybe; foldl is element-first left fold for
+  The NeoHaskell COLLECTIONS cheatsheet for concrete data-structure operations: Array (no
+  filter — use takeIf/dropIf; get returns Maybe; foldl is element-first left fold for
   replays), Map (set/get/contains/remove; reduce takes acc first), Text
-  (split/joinWith/replace; interpolate with #{} not ${}), and Set (not in Core
-  — must import explicitly). Also use when you reach for a vanilla reflex such
-  as arr !! i, head, Map.insert, Map.lookup, Map.member, or Array.filter —
-  every one of those is wrong in NeoHaskell.
+  (split/joinWith/replace/trim and #{} interpolation as a TEXT operation), and Set (import
+  explicitly — not in Core). Use when writing code that needs sequences, key-value lookups,
+  text manipulation, or sets, or when reaching for a vanilla reflex like arr !! i, head,
+  Map.insert, Map.lookup, Map.member, or Array.filter — all wrong here. Do NOT use for the
+  import-Core header, bare operators, or the fmt syntax itself (neohaskell-core-prelude),
+  for Task/Result/Maybe error handling and lifting Maybe into Task/Result (neohaskell-
+  effects-and-errors), or for JSON serialization of records (neohaskell-records-and-json).
 metadata:
   model: haiku
 ---

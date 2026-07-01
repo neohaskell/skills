@@ -1,17 +1,18 @@
 ---
 name: neohaskell-feature-pipeline
 description: >-
-  The entry point for building features in a NeoHaskell app (event-sourced /
-  CQRS). Use this whenever the user wants to add, build, implement, change, or
-  design a feature, start a new NeoHaskell project, or fix a bug in
-  already-deployed NeoHaskell code — even when they only say things like 'add a
-  wishlist', 'let members reserve books', 'implement checkout', or 'there is a bug
-  in PlaceOrder in prod'. It drives the whole outside-in pipeline end to end
-  (augment the request, model the events, verify the model, then build each slice
-  test-first: hurl RED, acceptance RED, unit RED, domain types, minimal
-  implementation, wiring, refactor) and tells you exactly which specialized skill
-  to use at each step. Start here whenever you are unsure which NeoHaskell skill to
-  reach for or how the pieces fit together.
+  The top-level ENTRY POINT and orchestrator for building a whole feature in a NeoHaskell
+  event-sourced / CQRS app, end to end. Use when the user wants to add, build, implement, or
+  design a WHOLE feature, start a new NeoHaskell project, or fix a bug in already-deployed
+  NeoHaskell code — even when they only say 'add a wishlist', 'let members reserve books',
+  'implement checkout', or 'there is a bug in PlaceOrder in prod'. Also use whenever they
+  are UNSURE which NeoHaskell skill to reach for, ask what order the steps go in, or how the
+  pieces fit. It drives the full pipeline (augment the request, model the events, verify the
+  model, then build each slice test-first) and routes to the right specialized skill at each
+  step. Do NOT use for a single named step already scoped by the user — defer to augment-
+  feature-request, event-modeling, verify-event-model, neohaskell-outside-in-tdd, the
+  write-* test skills, the implement-* skills, or wire-feature when only that one artifact
+  is requested.
 metadata:
   model: opus
 ---

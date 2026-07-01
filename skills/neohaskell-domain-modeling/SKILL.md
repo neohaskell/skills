@@ -1,19 +1,19 @@
 ---
 name: neohaskell-domain-modeling
 description: >-
-  Provides the NeoHaskell DOMAIN-phase discipline for turning a failing test's
-  implied types into precise domain types: value objects with smart
-  constructors, ADTs that make illegal states unrepresentable, and
-  parse-don't-validate at the boundary. Use whenever adding a field to an
-  entity/event/command/query, introducing a quantity/money/id/secret/status
-  value, or replacing a Text or Int primitive with a domain type — even if the
-  user only says "add a field", "model this", or "store the amount". Covers the
-  Natural, Decimal, Redacted, and Uuid wrappers, enum sum types, smart
-  constructors returning Result or Maybe, and stubbing bodies with
-  panic "TODO: not implemented" (or Integration.none for an outbound
-  handleEvent) so the module compiles and the red test fails on the assertion,
-  not on a type error. Load after write-unit-tests and before implement-command,
-  implement-event-and-update-entity, implement-query, or implement-integration.
+  The NeoHaskell DOMAIN-PHASE discipline for turning a failing test's implied types into
+  precise domain types: value objects with smart constructors, ADTs that make illegal states
+  unrepresentable, parse-don't-validate at the boundary, and the
+  Natural/Decimal/Redacted/Uuid wrappers and enum sum types. Use whenever a red test
+  references a type that does not exist yet, when adding a
+  field/quantity/money/id/secret/status value, or when replacing a Text or Int primitive
+  with a domain type — even if the user says only 'add a field' or 'model this'. Stubs
+  bodies with panic 'TODO' (or Integration.none) so the module compiles and the test fails
+  on the assertion. Do NOT use to fill in real decide/combine/handleEvent LOGIC (the
+  implement-* skills), to derive JSON instances (neohaskell-records-and-json), to add a
+  field to a live entity's snapshot decoder (expand-entity), or to run event-
+  storming/discovery (augment-feature-request). Load after write-unit-tests, before the
+  implement-* skills.
 metadata:
   model: sonnet
 ---

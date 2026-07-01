@@ -1,16 +1,18 @@
 ---
 name: neo-config-and-secrets
-description: >
-  Use when adding a new configuration field or secret to a NeoHaskell project:
-  declaring a field in Config.hs with the defineConfig TH DSL, wiring it via
-  Application.withConfig, reading it in an integration or factory function, or
-  setting up a .env / .env.example file. Also use when someone asks how to pass
-  an API token, port, or any tuneable to the app without hand-rolling getArgs or
-  lookupEnv, or when reviewing Config.hs for leaked secrets, String fields, or
-  missing doc modifiers. Covers Config.field, Config.doc, Config.defaultsTo,
-  Config.required, Config.envVar, Config.cliLong, Config.cliShort, Config.secret,
-  Application.withConfig, the factory-lambda wiring pattern, and
-  the Config.get accessor.
+description: >-
+  Use when adding CONFIGURATION fields or SECRETS to a NeoHaskell project: declaring a field
+  in Config.hs with the defineConfig TH DSL, wiring it via Application.withConfig, reading
+  it with Config.get in an integration or factory, or setting up .env / .env.example /
+  .gitignore. Also use to pass an API token, port, or tuneable WITHOUT hand-rolling getArgs
+  or lookupEnv, or when reviewing Config.hs for leaked secrets, String fields, missing
+  Config.doc, or a defaultsTo+required conflict. Covers
+  Config.field/doc/defaultsTo/required/envVar/cliLong/cliShort/secret,
+  Application.withConfig, the factory-lambda wiring, and Config.get. Do NOT use to implement
+  the integration that CONSUMES the value (implement-integration), to verify it loads on a
+  running app (neo-run-and-inspect), for general JSON serialization (neohaskell-records-and-
+  json), for effect/error handling of external calls (neohaskell-effects-and-errors), or for
+  where the Config module lives (neohaskell-module-layout).
 metadata:
   model: haiku
 ---

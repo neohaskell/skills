@@ -1,15 +1,16 @@
 ---
 name: write-feature-tests
 description: >-
-  Writes two NeoHaskell feature-level specs for a completed slice: an Acceptance
-  spec (pure in-domain flow: decide then Array.foldl update then combine, no HTTP)
-  and a Property spec (QuickCheck replay of the entity update fold via
-  Array.foldl update, oldest event first). Use in the outside-in TDD cycle at
-  step 2 (acceptance RED, before inner unit tests) and step 7 (property replay
-  after refactor). Also use when asked to write feature tests, acceptance tests,
-  property tests, QuickCheck replay tests, or fold-based invariant tests for a
-  NeoHaskell entity. This is NeoHaskell, not vanilla Haskell — io, pure, foldl
-  with the wrong arg order, and Array.filter are all wrong here.
+  Writes the two NeoHaskell FEATURE-LEVEL specs for a slice, both PURE and IN-DOMAIN with no
+  HTTP: an Acceptance spec (decide then Array.foldl update then combine) at step 2, and a
+  Property spec (QuickCheck replay of the entity update fold via Array.foldl update, oldest
+  event first) at step 7. Use when asked for feature tests, acceptance tests, property
+  tests, QuickCheck replay tests, or fold-based invariant/replay tests for a NeoHaskell
+  entity. Do NOT use for the outer Hurl HTTP e2e (write-hurl-e2e), for single-building-block
+  Decider/Projection/Outbound Hspec unit specs (write-unit-tests), or for implementing the
+  decide/update/combine bodies themselves (the implement-* skills). This is NeoHaskell, not
+  vanilla Haskell — io, pure, foldl with the wrong arg order, and Array.filter are all wrong
+  here.
 metadata:
   model: sonnet
 ---

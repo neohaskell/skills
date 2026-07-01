@@ -148,7 +148,9 @@ def validate(skill: str) -> str:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", default="sonnet", help="model for eval + improve (e.g. sonnet, opus, haiku)")
+    ap.add_argument("--model", default="opus",
+                    help="model for eval + improve. Use your session model (opus). "
+                         "NOTE: sonnet/haiku UNDER-TRIGGER skills, so they give a false 0-signal — use opus.")
     ap.add_argument("--max-iterations", type=int, default=3)
     ap.add_argument("--runs-per-query", type=int, default=3)
     ap.add_argument("--num-workers", type=int, default=8)

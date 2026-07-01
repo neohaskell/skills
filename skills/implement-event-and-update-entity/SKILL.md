@@ -1,17 +1,17 @@
 ---
 name: implement-event-and-update-entity
 description: >-
-  Implements a NeoHaskell event: creates the payload module under Events/Name.hs
-  (in-file type always named Event), adds the variant to the context Event.hs ADT,
-  extends getEventEntityId with a new branch, and adds the corresponding case to
-  the Entity.hs update fold. Use immediately after verify-event-model produces a
-  verified event node, or whenever a command's decide needs to emit an event type
-  that does not yet have a payload module. Also use when told to "add a new event",
-  "wire the event", or "implement the event side" of a command. Covers the locked
-  payload V2 rule (never edit a deployed Events/ file -- create a sibling V2
-  instead), creation-fact naming (CounterCreated and similar are correct, not CRUD
-  smells), and the command-first vs event-first ordering rule. Runs in the GREEN
-  phase of the outside-in TDD cycle.
+  Implements a NeoHaskell EVENT: creates the payload module Events/Name.hs (in-file type
+  always named Event), adds the variant to the context Event.hs ADT, extends
+  getEventEntityId with a new branch, and adds the matching case to the Entity.hs update
+  fold. Use right after verify-event-model produces a verified event node, or whenever a
+  command's decide references an event constructor whose payload module does not exist yet —
+  'add a new event', 'wire the event', 'implement the event side'. Covers the locked payload
+  V2 rule, creation-fact naming (CounterCreated is correct, not a CRUD smell), and command-
+  first vs event-first ordering. Do NOT use to implement a command's decide (implement-
+  command), to only ADD A FIELD to an existing entity record backward-compatibly (expand-
+  entity), for queries (implement-query), integrations (implement-integration), or wiring
+  (wire-feature). Runs in the GREEN phase.
 metadata:
   model: sonnet
 ---

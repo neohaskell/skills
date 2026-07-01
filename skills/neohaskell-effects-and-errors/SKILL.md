@@ -1,6 +1,16 @@
 ---
 name: neohaskell-effects-and-errors
-description: "Provides the NeoHaskell effects and error-handling cheatsheet for Task, Result, Maybe, and string interpolation. Use whenever a Haskell reflex reaches for IO, pure/return, Either/Left/Right, let-in/where, or string-formatting with dollar-sign or percent-sign syntax. Covers Task err value (error type first) with Task.yield, Task.throw, Task.andThen, Task.runOrPanic, and Task.fromIO for the IO-to-Task bridge; Result with Ok/Err constructors; Maybe with withDefault and andThen; do-let instead of let-in or where; and the fmt quasi-quoter with hash-brace interpolation. Load this skill when reviewing or writing any NeoHaskell module that performs effects or handles failures."
+description: >-
+  The NeoHaskell EFFECTS and ERROR-HANDLING cheatsheet: Task err value (error type first)
+  with Task.yield / throw / andThen / runOrPanic and Task.fromIO as the IO-to-Task bridge;
+  Result with Ok/Err; Maybe with withDefault/andThen; do-let instead of let-in or where; and
+  the fmt quasi-quoter with #{} interpolation in an effectful context. Use whenever a
+  Haskell reflex reaches for IO, pure/return, Either/Left/Right, let-in/where, do-block
+  sequencing of effects, error recovery/fallback, or converting IO to Task. Do NOT use for
+  Array/Map/Text/Set combinators (neohaskell-collections), the import-Core header or bare
+  operator table (neohaskell-core-prelude), record/JSON instances (neohaskell-records-and-
+  json), or designing typed error ADTs as domain value objects from a failing test
+  (neohaskell-domain-modeling designs the type; this skill wires it through Task/Result).
 metadata:
   model: haiku
 ---

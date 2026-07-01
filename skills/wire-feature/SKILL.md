@@ -1,19 +1,17 @@
 ---
 name: wire-feature
 description: >-
-  Registers implemented NeoHaskell modules as live HTTP endpoints in the GREEN
-  phase of the outside-in TDD cycle. Use after implement-command,
-  implement-event-and-update-entity, implement-query, or implement-integration
-  have produced compiling modules -- this is step 6 that makes the outer hurl
-  e2e go from 404 to the expected response. Also use when asked to "wire up",
-  "register a command", "add an endpoint", "make a query reachable", "connect an
-  integration", or "add withService to App.hs". Covers Service.hs (Service.new
-  followed by Service.command @Cmd for each command), App.hs
-  (Application.withService / withQuery @Q / withOutbound @H / withInbound @Config
-  / withOutboundLifecycle @Config @Entity), the instance-only import pattern
-  (import Context.Core ()), and when to create a multi-context aggregating
-  Service barrel. After this skill runs, neo inspect wiring lists the new
-  endpoints and the outer hurl test goes green.
+  Registers already-implemented NeoHaskell modules as LIVE HTTP endpoints in the GREEN phase
+  — step 6 that flips the outer hurl e2e from 404 to the expected response. Use AFTER
+  implement-command / implement-event-and-update-entity / implement-query / implement-
+  integration produced compiling modules, or when asked to 'wire up', 'register a command',
+  'add an endpoint', 'make a query reachable', 'connect an integration', or 'add withService
+  to App.hs', or when hitting a missing EntityOf/instance error at a Service.command call
+  site. Covers Service.hs (Service.new, Service.command @Cmd), App.hs (withService /
+  withQuery @Q / withOutbound @H / withInbound @Config / withOutboundLifecycle), the
+  instance-only import pattern (import Context.Core ()), and multi-context Service barrels.
+  Do NOT use to write the decide/combine/handleEvent logic (the implement-* skills) or the
+  tests (write-* skills). After this, neo inspect wiring lists the endpoints.
 metadata:
   model: sonnet
 ---

@@ -1,19 +1,17 @@
 ---
 name: verify-event-model
 description: >-
-  Gates a freshly-appended feature in a NeoHaskell event-model.json before any
-  code is written, in three passes: PASS 1 checks JSON-Schema shape offline
-  against the vendored v1 schema; PASS 2 checks referential integrity (mirroring
-  neo's validate.rs, plus duplicate-id and edge-endpoint-type checks); PASS 3
-  checks Event Modeling best practices neo never machine-checks. Flags
-  present-tense or RPC-echo event names (IncrementCounter, CreateFooDTO), vague
-  names (CartUpdated, DataUpdated), read-model fields tracing to no event, missing
-  command-produces-event or event-feeds-query links, fake unconditional
-  automations, infra modeled as nodes, orphan nodes, and any ReadModel-to-Command
-  flow. Use whenever an event-model.json changed, after event-modeling, and
-  before the outside-in TDD cycle or writing any command, event, query, or
-  integration — even if the user only says 'check the model' or 'is my event
-  model right'. Does NOT flag creation facts like CounterCreated or
+  Gates a freshly-appended NeoHaskell event-model.json BEFORE any code, in three passes:
+  PASS 1 JSON-Schema shape offline against the vendored v1 schema; PASS 2 referential
+  integrity (edge endpoints resolve, entityId/duplicate-id/edge-endpoint-type checks,
+  mirroring neo's validate.rs); PASS 3 Event Modeling best practices neo never machine-
+  checks. Flags present-tense or RPC-echo event names (IncrementCounter, CreateFooDTO),
+  vague names (CartUpdated, DataUpdated), read-model fields tracing to no event, missing
+  command-produces-event or event-feeds-query links, fake unconditional automations, infra-
+  as-nodes, orphans, and ReadModel-to-Command flows. Use to CHECK, validate, audit, or gate
+  a model — 'check the model', 'is my event model right', 'validate event-model.json', after
+  event-modeling and before the TDD cycle. Do NOT use to DESIGN or add nodes to the model —
+  that is event-modeling. Does NOT flag creation facts like CounterCreated or
   MemberRegistered.
 metadata:
   model: opus

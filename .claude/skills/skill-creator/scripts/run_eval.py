@@ -50,15 +50,21 @@ def run_single_query(
     """
     unique_id = uuid.uuid4().hex[:8]
     clean_name = f"{skill_name}-skill-{unique_id}"
-    project_commands_dir = Path(project_root) / ".claude" / "commands"
-    command_file = project_commands_dir / f"{clean_name}.md"
+    # PATCH: install a REAL skill under .claude/skills/<clean_name>/SKILL.md so
+    # Claude Code auto-discovers it and invokes it via the `Skill` tool from a
+    # natural-language query. The upstream approach dropped a .claude/commands/
+    # proxy, which does NOT trigger from NL queries in current Claude Code
+    # (verified: a real skill fires the Skill tool; a command proxy never does).
+    project_skills_dir = Path(project_root) / ".claude" / "skills" / clean_name
+    command_file = project_skills_dir / "SKILL.md"
 
     try:
-        project_commands_dir.mkdir(parents=True, exist_ok=True)
+        project_skills_dir.mkdir(parents=True, exist_ok=True)
         # Use YAML block scalar to avoid breaking on quotes in description
         indented_desc = "\n  ".join(skill_description.split("\n"))
         command_content = (
             f"---\n"
+            f"name: {clean_name}\n"
             f"description: |\n"
             f"  {indented_desc}\n"
             f"---\n\n"
@@ -125,20 +131,21 @@ def run_single_query(
                     except json.JSONDecodeError:
                         continue
 
-                    # Early detection via stream events
+                    # PATCH: detect the Skill/Read tool invoked with our skill name
+                    # ANYWHERE in the stream. The model may legitimately call other
+                    # tools first (e.g. git diff), so do NOT return False on a
+                    # non-Skill tool — only conclude False when the turn ends.
                     if event.get("type") == "stream_event":
                         se = event.get("event", {})
                         se_type = se.get("type", "")
 
                         if se_type == "content_block_start":
                             cb = se.get("content_block", {})
-                            if cb.get("type") == "tool_use":
-                                tool_name = cb.get("name", "")
-                                if tool_name in ("Skill", "Read"):
-                                    pending_tool_name = tool_name
-                                    accumulated_json = ""
-                                else:
-                                    return False
+                            if cb.get("type") == "tool_use" and cb.get("name") in ("Skill", "Read"):
+                                pending_tool_name = cb.get("name")
+                                accumulated_json = ""
+                            else:
+                                pending_tool_name = None
 
                         elif se_type == "content_block_delta" and pending_tool_name:
                             delta = se.get("delta", {})
@@ -147,13 +154,13 @@ def run_single_query(
                                 if clean_name in accumulated_json:
                                     return True
 
-                        elif se_type in ("content_block_stop", "message_stop"):
-                            if pending_tool_name:
-                                return clean_name in accumulated_json
-                            if se_type == "message_stop":
-                                return False
+                        elif se_type == "content_block_stop":
+                            if pending_tool_name and clean_name in accumulated_json:
+                                return True
+                            pending_tool_name = None
+                        # message_stop: keep scanning; the 'result' event ends the turn.
 
-                    # Fallback: full assistant message
+                    # Fallback: full assistant message (when partial messages absent)
                     elif event.get("type") == "assistant":
                         message = event.get("message", {})
                         for content_item in message.get("content", []):
@@ -161,11 +168,10 @@ def run_single_query(
                                 continue
                             tool_name = content_item.get("name", "")
                             tool_input = content_item.get("input", {})
-                            if tool_name == "Skill" and clean_name in tool_input.get("skill", ""):
-                                triggered = True
-                            elif tool_name == "Read" and clean_name in tool_input.get("file_path", ""):
-                                triggered = True
-                            return triggered
+                            if tool_name == "Skill" and clean_name in str(tool_input.get("skill", "")):
+                                return True
+                            if tool_name == "Read" and clean_name in str(tool_input.get("file_path", "")):
+                                return True
 
                     elif event.get("type") == "result":
                         return triggered
@@ -177,8 +183,9 @@ def run_single_query(
 
         return triggered
     finally:
-        if command_file.exists():
-            command_file.unlink()
+        import shutil
+        if project_skills_dir.exists():
+            shutil.rmtree(project_skills_dir, ignore_errors=True)
 
 
 def run_eval(

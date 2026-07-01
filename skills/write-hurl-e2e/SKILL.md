@@ -1,17 +1,17 @@
 ---
 name: write-hurl-e2e
 description: >-
-  Writes Hurl end-to-end test files under tests/ for NeoHaskell features —
-  POST /commands/kebab-name and GET /queries/kebab-name on localhost:8080 — with
-  [Captures] to bind entityId, [Asserts] to verify responses, and [Options]
-  retry for eventually-consistent queries. Run with neo test. Use this skill
-  first in each outside-in TDD slice (RED outer loop, before implementation
-  exists, while the endpoint returns 404). Also use when asked to add an e2e
-  test, write a .hurl file, test a command or query over HTTP, assert a 400
-  Rejected response on a reject path, verify an integration side-effect fires,
-  or capture an entityId and reuse it across steps. Teaches both query response
-  shapes: paginated items-wrapped ($.items / $.total / $.hasMore) and bare array
-  ($[?...]), with detection guidance for each.
+  Writes Hurl end-to-end .hurl test files under tests/ for NeoHaskell features — POST
+  /commands/kebab-name and GET /queries/kebab-name on localhost:8080 — with [Captures] to
+  bind entityId, [Asserts] to verify responses, and [Options] retry for eventually-
+  consistent queries. Run with neo test. This is the OUTER HTTP loop, written FIRST in each
+  slice (RED) while the endpoint still returns 404. Use to add an e2e/.hurl test, test a
+  command or query OVER HTTP, assert a 400 Rejected on a reject path, verify an integration
+  side-effect fired via a query, or capture and reuse an entityId. Covers both query shapes:
+  paginated ($.items/$.total/$.hasMore) and bare array ($[?...]). Do NOT use for in-memory
+  acceptance or property specs (write-feature-tests), Decider/Projection/Outbound Hspec unit
+  specs (write-unit-tests), wiring the endpoint live (wire-feature), or manually curling a
+  running app (neo-run-and-inspect).
 metadata:
   model: sonnet
 ---

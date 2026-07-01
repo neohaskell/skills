@@ -1,19 +1,17 @@
 ---
 name: neohaskell-outside-in-tdd
 description: >-
-  The per-slice development discipline for building a feature in a NeoHaskell
-  event-sourced project: outside-in, test-first TDD run as RED then DOMAIN then
-  GREEN then DOMAIN then REFACTOR, one assertion per test, Given-When-Then
-  naming, strict phase boundaries, and "let the compiler tell you what is
-  missing." Use whenever you are about to build or change a NeoHaskell feature
-  slice, right after verify-event-model and before writing any command, event,
-  query, or integration — even if the user just says "implement this" or reaches
-  straight for code with no failing test. Also use when asked which test to write
-  first, what red-green-refactor or outside-in TDD looks like in NeoHaskell, how
-  to keep the test pyramid from becoming an ice-cream-cone, or how to fix
-  deployed (locked) code as a fresh V2 cycle. This is the portable "start here"
-  process index ordering write-hurl-e2e, write-feature-tests, write-unit-tests,
-  neohaskell-domain-modeling, the implement-* skills, and wire-feature.
+  The per-SLICE test-first development discipline for a NeoHaskell event-sourced feature,
+  run AFTER the event model is verified: outside-in RED then DOMAIN then GREEN then DOMAIN
+  then REFACTOR, one assertion per test, Given-When-Then naming, strict phase boundaries,
+  'let the compiler tell you what is missing', and keeping the test pyramid from becoming an
+  ice-cream-cone. Use when about to build or change one feature slice and needing the ORDER
+  of steps, or when the user reaches straight for code with no failing test, jumped ahead of
+  RED, asks which test to write first, or wants to fix locked/deployed code as a fresh V2
+  cycle. This is the process INDEX that sequences write-hurl-e2e, write-feature-tests,
+  write-unit-tests, neohaskell-domain-modeling, the implement-* skills, and wire-feature.
+  Defer to neohaskell-feature-pipeline for the whole-feature run including modeling; defer
+  to the individual test/implement skills when one concrete artifact is requested.
 metadata:
   model: opus
 ---

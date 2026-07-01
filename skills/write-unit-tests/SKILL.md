@@ -1,6 +1,16 @@
 ---
 name: write-unit-tests
-description: Writes RED-first Hspec unit specs for the three pure NeoHaskell building blocks — Decider (command decide), Projection (query combine), and Outbound (integration handleEvent) — using the Test testlib, Decider.runDecision, and Auth.emptyContext. Use this skill whenever asked to write unit tests, write specs, test a command decision, test a query projection, or test an outbound integration handler for a NeoHaskell slice. Also invoke at step 3 of the outside-in TDD cycle, even if the user says only "add tests" or "write a spec", before implement-command, implement-query, or implement-integration, to produce the failing RED test that drives implementation. Assumes neohaskell/neo#2 is in place so neo test compiles the test suite.
+description: >-
+  Writes RED-first Hspec UNIT specs for the three pure NeoHaskell building blocks in
+  isolation — Decider (a command's decide), Projection (a query's combine), and Outbound (an
+  integration's handleEvent) — using the Test testlib, Decider.runDecision, and
+  Auth.emptyContext. This is step 3 of the outside-in cycle, before the matching implement-
+  command / implement-query / implement-integration. Use whenever asked to write unit tests,
+  write a spec, test a command decision, test a query projection, or test an outbound
+  handler for a slice — even if the user says only 'add tests' or 'write a spec'. Do NOT use
+  for the in-domain Acceptance or Property/QuickCheck specs that fold whole event streams
+  (write-feature-tests), the outer Hurl HTTP e2e (write-hurl-e2e), or implementing the
+  bodies under test. Assumes neohaskell/neo#2 so neo test compiles the suite.
 metadata:
   model: sonnet
 ---
