@@ -228,36 +228,24 @@ git **pre-commit hook** (`neo lock install` → `neo lock check`) and (2) a **pr
 
 The skills are flat and independent, but the **intended chaining** to add one feature is:
 
-```
-                          ┌─────────────────────────┐
-  vague request  ───────► │ augment-feature-request  │  (interview, multiple-choice)
-                          └────────────┬─────────────┘
-                                       ▼  concrete feature brief
-                          ┌─────────────────────────┐
-                          │ event-modeling           │  appends a submodel (feature) to
-                          └────────────┬─────────────┘  event-model.json  (schema §4)
-                                       ▼
-                          ┌─────────────────────────┐
-                          │ verify-event-model       │  best-practice cross-checks
-                          └────────────┬─────────────┘  (no CRUD events, past-tense, refs OK)
-                                       ▼  verified feature (set of slices)
-        ┌──────────────────────────────┼──────────────────────────────┐
-        ▼                              ▼                              ▼
-  implement-command         implement-event-and-update-entity     implement-query
-  (+ expand-entity if a            (+ Events/<E>.hs, Event.hs               │
-   field is needed)                 ADT variant, update fold)               │
-        │                              │                              │
-        └──────────────┬───────────────┴───────────────┬──────────────┘
-                       ▼                               ▼
-               implement-integration            wire-feature
-               (per trigger, panic stub)   (Service.command + app.hs withService/withQuery/withOutbound)
-                       │
-                       ▼
-        ┌──────────────────────────────────────────────────────────────┐
-        │  write-unit-tests (Decider / Projection / Outbound)            │
-        │  write-feature-tests (Acceptance / Property)                   │
-        │  write-hurl-e2e  (+ neo test to execute)                       │
-        └──────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    R(["vague request"]) --> A["augment-feature-request<br/>interview, multiple-choice"]
+    A -->|feature brief| M["event-modeling<br/>append submodel to event-model.json"]
+    M --> V["verify-event-model<br/>best-practice cross-checks; creation facts OK"]
+    V --> IC["implement-command"]
+    V --> IE["implement-event-and-update-entity<br/>Events/&lt;E&gt;.hs, Event.hs ADT variant, update fold"]
+    V --> IQ["implement-query"]
+    V --> II["implement-integration<br/>outbound-per-trigger · inbound · lifecycle; panic stub"]
+    IE -.->|new field needed| EX["expand-entity"]
+    IC --> W["wire-feature<br/>Service.command @Cmd; App.hs withService/withQuery/withOutbound/withInbound"]
+    IE --> W
+    IQ --> W
+    II --> W
+    EX --> W
+    W --> UT["write-unit-tests<br/>Decider / Projection / Outbound"]
+    W --> FT["write-feature-tests<br/>Acceptance / Property"]
+    W --> HE["write-hurl-e2e<br/>+ neo test to execute"]
 ```
 
 Because the set is flat, each skill restates its **Inputs / Outputs / Next** so the chain works

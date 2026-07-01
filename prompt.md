@@ -85,11 +85,12 @@ the IDE is `:2323`. No OpenAPI subcommand exists.
 
 ## The pipeline the skills implement
 
-```
-augment-feature-request → event-modeling → verify-event-model →
-  { implement-command, implement-event-and-update-entity (+ expand-entity), implement-query } →
-  implement-integration → wire-feature →
-  { write-unit-tests, write-feature-tests, write-hurl-e2e (run via neo test) }
+```mermaid
+flowchart LR
+    A["augment-feature-request"] --> M["event-modeling"] --> V["verify-event-model"]
+    V --> I["implement-command · implement-event-and-update-entity + expand-entity · implement-query"]
+    I --> II["implement-integration"] --> W["wire-feature"]
+    W --> T["write-unit-tests · write-feature-tests · write-hurl-e2e via neo test"]
 ```
 
 Existing **entities** are the starting model; events/commands/queries/integrations are treated as

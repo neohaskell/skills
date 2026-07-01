@@ -61,42 +61,29 @@ run their reasoning on Opus regardless of the consumer's session model.
 
 ## 3. Pipeline chaining
 
+```mermaid
+flowchart TD
+    R(["vague request"]) --> A["augment-feature-request — Opus<br/>interview → Feature Brief; no code"]
+    A --> M["event-modeling — Opus<br/>append Submodel→Chapter→Slice→nodes→edges to event-model.json"]
+    M --> V["verify-event-model — Opus<br/>schema + referential + best-practice; ALLOWS *Created facts"]
+    V --> IE["implement-event-and-update-entity — Sonnet"]
+    V --> IC["implement-command — Sonnet"]
+    V --> IQ["implement-query — Sonnet"]
+    V --> II["implement-integration — Sonnet<br/>outbound-per-trigger · inbound Timer/webhook · lifecycle"]
+    IE -.->|new field| EX["expand-entity — Sonnet"]
+    IC --> W["wire-feature — Sonnet<br/>Service.command @Cmd; App.hs withService/withQuery/withOutbound/withInbound"]
+    IE --> W
+    IQ --> W
+    II --> W
+    EX --> W
+    W --> UT["write-unit-tests — Sonnet<br/>Decider / Projection / Outbound Hspec"]
+    W --> FT["write-feature-tests — Sonnet<br/>Acceptance flow + Property replay"]
+    W --> HE["write-hurl-e2e — Sonnet<br/>.hurl e2e; run via neo test"]
 ```
-  vague request
-      │
-      ▼
-  augment-feature-request  (Opus, interview → Feature Brief; no code)
-      │
-      ▼
-  event-modeling           (Opus, append Submodel→Chapter→Slice→nodes→edges to event-model.json)
-      │
-      ▼
-  verify-event-model       (Opus, schema + referential + best-practice gate; ALLOWS *Created facts)
-      │
-      ├─────────────► implement-event-and-update-entity ──► (expand-entity if a new field is needed)
-      ├─────────────► implement-command
-      ├─────────────► implement-query
-      └─────────────► implement-integration  (outbound-per-trigger · inbound(Timer/webhook) · lifecycle)
-                              │
-                              ▼
-                        wire-feature  (Service.command @Cmd; App.hs withService/withQuery/withOutbound/withInbound)
-                              │
-       ┌──────────────────────┼───────────────────────────┐
-       ▼                      ▼                            ▼
-  write-unit-tests      write-feature-tests           write-hurl-e2e
-  (Decider/Projection/  (Acceptance flow +            (.hurl e2e; run via `neo test`)
-   Outbound Hspec)       Property replay)
 
-  Cheatsheets (Haiku) — core-prelude · collections · effects-and-errors · records-and-json · module-layout —
-  and tooling (Haiku) — neo-cli · neo-immutability-and-versioning · neo-config-and-secrets · neo-run-and-inspect —
-  are pulled in by any pipeline skill as needed.
-
-  PR-time (independent of the build pipeline):
-  neohaskell-code-review (Opus) ── set up once by ──► neohaskell-code-review-ci (Sonnet, provider-agnostic)
-
-  Deployed-fix path: a locked artifact change starts at the relevant implement-* skill in V2 mode
-  (neo-immutability-and-versioning), NOT at event-modeling.
-```
+- **Cheatsheets (Haiku)** — `core-prelude` · `collections` · `effects-and-errors` · `records-and-json` · `module-layout` — and **tooling (Haiku)** — `neo-cli` · `neo-immutability-and-versioning` · `neo-config-and-secrets` · `neo-run-and-inspect` — are pulled in by any pipeline skill as needed.
+- **PR-time** (independent of the build pipeline): `neohaskell-code-review` (Opus) is set up once by `neohaskell-code-review-ci` (Sonnet, provider-agnostic).
+- **Deployed-fix path:** a locked-artifact change starts at the relevant `implement-*` skill in V2 mode (`neo-immutability-and-versioning`), not at `event-modeling`.
 
 ## 4. The six verify lenses
 
