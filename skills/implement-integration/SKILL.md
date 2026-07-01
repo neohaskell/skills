@@ -243,7 +243,7 @@ loanNotifierIntegration = Lifecycle.OutboundConfig
       Task.yield LoanNotifierState { memberId = memberIdText }
 
   , processEvent = \state _event -> do
-      -- TODO: send notification; return commands to emit, or [] for none.
+      -- TODO: send notification or other side-effecting work.
       Task.yield []
 
   , cleanup = \state -> do
@@ -251,10 +251,15 @@ loanNotifierIntegration = Lifecycle.OutboundConfig
   }
 ```
 
-`initialize` returns the initial state wrapped in `Task`. `processEvent` returns
-`Task _ (Array cmd)` — emit cross-aggregate commands by including them in the
-returned array, or `Task.yield []` for none. `cleanup` runs when the worker is
-reaped; it returns `Task _ Unit`.
+`initialize` returns the initial state wrapped in `Task`. `processEvent` has type
+`state -> Event Json.Value -> Task Text (Array Integration.CommandPayload)` — the
+element type is the framework wrapper `Integration.CommandPayload`, not a raw
+command. Lifecycle `processEvent` is for side-effecting work (incrementing
+counters, sending notifications, writing to external stores); in practice always
+return `Task.yield []` as the testbed `EventCounter` does. Cross-aggregate command
+dispatch belongs in a per-trigger outbound handler (Template 1), not in a
+lifecycle `processEvent`. `cleanup` runs when the worker is reaped; it returns
+`Task Text Unit`.
 
 ---
 

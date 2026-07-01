@@ -67,6 +67,7 @@ module Starter.Counter.Events.CounterCreated (
 ) where
 
 import Core
+import Json qualified
 
 
 data Event = Event
@@ -74,6 +75,11 @@ data Event = Event
   , label    :: Text
   }
   deriving (Generic, Show)
+
+
+instance Json.FromJSON Event
+
+instance Json.ToJSON Event
 ```
 
 ### `src/Starter/Counter/Events/CounterIncremented.hs` [LOCKABLE]
@@ -84,6 +90,7 @@ module Starter.Counter.Events.CounterIncremented (
 ) where
 
 import Core
+import Json qualified
 
 
 data Event = Event
@@ -91,6 +98,11 @@ data Event = Event
   , amount   :: Int
   }
   deriving (Generic, Show)
+
+
+instance Json.FromJSON Event
+
+instance Json.ToJSON Event
 ```
 
 ### `src/Starter/Counter/Event.hs`
@@ -134,10 +146,12 @@ All entity↔event type instances and instances live here, not in `Event.hs`. `i
 module Starter.Counter.Entity (
   CounterEntity (..),
   initialState,
+  update,
 ) where
 
 import Core
 import Json qualified
+import Service.Command.Core (Event (..))
 import Starter.Counter.Event (CounterEvent (..), getEventEntityId)
 import Starter.Counter.Events.CounterCreated    qualified as CounterCreated
 import Starter.Counter.Events.CounterIncremented qualified as CounterIncremented
@@ -246,7 +260,7 @@ instance Default CounterEntity where
   def = initialState
 ```
 
-`Default` is re-exported by `Core` — no separate import is needed. The `command` and `deriveQuery` macros rely on this instance being present; omitting it causes a compile error.
+`Default` is re-exported by `Core` — no separate import is needed. Declaring `instance Default` for every entity is a strong project convention; the `command` and `deriveQuery` macros do not enforce it at compile time, but all public examples follow the pattern.
 
 Grounded in: `testbed/src/Testbed/Cart/Core.hs` line 28–30.
 
@@ -275,7 +289,7 @@ When you see a testbed import like `import Testbed.Cart.Core (CartEntity (..), C
 | Name the payload type `data CounterCreated = …` | Always `data Event = Event { … }` inside `Events/<Name>.hs` | `neo inspect` looks for a type named `Event` in each payload file |
 | Use `Event/` (singular) as the directory | Always `Events/` (plural) | `neo lock` and `neo inspect` key on the plural name |
 | Place `type instance EntityOf Ev` or `instance Event Ev` in `Event.hs` | All type instances (both directions) live in `Entity.hs` | Co-location avoids orphan-instance warnings and import cycles |
-| Omit `instance Default E where def = initialState` | Declare it in `Entity.hs` for every entity | The `command` macro requires it; missing it is a compile error |
+| Omit `instance Default E where def = initialState` | Declare it in `Entity.hs` for every entity | Strong project convention; all public examples follow the pattern |
 | Place `Entity.hs` or `Event.hs` inside `Commands/`, `Events/`, or `Queries/` dirs | Keep them at the context root | Files in those dirs are automatically lockable via `neo lock` |
 | Use `import Data.Default` for the `Default` class | `import Core` is sufficient — `Default` is re-exported | Extra imports cause `-Werror` unused-import failures |
 | Forget the instance-only `import Context.Core ()` in `Service.hs` | Always add `import Starter.Counter.Core ()` | Brings entity/event instances into scope; without it the macro fails |

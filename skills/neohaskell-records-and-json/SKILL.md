@@ -40,7 +40,6 @@ module <App>.<Context>.Entity where
 import Core
 import Json qualified
 import Uuid qualified
-import Array (Array)
 import Array qualified
 
 
@@ -61,8 +60,10 @@ instance Json.FromJSON <Entity>
 instance Json.ToJSON <Entity>
 
 
--- Default instance for the entity's zero state (used by the framework).
--- Ownership rule: entities get this; see neohaskell-module-layout for placement.
+-- Default instance for the entity's zero state.
+-- Project convention only — neither `command` nor `deriveQuery` checks for it;
+-- the macros compile fine without it. Ownership rule: entities get this; see
+-- neohaskell-module-layout for placement.
 instance Default <Entity> where
   def = initialState
 
@@ -105,6 +106,8 @@ Query read models add `ToSchema` and the access-control pair that `deriveQuery`
 wires into the `Query` typeclass instance.
 
 ```haskell
+{-# LANGUAGE TemplateHaskell #-}
+
 module <App>.<Context>.Queries.<QueryName> (
   <QueryName> (..),
   canAccess,

@@ -73,13 +73,14 @@ shape as its own constructor carrying exactly its data:
 
 -- Each case carries exactly what it needs, nothing it doesn't:
 data LoanState
-  = Active   { dueDate :: Uuid }        -- illustrative fields
-  | Closed   { returnedAt :: Uuid }
+  = Active   { dueDate :: DateTime }    -- illustrative fields
+  | Closed   { returnedAt :: DateTime }
   deriving (Eq, Show, Generic)
 ```
 
-**Non-negative counts.** A quantity of `-3` books is nonsense. `Natural Int` (constructor hidden;
-built only via `makeNatural`/`makeNaturalOrPanic`) makes the nonsense unconstructible — this is why
+**Non-negative counts.** A quantity of `-3` books is nonsense. `Natural Int` (constructor exported
+but always used via `makeNatural`/`makeNaturalOrPanic`, which enforce positivity) makes the nonsense
+unconstructible in practice — this is why
 the real `testbed` `CartItem` field is `amount :: Natural Int`, not `amount :: Int`.
 
 ---
@@ -160,8 +161,9 @@ constructor gives the same benefit — see Principle 5.
 A **smart constructor** is a function that is the *only* way to build a value, so it can enforce an
 invariant that the type then carries. NeoHaskell's own wrappers are built this way:
 
-- `Natural` — constructor unexported; built via `makeNatural :: n -> Maybe (Natural n)` (or
-  `makeNaturalOrPanic`). (`core/core/Basics.hs`)
+- `Natural` — constructor exported (`Natural (..)` in `Basics.hs`) but always use
+  `makeNatural :: n -> Maybe (Natural n)` (or `makeNaturalOrPanic`) — the bare constructor bypasses
+  the positivity check. (`core/core/Basics.hs`)
 - `Uuid` — `newtype Uuid = Uuid UUID` with the constructor unexported; built via `Uuid.generate` or
   `Uuid.fromText :: Text -> Maybe Uuid`. (`core/core/Uuid.hs`)
 - `Decimal` — built via `Decimal.decimal`, `Decimal.fromCents`, `Decimal.parseDecimal`.

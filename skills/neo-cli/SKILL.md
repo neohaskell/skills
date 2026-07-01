@@ -121,10 +121,11 @@ neo test          # unit tests (cabal) + hurl e2e files
 neo test --watch  # re-run on file changes (incompatible with --ci)
 ```
 
-**Boot wait:** `neo test` boots the app and waits approximately 2 seconds before firing
-hurl files. It does **not** poll `/ready` — `GET /ready` is 404 unless
-`Application.withReadinessProbe` is explicitly wired. Build-chain for hurl tests: see
-`write-hurl-e2e`.
+**Boot wait:** `neo test` boots the app and polls `http://127.0.0.1:8080/` (root path)
+every ~250 ms for up to 60 s. It fires the hurl files as soon as **any** HTTP response
+arrives — even a 404 — so it does not require a readiness endpoint to exist. It does
+**not** use a fixed sleep. (For `/ready` endpoint details see `neo-run-and-inspect`.)
+Build-chain for hurl tests: see `write-hurl-e2e`.
 
 **Requires:** `nix` on `PATH` + `git` (required by the test runner) + a flake-enabled directory.
 
@@ -178,7 +179,7 @@ neo inspect events        # event-sum constructors per domain
 neo inspect queries       # queries per domain
 neo inspect integrations  # integrations per domain (name, kind, events, commands emitted)
 neo inspect wiring        # derived wiring: command → event → integration → command
-neo inspect sync          # DESTRUCTIVE: rewrites event-model.json from source
+neo inspect sync          # regenerates event-model.json from source (overwrites manual edits)
 ```
 
 **Warning — `neo inspect sync` clobbers `event-model.json`**. It regenerates the file
@@ -223,7 +224,7 @@ Supported tool IDs: `claude`, `codex`, `kiro`, `cursor`, `agents`.
 | `neo --ci build --watch` | `--watch` and `--ci` are mutually exclusive; pick one |
 | `neo ide --host localhost` | must be a literal IP address (e.g. `127.0.0.1`); hostnames are rejected by clap |
 | `neo lock --remove` | does not exist; only `install`/`check`/`<search>`/`--all` |
-| assume `/ready` polls before hurl | `neo test` waits ~2s; `/ready` is 404 unless `withReadinessProbe` wired |
+| assume `/ready` polls before hurl | `neo test` polls root `/` every ~250 ms (any HTTP response triggers hurl); `/ready` is ON by default (`useReadinessEndpoint` to customize) — see `neo-run-and-inspect` |
 | `neo inspect sync` to see the model | sync **clobbers** `event-model.json`; use `neo inspect` (no subcommand) to read |
 | global flags after the subcommand | global flags (`--verbose`, `--ci`) must come **before** the subcommand |
 

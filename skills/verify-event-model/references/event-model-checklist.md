@@ -60,7 +60,7 @@ Optional: `submodels`. Nothing else may appear at the root.
 | Record | Required keys | Notes |
 |---|---|---|
 | `submodel` (a **feature**) | `id`, `name`, `order` | |
-| `chapter` | `id`, `name`, `order`, `submodelId` | `submodelId` is a string or `null` |
+| `chapter` | `id`, `name`, `order`, `submodelId?` | `submodelId` is optional; when present, a string or `null` |
 | `entity` | `id`, `name`, `order` | |
 | `slice` | `id`, `name`, `chapterId`, `order` | `chapterId` is a string or `null` |
 

@@ -169,9 +169,10 @@ neohaskell-review:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   variables:
+    GIT_DEPTH: "0"
     FAIL_ON_BLOCKERS: "true"
   script:
-    - apt-get update -qq && apt-get install -y -qq git curl
+    - apt-get update -qq && apt-get install -y -qq git curl python3
     - npm install -g @anthropic-ai/claude-code
 
     # Full history is required for the diff.
@@ -238,8 +239,7 @@ stages:
 
           - script: |
               git diff \
-                "origin/$(System.PullRequest.TargetBranchName)" \
-                "$(Build.SourceVersion)" \
+                "origin/$(System.PullRequest.TargetBranchName)...$(Build.SourceVersion)" \
                 > /tmp/pr.diff
             displayName: Compute diff
 

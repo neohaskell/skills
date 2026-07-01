@@ -71,7 +71,7 @@ Replace `Starter`, `Counter`, and command names for your domain.
 ```haskell
 -- src/Starter/Counter/Service.hs
 module Starter.Counter.Service (
-  counterService,
+  service,
 ) where
 
 import Core
@@ -81,8 +81,8 @@ import Starter.Counter.Commands.IncrementCounter (IncrementCounter)
 import Starter.Counter.Core ()
 
 
-counterService :: Service _ _
-counterService =
+service :: Service _ _
+service =
   Service.new
     |> Service.command @CreateCounter
     |> Service.command @IncrementCounter
@@ -129,7 +129,7 @@ app :: Application
 app =
   Application.new
     |> Application.withTransport WebTransport.server
-    |> Application.withService Counter.counterService
+    |> Application.withService Counter.service
     |> Application.withQuery @CounterSummary
     |> Application.withOutbound @NotifyOnThreshold
     |> Application.withInbound @() (\_ -> periodicCounterCreator)
@@ -235,7 +235,7 @@ making all instances visible.
 | Vanilla-Haskell reflex -- DON'T | NeoHaskell-correct -- DO | Why |
 |---|---|---|
 | `Application.withQuery CounterSummary` (missing @) | `Application.withQuery @CounterSummary` | The type application `@Q` is required; passing the constructor is a type error |
-| `Application.withService Counter` where `Counter` is the entity module | `import Starter.Counter.Service qualified as Counter` then `Counter.counterService` | `withService` takes the service value, not a module or type |
+| `Application.withService Counter` where `Counter` is the entity module | `import Starter.Counter.Service qualified as Counter` then `Counter.service` | `withService` takes the service value, not a module or type |
 | `let cfg = Config.get @CounterConfig` inside the `app` wiring chain | Factory lambda: `Application.withInbound @CounterConfig (\cfg -> ...)` | `Config.get` panics before `Application.run` loads the config; the factory is called after |
 | Skip `import Starter.Counter.Core ()` in Service.hs | Always add the instance-only import | Missing instances cause a `No instance for EntityOf` compile error at the `Service.command` call |
 | Create an aggregating Service barrel for a single-context app | Import the context service module directly in `App.hs` | An extra barrel adds indirection with no benefit; only needed when two or more contexts share an App.hs |

@@ -152,7 +152,7 @@ from the `containers` package. Import `Data.Map.Strict` directly only for low-le
 
 ```haskell
 Map.empty                           -- empty map (re-exported from Data.Map.Strict)
-Map.fromArray [(k1,v1),(k2,v2)]     -- :: (Ord key) => Array (key, value) -> Map key value
+Map.fromArray [(k1,v1),(k2,v2)]     -- :: (Eq key, Ord key) => Array (key, value) -> Map key value
 
 -- Builder pattern (do-notation style):
 Map.build do
@@ -299,7 +299,6 @@ import Text (Text)
 import Text qualified
 import Set (Set)
 import Set qualified
-import Maybe qualified
 
 
 -- | Filter a catalog to titles that still have copies.

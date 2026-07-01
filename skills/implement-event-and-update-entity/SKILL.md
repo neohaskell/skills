@@ -150,10 +150,10 @@ update event entity = case event of
     entity
       { counterId = ev.entityId
       , label     = ev.label
-      , count     = 0
+      , value     = 0
       }
   CounterIncremented ev ->
-    entity { count = entity.count + ev.amount }
+    entity { value = entity.value + ev.amount }
 ```
 
 The full `Entity.hs` with all instances for reference:
@@ -167,6 +167,7 @@ module Starter.Counter.Entity (
 
 import Core
 import Json qualified
+import Service.Command.Core (Event (..))
 import Starter.Counter.Event (CounterEvent (..), getEventEntityId)
 import Starter.Counter.Events.CounterCreated     qualified as CounterCreated
 import Starter.Counter.Events.CounterIncremented qualified as CounterIncremented
@@ -176,7 +177,7 @@ import Uuid qualified
 data CounterEntity = CounterEntity
   { counterId :: Uuid
   , label     :: Text
-  , count     :: Int
+  , value     :: Int
   }
   deriving (Generic)
 
@@ -196,7 +197,7 @@ initialState =
   CounterEntity
     { counterId = Uuid.nil
     , label     = ""
-    , count     = 0
+    , value     = 0
     }
 
 
@@ -223,17 +224,17 @@ update event entity = case event of
     entity
       { counterId = ev.entityId
       , label     = ev.label
-      , count     = 0
+      , value     = 0
       }
   CounterIncremented ev ->
-    entity { count = entity.count + ev.amount }
+    entity { value = entity.value + ev.amount }
 ```
 
 ---
 
 ## Locked payload — V2 rule
 
-If `Events/<Name>.hs` is listed in `.locked-files` (check with `neo lock query src/.../Events/<Name>.hs`), **do not edit it**. Instead:
+If `Events/<Name>.hs` is listed in `.locked-files` (check with `grep "src/.../Events/<Name>.hs" .locked-files`), **do not edit it**. Instead:
 
 1. Create `Events/<Name>V2.hs`. The **in-file type is still `Event`** (not `EventV2`); only the module path changes.
 2. Add a new ADT variant `<Name>V2 <Name>V2.Event` to `Event.hs`.

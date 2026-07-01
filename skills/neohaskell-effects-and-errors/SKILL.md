@@ -32,7 +32,7 @@ This is NeoHaskell, not vanilla Haskell. The `.hs` extension is shared, but the 
 | transform error | `Task.mapError :: (e1 -> e2) -> Task e1 a -> Task e2 a` | |
 | recover from error | `Task.recover :: (err -> Task err2 a) -> Task err a -> Task err2 a` | replaces `catch` |
 | capture as Result | `Task.asResult :: Task err a -> Task err2 (Result err a)` | |
-| at the boundary only | `Task.runOrPanic :: (Show err) => Task err a -> IO a` | `main`/`Application.run` |
+| at the boundary only | `Task.runOrPanic :: (HasCallStack, Show err) => Task err a -> IO a` | `main`/`Application.run` |
 | wrap any IO action | `Task.fromIO :: IO a -> Task _ a` | IO bridge — see below |
 | conditional run | `Task.when :: Bool -> Task err Unit -> Task err Unit` | |
 | loop over Array | `Task.forEach :: (a -> Task err Unit) -> Array a -> Task err Unit` | |

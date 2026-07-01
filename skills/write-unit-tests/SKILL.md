@@ -219,7 +219,7 @@ for counting. The wildcard branch in `handleEvent` must return `Integration.none
 | `it "x" $ do ...` | `it "x" \\_ctx -> do ...` | `it` takes a `context -> Task Text Unit` lambda; `$` is not NeoHaskell |
 | `shouldBe actual expected` (Hspec argument order) | `actual |> shouldBe expected` | NeoHaskell's `shouldBe` takes **expected first**, actual second — the reverse of vanilla Hspec. The pipe form makes this natural |
 | `/=` | `!=` | NeoHaskell inequality operator |
-| `pure unit` / `return ()` | `Task.yield unit` | `pure` is a code-smell in NeoHaskell Task context; use the explicit Task constructor |
+| `pure unit` / `return ()` as the **entry point** of a `Task` (i.e. the whole body of a function returning `Task`) | `Task.yield unit` | Inside a Task-do block `pure unit` is a valid continuation step and is fine; the smell is using `pure` *instead of* `Task.yield` when constructing the Task itself |
 | Multiple `shouldBe` in one `it` block | One assertion per `it` | Enforces Given-When-Then discipline; the outside-in TDD phase boundary check flags multi-assert tests |
 | `panic "TODO: not implemented"` inside outbound `handleEvent` | `Integration.none` + a `-- TODO:` comment | A `panic` in a pure handler crashes the live event dispatcher when that event fires; `Integration.none` is safe |
 | `Decider.accept [e]` (invented constructor) | `Decider.acceptNew [e]`, `Decider.acceptExisting [e]`, or `Decider.acceptAny [e]` | These are the real smart constructors; no bare `accept` exists |
@@ -230,7 +230,7 @@ for counting. The wildcard branch in `handleEvent` must return `Integration.none
 ## Verify
 
 ```
-neo build    # must compile (even with panic stubs in decide/combine/handleEvent)
+neo build    # must compile (even with panic stubs in decide/combine; handleEvent wildcard must use Integration.none, not panic — see stub rule above)
 neo test     # spec must FAIL (RED) until implement-* fills in the logic
 ```
 

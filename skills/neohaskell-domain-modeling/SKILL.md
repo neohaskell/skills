@@ -61,7 +61,7 @@ The `Natural`, `Decimal`, `Redacted`, and `Uuid` **types** are re-exported by `C
 
 | Domain need | Type | Import for its functions | Construct with | Notes |
 |---|---|---|---|---|
-| a count / quantity that must be > 0 | `Natural Int` | (in `Core`) | `makeNatural :: (Ord n, Num n) => n -> Maybe (Natural n)` or `makeNaturalOrPanic` | constructor is hidden; the only way in is the smart constructor. Grounded: `Basics.hs`, `Cart/Core.hs` (`amount :: Natural Int`). |
+| a count / quantity that must be > 0 | `Natural Int` | (in `Core`) | `makeNatural :: (Ord n, Num n) => n -> Maybe (Natural n)` or `makeNaturalOrPanic` | constructor is exported (`Natural (..)`) but always use the smart constructor — the bare constructor bypasses the positivity check. Grounded: `Basics.hs`, `Cart/Core.hs` (`amount :: Natural Int`). |
 | money / precise decimal | `Decimal` | `import Decimal qualified` | `Decimal.decimal :: Float -> Decimal`, `Decimal.fromCents`, `Decimal.zero`, `Decimal.parseDecimal :: Text -> Maybe Decimal` | fixed-point `Int64`, no float error; divide with `Decimal.divide :: Decimal -> Decimal -> Maybe Decimal` (not `/`). Grounded: `Decimal.hs`. |
 | a secret / PII | `Redacted Text` | `import Redacted qualified` | `Redacted.wrap`, `Redacted.labeled`, `Redacted.empty` | `Show` prints `<redacted>`; read with `Redacted.unwrap`. Has **no** `ToJSON`, **no** `Eq`, **no** `Generic` — by design. Grounded: `Redacted.hs`. |
 | an identity | `Uuid` | `import Uuid qualified` | `Uuid.generate :: Task _ Uuid`, `Uuid.fromText :: Text -> Maybe Uuid`, `Uuid.nil` | never a `Text`. Ids are generated inside `decide` with `Decider.generateUuid`. Grounded: `Uuid.hs`, `Cart/Core.hs`. |

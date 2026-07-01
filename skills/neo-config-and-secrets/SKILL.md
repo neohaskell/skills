@@ -9,7 +9,7 @@ description: >
   lookupEnv, or when reviewing Config.hs for leaked secrets, String fields, or
   missing doc modifiers. Covers Config.field, Config.doc, Config.defaultsTo,
   Config.required, Config.envVar, Config.cliLong, Config.cliShort, Config.secret,
-  Redacted Text, Application.withConfig, the factory-lambda wiring pattern, and
+  Application.withConfig, the factory-lambda wiring pattern, and
   the Config.get accessor.
 metadata:
   model: haiku
@@ -55,7 +55,6 @@ module Library.Config (
 import Config (defineConfig)
 import Config qualified
 import Core
-import Redacted (Redacted)
 
 
 defineConfig
@@ -72,9 +71,8 @@ defineConfig
       |> Config.defaultsTo ("http://catalogue.internal" :: Text)
       |> Config.envVar "CATALOGUE_BASE_URL"
 
-    -- Secret: type is Redacted Text so callers must explicitly unwrap.
-    -- Config.secret additionally redacts the value in Show / --help output.
-  , Config.field @(Redacted Text) "apiToken"
+    -- Secret: Config.secret redacts the value in Show / --help output.
+  , Config.field @Text "apiToken"
       |> Config.doc "API token for the catalogue service (sensitive)"
       |> Config.required
       |> Config.envVar "API_TOKEN"
@@ -86,7 +84,7 @@ defineConfig
 
 | Generated artifact | What it is |
 |--------------------|-----------|
-| `data LibraryConfig = LibraryConfig { port :: Int, catalogBaseUrl :: Text, apiToken :: Redacted Text }` | The config record |
+| `data LibraryConfig = LibraryConfig { port :: Int, catalogBaseUrl :: Text, apiToken :: Text }` | The config record |
 | `instance HasParser LibraryConfig` | Parsed from CLI args + env vars + `.env` at startup |
 | `type HasLibraryConfig = (?config :: LibraryConfig)` | Implicit-parameter constraint for consumers |
 | Custom `Show` instance | Replaces every `secret` field value with `REDACTED` |
@@ -130,7 +128,7 @@ makeEventStoreConfig :: LibraryConfig -> MyEventStoreConfig
 makeEventStoreConfig config =
   MyEventStoreConfig
     { host = config.catalogBaseUrl
-    , token = Redacted.unwrap config.apiToken   -- explicit unwrap required
+    , token = config.apiToken
     }
 ```
 
@@ -143,12 +141,11 @@ After `Application.run`, access the config anywhere with `Config.get`:
 ```haskell
 import Library.Config (LibraryConfig)
 import Config qualified
-import Redacted qualified
 
 sendRequest :: Task Text ()
 sendRequest = do
   let cfg = Config.get @LibraryConfig
-  let token = Redacted.unwrap cfg.apiToken   -- explicit: you know you need it
+  let token = cfg.apiToken
   -- ... use token
   Task.yield unit
 ```
@@ -158,7 +155,7 @@ Or carry the implicit-parameter constraint through your call chain:
 ```haskell
 callCatalogue :: (HasLibraryConfig) => Task Text ()
 callCatalogue = do
-  let token = Redacted.unwrap ?config.apiToken
+  let token = ?config.apiToken
   -- ...
   Task.yield unit
 ```
@@ -192,10 +189,10 @@ API_TOKEN=sk-actual-secret-value
 |----------------------------------|-------------------|
 | `import System.Environment (lookupEnv)` and parse manually | `defineConfig` DSL — it handles CLI args, env vars, `.env`, validation, and `--help` |
 | Field type `String` | Field type `Text` (string literals are already `Text` in NeoHaskell) |
-| Bare `Text` for a token/password | `Redacted Text` — the type system then forces `Redacted.unwrap` at the call site |
-| `|> Config.secret` without `@(Redacted Text)` | Both: `@(Redacted Text)` for type-level protection AND `|> Config.secret` for display redaction |
+| Bare `Text` for a token/password with no modifier | `field @Text ... |> Config.secret` — `Config.secret` redacts the value in `Show` / `--help` output |
+| Forgetting `|> Config.secret` on a sensitive field | Always add `|> Config.secret` — without it the value appears in logs and `--help` |
 | `Config.get @LibraryConfig` inside `Application.new |> ...` wiring | Factory lambda (`\config -> ...`) — `Config.get` panics if called before `Application.run` |
-| `Console.print (toText cfg.apiToken)` | `Console.print (toText cfg.apiToken)` shows `<redacted>` (safe) — never print `Redacted.unwrap` |
+| `Console.print (toText cfg.apiToken)` | Safe when `Config.secret` was set — the generated `Show` instance emits `REDACTED`; the field is plain `Text` at runtime |
 | Omitting `|> Config.doc "..."` | Every field needs `Config.doc` — the TH macro **rejects fields without documentation** at compile time |
 | Defaultsing and requiring the same field | `defaultsTo` and `required` are mutually exclusive — using both is a compile error |
 | Adding `{-# LANGUAGE TemplateHaskell #-}` assuming it's missing | It is a **project default extension** — present in the source for clarity; do not diagnose its absence as a compilation failure |

@@ -209,6 +209,7 @@ singular `Event.hs` ADT and handle it in the (unlocked) entity.
 module Starter.Counter.Events.CounterIncrementedV2 (Event (..)) where
 
 import Core
+import Json qualified
 
 data Event = Event
   { entityId :: Uuid
@@ -216,6 +217,12 @@ data Event = Event
   , reason :: Text -- the new field this V2 exists to carry
   }
   deriving (Generic, Show)
+
+
+instance Json.FromJSON Event
+
+
+instance Json.ToJSON Event
 ```
 
 ```haskell

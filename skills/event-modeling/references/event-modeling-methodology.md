@@ -88,7 +88,7 @@ and edges, and to a fixed NeoHaskell implement-* skill.
 | **State Change** | Command → Event | `command` node + `event` node, joined by `commandProducesEvent` (command→event) | `implement-command` (`decide` emits) + `implement-event-and-update-entity` |
 | **State View** | Event(s) → Read Model | `query` node, each source event joined by `eventFeedsQuery` (event→query) | `implement-query` (`deriveQuery` + `QueryOf`/`combine`) |
 | **Automation** | Event → [condition] → Command → Event | `integration` node (`kind:"outbound"`); `eventTriggersIntegration` (event→integration) + `integrationTriggersCommand` (integration→command); the new command then has its own State-Change edges | `implement-integration` (conditional pure `handleEvent`) + the emitted command's `decide` |
-| **Translation** | External / timer / webhook → Internal Command → Event | `integration` node (`kind:"inbound"`); `integrationTriggersCommand` (integration→command); the command then produces its event | `implement-integration` (inbound `withInbound`/`Integration.Timer`) + `implement-command` + `implement-event-and-update-entity` |
+| **Translation** | External / timer / webhook → Internal Command → Event | `integration` node (`kind:"inbound"`); `integrationTriggersCommand` (integration→command); the command then produces its event | `implement-integration` (inbound source built with `Integration.inbound` / `Timer.every`, then wired into the app with `Application.withInbound`) + `implement-command` + `implement-event-and-update-entity` |
 
 Two consequences fall out and are worth stating to a weak model:
 
@@ -296,7 +296,7 @@ identifier** the implement-* skill will emit.
 | `event` | `Events/<Name>.hs` payload (type literally `Event`) + a variant in `Event.hs` ADT + an `update` case | `implement-event-and-update-entity` |
 | `query` | `Queries/<Name>.hs` (record + `deriveQuery` + `QueryOf`/`combine` + `canAccess`/`canView`) | `implement-query` |
 | `integration` (outbound) | `Integrations/<Name>.hs` (marker + pure `handleEvent`) | `implement-integration` |
-| `integration` (inbound) | inbound source wired with `withInbound`/`Integration.Timer` | `implement-integration` |
+| `integration` (inbound) | inbound source built with `Integration.inbound` / `Timer.every`, then wired into the app with `Application.withInbound` | `implement-integration` |
 | entity referenced by `entityId` | evolves `Entity.hs` (add-only) | `expand-entity` |
 
 Each **Slice** is one **outside-in TDD vertical slice**: the design here precedes the RED phase, then

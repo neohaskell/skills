@@ -82,7 +82,7 @@ spec = do
                   }
       let entity = Just CounterEntity
                      { counterId = existingId
-                     , count     = 0
+                     , value     = 0
                      , label     = "my counter"
                      }
 
@@ -97,9 +97,9 @@ spec = do
         RejectCommand reason ->
           fail [fmt|Expected accept but got reject: #{reason}|]
         AcceptCommand _ events -> do
-          let startState  = CounterEntity {counterId = existingId, count = 0, label = "my counter"}
+          let startState  = CounterEntity {counterId = existingId, value = 0, label = "my counter"}
           let finalEntity = Array.foldl update startState events
-          finalEntity.count |> shouldBe 5
+          finalEntity.value |> shouldBe 5
 
     it "rejects when the counter does not exist" \_ -> do
       let cmd = IncrementCounter.IncrementCounter {entityId = Uuid.nil, amount = 5}
@@ -116,7 +116,7 @@ spec = do
     it "rejects when the amount is not positive" \_ -> do
       let existingId = Uuid.nil
       let cmd    = IncrementCounter.IncrementCounter {entityId = existingId, amount = 0}
-      let entity = Just CounterEntity {counterId = existingId, count = 3, label = "x"}
+      let entity = Just CounterEntity {counterId = existingId, value = 3, label = "x"}
       result <-
         Decider.runDecision
           (DecisionContext {genUuid = Uuid.generate})
@@ -171,17 +171,17 @@ spec =
         let events      = Array.fromLinkedList (GhcList.map CounterIncremented increments)
             finalEntity = Array.foldl update initialState events
             expected    = GhcList.sum (GhcList.map (.amount) increments)
-        in  finalEntity.count GhcPrelude.== expected
+        in  finalEntity.value GhcPrelude.== expected
 
     Hspec.it "count is non-negative after any sequence of valid events (invariant)" do
       QuickCheck.property \(increments :: [CounterIncremented.Event]) ->
         let events      = Array.fromLinkedList (GhcList.map CounterIncremented increments)
             finalEntity = Array.foldl update initialState events
-        in  finalEntity.count GhcPrelude.>= 0
+        in  finalEntity.value GhcPrelude.>= 0
 
     Hspec.it "replaying empty event list is identity (initialState roundtrip)" do
       let finalEntity = Array.foldl update initialState (Array.empty :: Array CounterEvent)
-      Hspec.shouldBe finalEntity.count initialState.count
+      Hspec.shouldBe finalEntity.value initialState.value
 ```
 
 ---

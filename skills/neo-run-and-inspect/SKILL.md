@@ -55,7 +55,7 @@ All routes are implemented in `Service.Transport.Web.assembleTransport`. This is
 | `GET`  | `/openapi.yaml`          | OpenAPI 3.x spec (YAML) |
 | `GET`  | `/docs`                  | Scalar interactive docs UI |
 | `GET`  | `/health`                | Health check; 200 OK, always available |
-| `GET`  | `/ready`                 | Readiness probe; **404 unless `Application.withReadinessProbe` is wired** |
+| `GET`  | `/ready`                 | Readiness probe; **enabled by default** (200 = Ready, 503 = Rebuilding/Failed) |
 
 **Kebab-case conversion.** The router converts the URL path segment to PascalCase before looking up the handler. The URL `/commands/increment-counter` maps to the `IncrementCounter` command type. The URL `/queries/counter-value` maps to the `CounterValue` query type.
 
@@ -89,7 +89,7 @@ xdg-open http://localhost:8080/docs    # Linux
 # Health check (always 200 when the app is up)
 curl -s http://localhost:8080/health
 
-# Readiness probe (404 until Application.withReadinessProbe is wired)
+# Readiness probe (enabled by default; 200 = Ready, 503 = Rebuilding/Failed)
 curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/ready
 ```
 
@@ -111,17 +111,14 @@ HTTP 200
 
 ---
 
-## 4. Why `/ready` is 404 by default
+## 4. `/ready` is enabled by default
 
-`WebTransport.server` initialises `readinessConfig = Nothing` and `readinessProbe = Nothing`. The routing pattern in `Web.hs` checks `isReadinessPath` and calls `respondReadiness`, which returns 404 when both fields are `Nothing`:
+`Application.new` sets `readinessConfig = Just ReadinessConfig { readinessPath = "ready", includeQueryStatus = True }`, so the endpoint is live from the first `neo run` without any extra wiring:
 
-```haskell
--- both Nothing → the guard never matches → falls through to notFound
-readinessConfig = Nothing,
-readinessProbe  = Nothing,
-```
+- **200** — app is Ready
+- **503** — app is Rebuilding or Failed
 
-To enable `/ready`, call `Application.withReadinessProbe` in your `App.hs`. That belongs to the [wire-feature](../wire-feature/) step. Until it is wired, load-balancer readiness checks will see 404 — design hurl tests accordingly.
+`Application.useReadinessEndpoint :: Application -> Application` re-enables the endpoint after an explicit disable; you only need to call it if something in your `App.hs` has set `readinessConfig = Nothing`. Under normal circumstances (starting from `Application.new`) you can hit `/ready` immediately and load-balancer readiness checks will work out of the box.
 
 ---
 
@@ -132,7 +129,7 @@ The spec title and version come from `Application.withApiInfo`. If that call is 
 ```haskell
 -- App.hs
 Application.run
-  |> Application.withApiInfo ApiInfo { apiTitle = "My App", apiVersion = "0.1.0" }
+  |> Application.withApiInfo (\_ -> ApiInfo { apiTitle = "My App", apiVersion = "0.1.0", apiDescription = "" })
   ...
 ```
 
@@ -191,7 +188,7 @@ The safe direction: drive the model **into code** (implement → wire → sync),
 | Navigate to `/swagger` or `/swagger-ui` | Navigate to `/docs` (Scalar UI); `/swagger` returns 404 |
 | Use port `:2323` for API calls | `:2323` is `neo ide` (event-modeling UI); the app API is `:8080` |
 | Use port `:8080` to open the IDE | `:8080` is the app API; open `http://127.0.0.1:2323` for the IDE |
-| Assume `/ready` is always 200 | `/ready` is 404 until `Application.withReadinessProbe` is wired in `App.hs` |
+| Assume `/ready` must be manually wired | `/ready` is **on by default** via `Application.new`; use `Application.useReadinessEndpoint` only to re-enable after an explicit disable |
 | Run `neo inspect sync` after hand-editing `event-model.json` | Sync clobbers hand-authored edits — run it only to bootstrap or refresh from existing Haskell source |
 | Hard-code port 8080 everywhere | Port is Config-derived (default 8080); to override, add a `Config.envVar "PORT"` field in `Config.hs` |
 | Pass `"localhost"` to `neo ide --host` | Must be an IP literal: `127.0.0.1` or `0.0.0.0`; `neo ide --host localhost` is rejected by the CLI |

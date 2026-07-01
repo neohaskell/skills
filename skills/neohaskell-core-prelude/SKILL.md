@@ -49,6 +49,7 @@ import Text (Text)
 import Text qualified
 import Task (Task)
 import Task qualified
+import Console qualified   -- Core re-exports log/print/readLine unqualified; qualify for Console.print etc.
 import Maybe qualified     -- Maybe (..) is already in Core; import qualified for Maybe.withDefault etc.
 import Result qualified    -- Result (..) is already in Core; import qualified for Result.andThen etc.
 
@@ -162,7 +163,7 @@ Use `Natural Int` (or `Natural Float`) to represent counts and quantities that m
 Console.print :: Text -> Task _ Unit   -- wraps IO internally
 
 -- log and readLine return IO, not Task — bridge with Task.fromIO
-Console.log      :: Text -> IO Unit    -- debug logging (checks NEOHASKELL_DEBUG env var)
+Console.log      :: (HasCallStack) => Text -> IO Unit    -- debug logging (checks NEOHASKELL_DEBUG env var)
 Console.readLine :: IO Text            -- reads a line
 
 -- In a Task context:
@@ -223,7 +224,7 @@ summarise counts =
 | `import Prelude` | `import Core` | `NoImplicitPrelude` is always on |
 | `module Foo where` (no `import Core`) | `import Core` as the first import | Required in every module |
 | `f $ x` | `x \|> f` | Pipe forward |
-| `f . g` | `f .> g` | Forward compose |
+| `g . f` | `f .> g` | Forward compose (`.>` applies f first) |
 | `xs <> ys` | `xs ++ ys` | `Appendable` typeclass |
 | `a /= b` | `a != b` | |
 | `() :: ()` | `unit :: Unit` | Type and value both renamed |
