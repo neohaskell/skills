@@ -44,6 +44,11 @@ via an explicit **Inputs / Outputs / Next** header.
 | Tests | full pyramid (Decider/Projection/Outbound/Acceptance/Property) + hurl e2e |
 | `Core.hs` barrel | thin (re-export `Entity` + `Event` only) |
 | Examples | public-only (Counter, Cart/Stock) |
+| Model tiers | Opus 4.8 (planning/verify) · Sonnet (implement/test/CI) · Haiku (cheatsheet/tooling) — see BLUEPRINT §10 |
+| Integrations | outbound-per-trigger **plus inbound** (`withInbound`/`Timer`) **and lifecycle outbound** (`withOutboundLifecycle`) |
+| PR review | ship `neohaskell-code-review` (Opus) + `neohaskell-code-review-ci` (provider-agnostic, Sonnet) |
+| Events naming | past-tense facts; CRUD smell is only `Update*`/`Delete*`/imperative echoes — **creation facts (`*Created`) are allowed** |
+| Test suite | full Haskell pyramid depends on [neohaskell/neo#2](https://github.com/neohaskell/neo/issues/2) |
 
 ## NeoHaskell facts every skill must encode
 
@@ -113,10 +118,12 @@ JSON default for old snapshots). Full rules in **BLUEPRINT §8**.
 
 ## Skills to create
 
-The 21 skills (5 language cheatsheets, 4 tooling, 12 pipeline), with each one's
-Inputs/Outputs/Next, are specified in **BLUEPRINT §5**, and the folder tree in **BLUEPRINT §6**.
-Frontmatter rules (`name` + `description` required; folder name must equal `name`) are in
-**BLUEPRINT §7**.
+The **23 skills** (5 language cheatsheets, 4 tooling, 12 pipeline, 2 review), with each one's
+Inputs/Outputs/Next, model tier, and applied fixes, are specified in **[`SPEC.md`](./SPEC.md)** (the
+Phase-0 decomposition); the summary inventory is in **BLUEPRINT §5**, the folder tree in
+**BLUEPRINT §6**, and the build/review process + model-tier policy in **BLUEPRINT §10**. Frontmatter
+rules (`name` + `description` required; folder name must equal `name`; `model:` tier) are in
+**BLUEPRINT §7 / §10**.
 
 ## Definition of done
 

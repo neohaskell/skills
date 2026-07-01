@@ -54,6 +54,11 @@ NeoHaskell project **incrementally**, while respecting NeoHaskell's core philoso
 | Outbound integrations | **One handler type per trigger** (e.g. `ReserveStockOnItemAdded`). |
 | Tests | **Full pyramid** — Decider + Projection + Outbound + Acceptance + Property (Hspec/QuickCheck) plus hurl e2e. |
 | `Core.hs` barrel | **Thin** — re-export `Entity` + `Event` only (add value-object/enum modules only when a context has them). |
+| Model tiers | **Opus 4.8** for planning/verification (`augment-feature-request`, `event-modeling`, `verify-event-model`, `neohaskell-code-review`); **Sonnet** for implementers/test-writers/CI-config; **Haiku** for cheatsheet + tooling reference. See [§10](#10-build--review-process). |
+| Integration scope | **Inbound (timer/webhook via `withInbound`/`Timer`) + stateful lifecycle outbound (`withOutboundLifecycle`) are in scope**, alongside outbound-per-trigger. |
+| Command vs query auth | Auth is **off by default**; the `authenticatedAccess` default is enforced only when `Application.withAuth` wires JWT. A **query** must always declare `canAccess`+`canView` (`deriveQuery` won't compile otherwise). |
+| Test suite | Full Haskell pyramid depends on the fix for [neohaskell/neo#2](https://github.com/neohaskell/neo/issues/2) (stock `neo` generates no `test-suite` stanza); hurl e2e runs today. |
+| PR review | Two review skills: `neohaskell-code-review` (diff-scoped reviewer, Opus) + `neohaskell-code-review-ci` (provider-agnostic CI wiring, Sonnet). |
 
 ### The "weak LLM" doctrine (applies to every skill)
 
@@ -150,7 +155,8 @@ Key contracts:
   **query** has **no implicit default**: `deriveQuery` *requires* both `canAccess` and `canView` and
   fails compilation if either is missing — always write them (use `authenticatedAccess`/`ownerOnly`
   for the secure choice, `publicAccess`/`publicView` to open up).
-- **Auth import (chosen API):** `import Service.AccessControl (AccessError, UserClaims, publicAccess, authenticatedAccess, publicView, ownerOnly)`; `canAccess :: Maybe UserClaims -> Maybe AccessError`.
+- **Auth import (chosen API):** `import Service.AccessControl (AccessError, UserClaims, publicAccess, authenticatedAccess, publicView, ownerOnly)`; `canAccess :: Maybe UserClaims -> Maybe AccessError`. Note: the `decide` third argument **`RequestContext` comes from `Service.Auth`**, not `Service.AccessControl`.
+- **Where the entity↔event instances live:** `type instance EventOf E`, `type instance EntityOf Ev`, `instance Entity E`, and `instance Event Ev` are all **co-located in `Entity.hs`** (as in the public `Counter` source); `Event.hs` holds only the ADT + `getEventEntityId`.
 - **Integrations are wired by type** (`Application.withOutbound @H`); the actual HTTP/AI/IO lives in
   a separate `ToAction` instance, never inside `handleEvent`. Cross-aggregate commands are emitted
   with `Integration.outbound Command.Emit { command = SomeCmd {..} }`.
@@ -295,7 +301,7 @@ not add convenience keys (`description`, `color`, `notes`, positions on nodes, �
 | `event` | `id, type, name, entityId, sliceId` (+ optional `fields`) | `Events/<Name>.hs` payload + variant in `Event.hs` ADT + `update` case |
 | `command` | `id, type, name, entityId, sliceId` (+ optional `fields`) | `Commands/<Name>.hs` (`command` macro) |
 | `query` | `id, type, name, sliceId` (**no `entityId`**) | `Queries/<Name>.hs` (`deriveQuery`) |
-| `integration` | `id, type, name, kind ("inbound"\|"outbound"), sliceId` | `Integrations/<Handler>.hs` (`outboundIntegration`) |
+| `integration` | `id, type, name, kind ("inbound"\|"outbound"), sliceId` | `Integrations/<Handler>.hs` — `outbound` → `outboundIntegration` (per trigger); `inbound` → `withInbound`/`Integration.Timer` |
 | `uiPlaceholder` | `id, type, name, sliceId` | (frontend; out of scope for these backend skills) |
 
 > **Trap:** for `event`/`command` nodes the keys `entityId` and `sliceId` are **required even when
@@ -339,8 +345,9 @@ is a `Submodel`.** Appending a new feature (the `event-modeling` skill's job) me
 
 ### 4.6 The `verify-event-model` skill's best-practice checks
 
-Beyond schema validity: events are **past-tense facts** (`ItemAdded`, not `AddItem`); **no
-CRUD-named events** (`CreatedX`/`UpdatedX`/`DeletedX` are smells — name the business fact); commands
+Beyond schema validity: events are **past-tense facts** (`ItemAdded`, not `AddItem`); the **CRUD-name
+smell is scoped to `Update*`/`Delete*` and imperative-echo names** — **creation facts are allowed**
+(`CounterCreated`, `CartCreated`, `*Opened`, `*Registered`), matching the public sources; commands
 are **imperative** (`AddItem`); every event is produced by a command (`commandProducesEvent`); every
 query is fed by ≥1 event; integrations connect via `eventTriggersIntegration` /
 `integrationTriggersCommand`; names are unique and PascalCase; no orphan nodes.
@@ -388,6 +395,15 @@ flat set chains without an orchestrator.
 | `write-feature-tests` | Acceptance (in-domain flow) + Property (QuickCheck `update` replay) specs | a feature → `test/Acceptance/…`, `test/Property/…` |
 | `write-hurl-e2e` | hurl files (`[Captures]`/`[Asserts]`/`[Options] retry`) + run via `neo test` | a feature → `tests/**/*.hurl` + run result |
 
+### 5.4 Review (PR-time)
+
+| Skill | Model | One-liner | Inputs → Outputs |
+| --- | --- | --- | --- |
+| `neohaskell-code-review` | Opus | diff-scoped PR reviewer running the six lenses + ES/CQRS/immutability/privacy checks, severity-ranked | a PR diff → `file:line` findings (blocker/major/minor/nit) + verdict |
+| `neohaskell-code-review-ci` | Sonnet | provider-agnostic CI wiring (GitHub Actions / GitLab CI / Azure DevOps / Bitbucket) to run the reviewer on every PR/MR | CI provider → the pipeline config + setup notes |
+
+See [`SPEC.md` §6](./SPEC.md#6-the-two-review-skills) for the full spec of both.
+
 ---
 
 ## 6. `skills/` folder tree
@@ -420,6 +436,9 @@ skills/
   write-unit-tests/SKILL.md
   write-feature-tests/SKILL.md
   write-hurl-e2e/SKILL.md
+  # review (PR-time)
+  neohaskell-code-review/SKILL.md
+  neohaskell-code-review-ci/SKILL.md
 ```
 
 Skills that ship a copy-paste template heavier than a short snippet keep it under
@@ -566,3 +585,49 @@ outbound integrations; full test pyramid + hurl; thin `Core.hs` barrel.
 4. **A legacy auth API** (`Service.Query.Auth` / `QueryAuthError`) exists on older framework commits
    and is treated as out-of-date; the cheatsheets teach only the newer `Service.AccessControl` /
    `AccessError` API. Projects pinned to an older commit should bump before relying on the skills.
+
+---
+
+## 10. Build & review process
+
+The skills are built (and, once shipped, exercised) through a **gated, cross-checked pipeline**
+modeled on hierarchical review with human-in-the-loop gates. Full per-skill decomposition and the
+critique-resolution log live in [`SPEC.md`](./SPEC.md).
+
+### 10.1 Model-tier policy
+
+Each skill runs its reasoning on a tier matched to its cognitive load. A skill declares `model:` in
+frontmatter where honored and — per the `skill-audit` invocation-pattern convention — **delegates its
+work to a sub-agent spawned with the matching `model:`** (`opus`/`sonnet`/`haiku`), so the tier holds
+regardless of the consumer's session model.
+
+| Tier | Model | Skills |
+| --- | --- | --- |
+| Planning / verification | **Opus 4.8** (`claude-opus-4-8`, max effort) | `augment-feature-request`, `event-modeling`, `verify-event-model`, `neohaskell-code-review` |
+| Implement / test / CI-config | **Sonnet** (`claude-sonnet-4-6`) | the 9 implementer + test-writer skills, `neohaskell-code-review-ci` |
+| Reference lookup | **Haiku** (`claude-haiku-4-5`) | the 5 `neohaskell-*` cheatsheets + 4 `neo-*` tooling skills |
+
+### 10.2 The gated build pipeline
+
+| Phase | Work | Cross-checks | Gate |
+| --- | --- | --- | --- |
+| 0 · Decompose | expand this blueprint into a per-skill spec (`SPEC.md`) | consistency + gap detection over all skills | ✅ owner reviews `SPEC.md` |
+| 1 · Draft | one agent drafts each `SKILL.md` from its spec (parallel, on the skill's own tier) | — | — |
+| 2 · Verify | — | the **six lenses** below, per skill; adversarial verification; majority-refute for disputed findings | ✅ owner reviews the verdict report |
+| 3 · Integrate | dogfood a mock feature through the whole flat pipeline | end-to-end coverage + gap critic | ✅ owner sign-off before commit |
+
+### 10.3 The six verify lenses
+
+1. **template-compile-identifier** — every NeoHaskell identifier/import/macro resolves to real source (for JSON/hurl skills: schema-validity / real-endpoint resolution).
+2. **neohaskell-language-correctness** — no vanilla-Haskell leakage; `import Core`; qualified calls; `#{}` fmt; `panic` stubs.
+3. **es-event-modeling-correctness** — `decide` terminates in accept/reject; `update` fold totality; no CRUD event names (creation facts exempt); total `combine`; pure `handleEvent`; secure-by-default asymmetry.
+4. **cross-skill-consistency** — Inputs/Outputs/Next chain; templates/terminology agree across skills and with this blueprint.
+5. **frontmatter-best-practices** — `name` == folder; third-person trigger-rich `description`; weak-LLM doctrine; `model:` tier.
+6. **privacy-adversarial** — zero client leakage + an adversarial pass trying to break each template.
+
+### 10.4 Ongoing PR review
+
+`neohaskell-code-review` (Opus) applies the same six lenses — plus immutability/V2 and secrets checks
+— to a **PR diff**, emitting severity-ranked `file:line` findings; `neohaskell-code-review-ci`
+(Sonnet) wires it to run on every PR/MR for the project's CI provider. This is the self-hosted,
+no-third-party analogue of a CodeRabbit-style reviewer.
