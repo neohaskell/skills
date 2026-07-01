@@ -48,7 +48,8 @@ via an explicit **Inputs / Outputs / Next** header.
 | Integrations | outbound-per-trigger **plus inbound** (`withInbound`/`Timer`) **and lifecycle outbound** (`withOutboundLifecycle`) |
 | PR review | ship `neohaskell-code-review` (Opus) + `neohaskell-code-review-ci` (provider-agnostic, Sonnet) |
 | Events naming | past-tense facts; CRUD smell is only `Update*`/`Delete*`/imperative echoes — **creation facts (`*Created`) are allowed** |
-| Test suite | full Haskell pyramid depends on [neohaskell/neo#2](https://github.com/neohaskell/neo/issues/2) |
+| Dev process | **outside-in TDD** (jwilger-style): RED → DOMAIN → GREEN → DOMAIN → REFACTOR per slice; tests written first, outside-in order, pyramid shape |
+| Test suite | full Haskell pyramid assumes [neohaskell/neo#2](https://github.com/neohaskell/neo/issues/2) (nearly landed) — build as if it's in place |
 
 ## NeoHaskell facts every skill must encode
 
@@ -85,12 +86,16 @@ the IDE is `:2323`. No OpenAPI subcommand exists.
 
 ## The pipeline the skills implement
 
+Design first, then each slice **outside-in, test-first** (RED → DOMAIN → GREEN → REFACTOR):
+
 ```mermaid
 flowchart LR
     A["augment-feature-request"] --> M["event-modeling"] --> V["verify-event-model"]
-    V --> I["implement-command · implement-event-and-update-entity + expand-entity · implement-query"]
-    I --> II["implement-integration"] --> W["wire-feature"]
-    W --> T["write-unit-tests · write-feature-tests · write-hurl-e2e via neo test"]
+    V --> HE["① write-hurl-e2e (RED)"] --> FT["② write-feature-tests / acceptance (RED)"]
+    FT --> UT["③ write-unit-tests (RED)"] --> DM["④ neohaskell-domain-modeling (DOMAIN)"]
+    DM --> IMPL["⑤ implement-command / event+entity / query / integration (GREEN)"]
+    IMPL --> W["⑥ wire-feature (GREEN)"] --> RF["⑦ refactor + property"]
+    RF -.->|next slice| HE
 ```
 
 Existing **entities** are the starting model; events/commands/queries/integrations are treated as
@@ -119,7 +124,7 @@ JSON default for old snapshots). Full rules in **BLUEPRINT §8**.
 
 ## Skills to create
 
-The **23 skills** (5 language cheatsheets, 4 tooling, 12 pipeline, 2 review), with each one's
+The **25 skills** (5 language cheatsheets, 4 tooling, 13 pipeline, 1 process = `neohaskell-outside-in-tdd`, 2 review), with each one's
 Inputs/Outputs/Next, model tier, and applied fixes, are specified in **[`SPEC.md`](./SPEC.md)** (the
 Phase-0 decomposition); the summary inventory is in **BLUEPRINT §5**, the folder tree in
 **BLUEPRINT §6**, and the build/review process + model-tier policy in **BLUEPRINT §10**. Frontmatter

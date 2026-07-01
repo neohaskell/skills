@@ -35,23 +35,25 @@ before Phase 1 (drafting the `SKILL.md` files). Companion to [`BLUEPRINT.md`](./
 | 9 | `neo-run-and-inspect` | tooling | **Haiku** | write-hurl-e2e, wire-feature, event-modeling |
 | 10 | `augment-feature-request` | pipeline | **Opus** | event-modeling |
 | 11 | `event-modeling` | pipeline | **Opus** | verify-event-model |
-| 12 | `verify-event-model` | pipeline | **Opus** | implement-command/event/query/integration, expand-entity |
-| 13 | `implement-command` | pipeline | **Sonnet** | write-unit-tests, implement-event…, wire-feature |
-| 14 | `implement-event-and-update-entity` | pipeline | **Sonnet** | expand-entity, implement-command, write-unit-tests, write-feature-tests |
-| 15 | `expand-entity` | pipeline | **Sonnet** | implement-event…, write-feature-tests, write-unit-tests |
-| 16 | `implement-query` | pipeline | **Sonnet** | wire-feature, write-unit-tests |
-| 17 | `implement-integration` | pipeline | **Sonnet** | wire-feature, implement-command, write-unit-tests |
-| 18 | `wire-feature` | pipeline | **Sonnet** | write-unit-tests, write-feature-tests, write-hurl-e2e |
-| 19 | `write-unit-tests` | pipeline | **Sonnet** | write-feature-tests, write-hurl-e2e |
-| 20 | `write-feature-tests` | pipeline | **Sonnet** | write-hurl-e2e |
-| 21 | `write-hurl-e2e` | pipeline | **Sonnet** | neo-run-and-inspect |
+| 12 | `verify-event-model` | pipeline | **Opus** | neohaskell-outside-in-tdd, write-hurl-e2e |
+| 13 | `implement-command` | pipeline | **Sonnet** | wire-feature (GREEN) |
+| 14 | `implement-event-and-update-entity` | pipeline | **Sonnet** | expand-entity, wire-feature (GREEN) |
+| 15 | `expand-entity` | pipeline | **Sonnet** | implement-event…, wire-feature |
+| 16 | `implement-query` | pipeline | **Sonnet** | wire-feature (GREEN) |
+| 17 | `implement-integration` | pipeline | **Sonnet** | wire-feature, implement-command |
+| 18 | `wire-feature` | pipeline | **Sonnet** | refactor → next slice; write-feature-tests (property) |
+| 19 | `write-unit-tests` | pipeline | **Sonnet** | neohaskell-domain-modeling → implement-* (RED→DOMAIN→GREEN) |
+| 20 | `write-feature-tests` | pipeline | **Sonnet** | write-unit-tests (acceptance RED → inner loop) |
+| 21 | `write-hurl-e2e` | pipeline | **Sonnet** | write-feature-tests (RED, outer loop) |
 | 22 | `neohaskell-code-review` | review | **Opus** | (PR-time) neohaskell-code-review-ci |
 | 23 | `neohaskell-code-review-ci` | review | **Sonnet** | (one-time CI setup) |
+| 24 | `neohaskell-outside-in-tdd` | process | **Opus** | governs the per-slice cycle: hurl → feature → unit → domain-modeling → implement-* → wire |
+| 25 | `neohaskell-domain-modeling` | pipeline | **Sonnet** | implement-command/event/query/integration (DOMAIN→GREEN) |
 
 ## 2. Model-tier policy
 
-- **Opus 4.8** (`claude-opus-4-8`, max effort) — reasoning-heavy planning/verification: `augment-feature-request`, `event-modeling`, `verify-event-model`, `neohaskell-code-review`.
-- **Sonnet** (`claude-sonnet-4-6`) — template-driven implementers, test-writers, and CI-config generation.
+- **Opus 4.8** (`claude-opus-4-8`, max effort) — reasoning-heavy planning/verification/discipline: `augment-feature-request`, `event-modeling`, `verify-event-model`, `neohaskell-code-review`, `neohaskell-outside-in-tdd`.
+- **Sonnet** (`claude-sonnet-4-6`) — template-driven implementers, test-writers, domain-modeling, and CI-config generation (incl. `neohaskell-domain-modeling`).
 - **Haiku** (`claude-haiku-4-5`) — cheatsheet + tooling reference lookup.
 
 **Mechanism.** Each skill declares its tier in frontmatter (`model:`) where honored, and — per the
@@ -61,29 +63,30 @@ run their reasoning on Opus regardless of the consumer's session model.
 
 ## 3. Pipeline chaining
 
+Design comes first (`augment` → `event-modeling` → `verify`); then each vertical slice is built **outside-in, test-first** (jwilger's RED → DOMAIN → GREEN → DOMAIN → REFACTOR):
+
 ```mermaid
 flowchart TD
-    R(["vague request"]) --> A["augment-feature-request — Opus<br/>interview → Feature Brief; no code"]
-    A --> M["event-modeling — Opus<br/>append Submodel→Chapter→Slice→nodes→edges to event-model.json"]
-    M --> V["verify-event-model — Opus<br/>schema + referential + best-practice; ALLOWS *Created facts"]
-    V --> IE["implement-event-and-update-entity — Sonnet"]
-    V --> IC["implement-command — Sonnet"]
-    V --> IQ["implement-query — Sonnet"]
-    V --> II["implement-integration — Sonnet<br/>outbound-per-trigger · inbound Timer/webhook · lifecycle"]
-    IE -.->|new field| EX["expand-entity — Sonnet"]
-    IC --> W["wire-feature — Sonnet<br/>Service.command @Cmd; App.hs withService/withQuery/withOutbound/withInbound"]
-    IE --> W
-    IQ --> W
-    II --> W
-    EX --> W
-    W --> UT["write-unit-tests — Sonnet<br/>Decider / Projection / Outbound Hspec"]
-    W --> FT["write-feature-tests — Sonnet<br/>Acceptance flow + Property replay"]
-    W --> HE["write-hurl-e2e — Sonnet<br/>.hurl e2e; run via neo test"]
+    R(["vague request"]) --> A["augment-feature-request — Opus<br/>hybrid discovery → Feature Brief"]
+    A --> M["event-modeling — Opus<br/>seven steps + four patterns → event-model.json"]
+    M --> V["verify-event-model — Opus<br/>schema + referential + methodology checks"]
+    V --> OIT["neohaskell-outside-in-tdd — Opus<br/>governs the per-slice RED→DOMAIN→GREEN→REFACTOR cycle"]
+    OIT --> HE["① write-hurl-e2e — Sonnet · RED outer<br/>observable HTTP; 404 until wired"]
+    HE --> FTA["② write-feature-tests / acceptance — Sonnet · RED<br/>in-domain flow; compile-error then assertion"]
+    FTA --> UT["③ write-unit-tests — Sonnet · RED<br/>one assertion, GWT — Decider / Projection / Outbound"]
+    UT --> DM["④ neohaskell-domain-modeling — Sonnet · DOMAIN<br/>value objects, ADTs, illegal-states-unrepresentable, panic TODO stubs"]
+    DM --> IMPL["⑤ implement-command / event+entity / query / integration — Sonnet · GREEN minimal<br/>+ expand-entity if a field is needed"]
+    IMPL --> W["⑥ wire-feature — Sonnet · GREEN<br/>endpoint exists → outer hurl goes green"]
+    W --> RF["⑦ refactor + write-feature-tests / property replay"]
+    RF -.->|next slice| HE
 ```
 
-- **Cheatsheets (Haiku)** — `core-prelude` · `collections` · `effects-and-errors` · `records-and-json` · `module-layout` — and **tooling (Haiku)** — `neo-cli` · `neo-immutability-and-versioning` · `neo-config-and-secrets` · `neo-run-and-inspect` — are pulled in by any pipeline skill as needed.
-- **PR-time** (independent of the build pipeline): `neohaskell-code-review` (Opus) is set up once by `neohaskell-code-review-ci` (Sonnet, provider-agnostic).
-- **Deployed-fix path:** a locked-artifact change starts at the relevant `implement-*` skill in V2 mode (`neo-immutability-and-versioning`), not at `event-modeling`.
+- **Outside-in inverts the WRITE ORDER, not the shape.** Start at the e2e/acceptance boundary and drive inward — but the resulting test **distribution stays pyramid-shaped** (many fast unit/property tests, few slow e2e). Avoid the ice-cream-cone (all hurl, no units).
+- **Phase boundaries (jwilger).** RED touches only test files; DOMAIN only type definitions (`panic "TODO"` stubs); GREEN only implementation bodies. `neohaskell-code-review` flags violations.
+- **Compiled-language RED.** In NeoHaskell, RED is often a **type error** ("let the compiler tell you what's missing"); GREEN = compiles + `neo build` passes; runnable hspec assertions come from the test-suite. **Assumes [neohaskell/neo#2](https://github.com/neohaskell/neo/issues/2) is in place** so the inner Haskell loop runs.
+- **Cheatsheets (Haiku)** — `core-prelude` · `collections` · `effects-and-errors` · `records-and-json` · `module-layout` — and **tooling (Haiku)** — `neo-cli` · `neo-immutability-and-versioning` · `neo-config-and-secrets` · `neo-run-and-inspect` — are pulled in by any cycle skill as needed.
+- **PR-time** (independent of the build cycle): `neohaskell-code-review` (Opus) is set up once by `neohaskell-code-review-ci` (Sonnet, provider-agnostic).
+- **Deployed-fix path:** a locked-artifact change is a **fresh outside-in TDD cycle on the `V2` sibling** (`neo-immutability-and-versioning`), never an edit.
 
 ## 4. The six verify lenses
 
@@ -101,6 +104,8 @@ Applied per skill in Phase 2 (each spec lists which apply):
 ## 5. Per-skill specs
 
 Each block: **purpose** · **frontmatter description (condensed)** · **In → Out → Next** · **key DO/DON'T** · **acceptance** · **notes/fixes**. Full templates are grounded in the cited public sources and produced in Phase 1.
+
+> **Outside-in TDD roles (per §24).** The blocks below describe each skill's *content*; their *order* is the outside-in cycle in §3. In that cycle the **test skills (19 `write-unit-tests`, 20 `write-feature-tests`, 21 `write-hurl-e2e`) are written RED-first** (before implementation), and the **implementers (13–17) run in the GREEN phase** — minimal code to pass the red test, then refactor — after the **DOMAIN phase (25 `neohaskell-domain-modeling`)** has created the types.
 
 ### 1 · `neohaskell-core-prelude` — Haiku
 - **Purpose:** anti-hallucination base layer: `import Core` (Prelude OFF), operators (`|>` `<|` `.>` `<.` `++` `!=`), `panic`, `Unit`/`unit`, Int/Float math split, `[fmt|…#{x}…|]`, and the full trap table.
@@ -235,21 +240,36 @@ Each block: **purpose** · **frontmatter description (condensed)** · **In → O
 - **In:** a building block. **Out:** `test/{Decider,Projection,Outbound}/…Spec.hs`. **Next:** write-feature-tests, write-hurl-e2e.
 - **DO:** `import Test`; `spec :: Spec Unit`; `it "…" \_ctx -> do`; `actual |> shouldBe expected`; `Decider.runDecision (DecisionContext {genUuid = Uuid.generate}) (decide cmd Nothing Auth.emptyContext)`. **DON'T:** `import Test.Hspec` (normal specs); `IO ()`; `shouldBe actual expected` (arg order).
 - **Acceptance:** specs compile + pass once the test-suite exists.
-- **Notes/fixes:** **depends on [neohaskell/neo#2](https://github.com/neohaskell/neo/issues/2)** — stock `neo` generates no `test-suite` stanza; the skill notes the specs compile/run **after** that fix (or a manual `test-suite`); share the exact clean reject string with `implement-command` (strip the `StubPackage` artifact).
+- **Notes/fixes:** **assumes [neohaskell/neo#2](https://github.com/neohaskell/neo/issues/2)** (nearly landed) so `neo test` compiles/runs the generated `test-suite`; RED-first (before `implement-*`); share the exact clean reject string with `implement-command` (strip the `StubPackage` artifact).
 
 ### 20 · `write-feature-tests` — Sonnet
 - **Purpose:** **Acceptance** spec (pure in-domain flow `decide → update → combine`, no HTTP) + **Property** spec (QuickCheck replay of the entity `update` fold via `Array.foldl update`).
 - **In:** a completed feature. **Out:** `test/Acceptance/<Feature>Spec.hs`, `test/Property/<Entity>ReplaySpec.hs`. **Next:** write-hurl-e2e.
 - **DO:** Acceptance via the `Test` wrapper; Property via `import Test.Hspec qualified as Hspec` + `Test.QuickCheck` + `GhcPrelude`-qualified list/bool ops. **DON'T:** boot the app (that's hurl); vanilla Hspec/QuickCheck idioms.
 - **Acceptance:** compile + pass once the suite exists; generated quantities non-negative (`makeNaturalOrPanic`).
-- **Notes/fixes:** same **neo#2** dependency; `Array.foldl update` (element-first left fold, oldest event first).
+- **Notes/fixes:** same **neo#2** assumption (treated as available); acceptance spec is RED-first (outer loop, ② in §3); `Array.foldl update` (element-first left fold, oldest event first).
 
 ### 21 · `write-hurl-e2e` — Sonnet
 - **Purpose:** `.hurl` e2e under `tests/` — `POST /commands/<kebab>`, `GET /queries/<kebab>` on `:8080` with `[Captures]`/`[Asserts]`/retrying `[Options]`; run via `neo test`.
 - **In:** a completed feature. **Out:** `tests/**/*.hurl` + a run result. **Next:** neo-run-and-inspect.
 - **DO:** capture `entityId`, reuse it, `[Options] retry` for eventually-consistent queries; assert `400`/`Rejected` for reject paths. **DON'T:** emit `.hs`; assume auth (default happy-path is unauthenticated → 200).
 - **Acceptance:** `neo test` boots the app and the hurl files pass.
-- **Notes/fixes:** **query response shape varies** — bare array (`$[?…]`) vs `{items:[…]}` (`$.items[?…]`); teach both, detect from the query (unlike Haskell tests, hurl runs today).
+- **Notes/fixes:** **query response shape varies** — bare array (`$[?…]`) vs `{items:[…]}` (`$.items[?…]`); teach both, detect from the query.
+
+### 24 · `neohaskell-outside-in-tdd` — **Opus** (new)
+- **Purpose:** the **development discipline** every slice follows — outside-in, black-box, double-loop TDD adapted to NeoHaskell: **RED → DOMAIN → GREEN → DOMAIN → REFACTOR**, one assertion per test, GWT, strict phase boundaries, and "let the compiler tell you what's missing."
+- **In:** a verified slice (from `verify-event-model`). **Out:** the ordered cycle the test/domain/implement/wire skills execute. **Governs:** `write-hurl-e2e` → `write-feature-tests` → `write-unit-tests` → `neohaskell-domain-modeling` → `implement-*` → `wire-feature` → refactor.
+- **The cycle:** ① outer RED = `write-hurl-e2e` (observable behavior, 404 until wired); ② acceptance RED = `write-feature-tests`; ③ inner RED = `write-unit-tests` (1 assertion, GWT); ④ DOMAIN = `neohaskell-domain-modeling` (types + `panic "TODO"` stubs); ⑤ GREEN = `implement-*` (minimal); ⑥ `wire-feature`; ⑦ REFACTOR + property.
+- **DO:** write the failing test **first**; RED touches only test files, DOMAIN only type defs, GREEN only bodies; one assertion; keep the test distribution **pyramid-shaped**. **DON'T:** implement before a red test; multi-assert tests; invert the *ratio* into an ice-cream-cone; edit a locked file (fresh cycle on `V2`).
+- **Acceptance:** each slice ends all-green (`neo test`: hspec + hurl); phase boundaries respected (checkable by `neohaskell-code-review`).
+- **Notes/fixes:** grounded in `references/outside-in-tdd.md` (adapted from jwilger's `tdd-constraints` + `TDD_WORKFLOW`, MIT); **not** adopted: the `sdlc-red`/`green`/`domain` sub-agents + orchestrator machinery — our flat skills encode the discipline and `neohaskell-code-review` enforces it. **Assumes [neo#2](https://github.com/neohaskell/neo/issues/2)** so hspec runs.
+
+### 25 · `neohaskell-domain-modeling` — **Sonnet** (new)
+- **Purpose:** the **DOMAIN phase** — turn a red test's implied types into precise NeoHaskell: value objects + smart constructors, ADTs that **make illegal states unrepresentable**, parse-don't-validate, and `panic "TODO"` stubs so it compiles-then-fails-on-assertion.
+- **In:** a red `write-unit-tests`/acceptance spec referencing not-yet-existing types. **Out:** the type definitions (event payload fields, entity fields, value objects/enums, `Result`/`Maybe` error types) with stubbed bodies. **Next:** `implement-command/event/query/integration` (GREEN).
+- **DO:** replace primitives with domain types (`Natural`, `Decimal`, `Redacted`, `Uuid`, bespoke `newtype`/enums); parse at the edge into a valid type; smart constructors returning `Result`/`Maybe`; `panic "TODO: not implemented"` bodies. **DON'T:** primitive obsession (`Text`/`Int` where a value object belongs); representable invalid states; validation scattered through logic; put real logic here (that's GREEN).
+- **Acceptance:** module compiles with stubbed bodies; the red spec now fails on the **assertion**, not a type error; no primitive-obsession flags from `neohaskell-code-review`.
+- **Notes/fixes:** grounded in `references/domain-modeling-principles.md` (adapted from jwilger's `domain-modeling` principles, MIT); fits NeoHaskell's type-driven idioms (this is where "illegal states unrepresentable" is applied).
 
 ### Event Modeling methodology → `event-model.json` → NeoHaskell
 
@@ -303,7 +323,7 @@ Every Phase-0 finding and its resolution (all applied in this spec; BLUEPRINT ed
 | # | Finding | Resolution |
 |---|---|---|
 | 1 | `*Created` flagged as CRUD would reject its own examples | **Allow creation facts** (`*Created`/`*Opened`/`*Registered`); smell scoped to `Update*`/`Delete*`/imperative echoes. Aligned across augment/event-modeling/verify/implement-event. (BLUEPRINT §4.6 edit.) |
-| 2 | Haskell test-suite doesn't compile under stock `neo` | **Filed [neohaskell/neo#2](https://github.com/neohaskell/neo/issues/2).** Keep the full pyramid; test-writer skills reference #2 as prerequisite. |
+| 2 | Haskell test-suite doesn't compile under stock `neo` | **Filed [neohaskell/neo#2](https://github.com/neohaskell/neo/issues/2)** (nearly landed). Keep the full pyramid; **proceed as if #2 is in place** so the inner Haskell TDD loop runs. |
 | 3 | Inbound integrations + stateful outbound unowned | **Scoped in** (owner decision): `implement-integration` gains inbound (`withInbound`/`Timer`) + lifecycle (`withOutboundLifecycle`); augment/event-modeling/verify/wire-feature support inbound. |
 | 4 | Command "secure-by-default" vs unauthenticated hurl 200 | **Resolved factually:** auth off by default; `canExecute` enforced only when `withAuth` wired. `implement-command` + `write-hurl-e2e` tell one story. |
 | 5 | `StubPackage.foo` artifact in the canonical `IncrementCounter` source | **Strip it**; pin a clean reject string shared between `implement-command` and `write-unit-tests`. |

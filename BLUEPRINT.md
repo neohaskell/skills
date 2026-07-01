@@ -57,7 +57,8 @@ NeoHaskell project **incrementally**, while respecting NeoHaskell's core philoso
 | Model tiers | **Opus 4.8** for planning/verification (`augment-feature-request`, `event-modeling`, `verify-event-model`, `neohaskell-code-review`); **Sonnet** for implementers/test-writers/CI-config; **Haiku** for cheatsheet + tooling reference. See [§10](#10-build--review-process). |
 | Integration scope | **Inbound (timer/webhook via `withInbound`/`Timer`) + stateful lifecycle outbound (`withOutboundLifecycle`) are in scope**, alongside outbound-per-trigger. |
 | Command vs query auth | Auth is **off by default**; the `authenticatedAccess` default is enforced only when `Application.withAuth` wires JWT. A **query** must always declare `canAccess`+`canView` (`deriveQuery` won't compile otherwise). |
-| Test suite | Full Haskell pyramid depends on the fix for [neohaskell/neo#2](https://github.com/neohaskell/neo/issues/2) (stock `neo` generates no `test-suite` stanza); hurl e2e runs today. |
+| Dev process | **Outside-in TDD** (jwilger-style): design first, then per slice **RED → DOMAIN → GREEN → DOMAIN → REFACTOR** — tests written first, outside-in *order*, pyramid *shape*. Adds `neohaskell-outside-in-tdd` (Opus) + `neohaskell-domain-modeling` (Sonnet). See [§10](#10-build--review-process). |
+| Test suite | Full Haskell pyramid **assumes [neohaskell/neo#2](https://github.com/neohaskell/neo/issues/2)** (nearly landed; stock `neo` currently generates no `test-suite` stanza) — build as if in place. |
 | PR review | Two review skills: `neohaskell-code-review` (diff-scoped reviewer, Opus) + `neohaskell-code-review-ci` (provider-agnostic CI wiring, Sonnet). |
 | Methodology grounding | The planning skills are grounded in a vendored, MIT-attributed `references/event-modeling-methodology.md` (Dilger's *Understanding Eventsourcing* / eventmodeling.org, adapted from jwilger's `event-modeling` skill, retargeted to `event-model.json`); `references/` is a standard convention. The SDLC-plugin machinery is **not** adopted. See [`SPEC.md` §5](./SPEC.md#event-modeling-methodology--event-modeljson--neohaskell). |
 | Domain discovery | `augment-feature-request` is **hybrid** — full-domain discovery once (new project → domain overview), feature-scoped thereafter (detects an existing overview). |
@@ -228,31 +229,31 @@ git **pre-commit hook** (`neo lock install` → `neo lock check`) and (2) a **pr
 
 ## 3. The feature pipeline
 
-The skills are flat and independent, but the **intended chaining** to add one feature is:
+The skills are flat and independent. Design comes first (`augment` → `event-modeling` → `verify`);
+then each vertical slice is built **outside-in, test-first** (jwilger's RED → DOMAIN → GREEN →
+DOMAIN → REFACTOR):
 
 ```mermaid
 flowchart TD
-    R(["vague request"]) --> A["augment-feature-request<br/>interview, multiple-choice"]
-    A -->|feature brief| M["event-modeling<br/>append submodel to event-model.json"]
-    M --> V["verify-event-model<br/>best-practice cross-checks; creation facts OK"]
-    V --> IC["implement-command"]
-    V --> IE["implement-event-and-update-entity<br/>Events/&lt;E&gt;.hs, Event.hs ADT variant, update fold"]
-    V --> IQ["implement-query"]
-    V --> II["implement-integration<br/>outbound-per-trigger · inbound · lifecycle; panic stub"]
-    IE -.->|new field needed| EX["expand-entity"]
-    IC --> W["wire-feature<br/>Service.command @Cmd; App.hs withService/withQuery/withOutbound/withInbound"]
-    IE --> W
-    IQ --> W
-    II --> W
-    EX --> W
-    W --> UT["write-unit-tests<br/>Decider / Projection / Outbound"]
-    W --> FT["write-feature-tests<br/>Acceptance / Property"]
-    W --> HE["write-hurl-e2e<br/>+ neo test to execute"]
+    R(["vague request"]) --> A["augment-feature-request<br/>hybrid discovery → Feature Brief"]
+    A -->|feature brief| M["event-modeling<br/>seven steps + four patterns → event-model.json"]
+    M --> V["verify-event-model<br/>schema + referential + methodology checks"]
+    V --> OIT["neohaskell-outside-in-tdd<br/>governs the per-slice cycle"]
+    OIT --> HE["① write-hurl-e2e — RED outer<br/>observable HTTP; 404 until wired"]
+    HE --> FT["② write-feature-tests / acceptance — RED"]
+    FT --> UT["③ write-unit-tests — RED<br/>1 assertion, GWT · Decider/Projection/Outbound"]
+    UT --> DM["④ neohaskell-domain-modeling — DOMAIN<br/>value objects, ADTs, panic TODO stubs"]
+    DM --> IMPL["⑤ implement-command / event+entity / query / integration — GREEN minimal<br/>+ expand-entity if a field is needed"]
+    IMPL --> W["⑥ wire-feature — GREEN<br/>Service.command @Cmd; App.hs withService/withQuery/withOutbound/withInbound"]
+    W --> RF["⑦ refactor + write-feature-tests / property"]
+    RF -.->|next slice| HE
 ```
 
-Because the set is flat, each skill restates its **Inputs / Outputs / Next** so the chain works
-whether driven by a human or an agent. When fixing a deployed (locked) artifact, the chain starts at
-the relevant implementer skill in **V2 mode** (see §8) instead of `event-modeling`.
+Outside-in inverts the **write order** (start at the boundary), not the **shape** (the test
+distribution stays pyramid-shaped — many fast unit/property tests, few e2e). Because the set is flat,
+each skill restates its **Inputs / Outputs / Next** so the cycle works whether driven by a human or
+an agent. When fixing a deployed (locked) artifact, it is a **fresh outside-in cycle on the `V2`
+sibling** (see §8), never an edit.
 
 ---
 
@@ -389,6 +390,15 @@ flat set chains without an orchestrator.
 
 See [`SPEC.md` §6](./SPEC.md#6-the-two-review-skills) for the full spec of both.
 
+### 5.5 Process & domain (outside-in TDD)
+
+| Skill | Model | One-liner | Inputs → Outputs |
+| --- | --- | --- | --- |
+| `neohaskell-outside-in-tdd` | Opus | the per-slice development discipline: RED → DOMAIN → GREEN → DOMAIN → REFACTOR, phase boundaries, one-assertion, GWT, compiler-as-RED | a verified slice → the ordered test-first cycle the other skills execute |
+| `neohaskell-domain-modeling` | Sonnet | the DOMAIN phase: value objects + smart constructors, ADTs that make illegal states unrepresentable, parse-don't-validate, `panic "TODO"` stubs | a red test's implied types → precise NeoHaskell type definitions (stubbed) |
+
+Both are adapted (MIT) from jwilger's `tdd-constraints` / `domain-modeling`; the SDLC red/green/domain **sub-agents + orchestrator** are **not** adopted — the flat skills encode the discipline and `neohaskell-code-review` enforces the phase boundaries.
+
 ---
 
 ## 6. `skills/` folder tree
@@ -423,6 +433,13 @@ skills/
   write-unit-tests/SKILL.md
   write-feature-tests/SKILL.md
   write-hurl-e2e/SKILL.md
+  # process & domain (outside-in TDD)
+  neohaskell-outside-in-tdd/
+    SKILL.md
+    references/outside-in-tdd.md             # adapted, MIT-attributed (jwilger tdd-constraints + TDD_WORKFLOW)
+  neohaskell-domain-modeling/
+    SKILL.md
+    references/domain-modeling-principles.md  # adapted, MIT-attributed (jwilger domain-modeling)
   # review (PR-time)
   neohaskell-code-review/SKILL.md
   neohaskell-code-review-ci/SKILL.md
