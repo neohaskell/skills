@@ -54,10 +54,11 @@ before Phase 1 (drafting the `SKILL.md` files). Companion to [`BLUEPRINT.md`](./
 | 23 | `neohaskell-code-review-ci` | review | **Sonnet** | (one-time CI setup) |
 | 24 | `neohaskell-outside-in-tdd` | process | **Opus** | governs the per-slice cycle: hurl → feature → unit → domain-modeling → implement-* → wire |
 | 25 | `neohaskell-domain-modeling` | pipeline | **Sonnet** | implement-command/event/query/integration (DOMAIN→GREEN) |
+| 26 | `neohaskell-feature-pipeline` | entry | **Opus** | drives the whole pipeline: augment → event-modeling → verify → outside-in TDD per slice |
 
 ## 2. Model-tier policy
 
-- **Opus 4.8** (`claude-opus-4-8`, max effort) — reasoning-heavy planning/verification/discipline: `augment-feature-request`, `event-modeling`, `verify-event-model`, `neohaskell-code-review`, `neohaskell-outside-in-tdd`.
+- **Opus 4.8** (`claude-opus-4-8`, max effort) — reasoning-heavy planning/verification/discipline: `neohaskell-feature-pipeline` (entry point), `augment-feature-request`, `event-modeling`, `verify-event-model`, `neohaskell-code-review`, `neohaskell-outside-in-tdd`.
 - **Sonnet** (`claude-sonnet-4-6`) — template-driven implementers, test-writers, domain-modeling, and CI-config generation (incl. `neohaskell-domain-modeling`).
 - **Haiku** (`claude-haiku-4-5`) — cheatsheet + tooling reference lookup.
 

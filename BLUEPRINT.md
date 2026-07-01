@@ -46,7 +46,7 @@ NeoHaskell project **incrementally**, while respecting NeoHaskell's core philoso
 
 | Aspect | Decision |
 | --- | --- |
-| Architecture | **Flat, independent peer skills.** No central orchestrator. Each skill declares its **Inputs / Outputs / Next** so a human or a driving agent can chain them. |
+| Architecture | **Flat, independent peer skills.** Each declares its **Inputs / Outputs / Next** so a human or a driving agent can chain them. One **entry-point** skill, `neohaskell-feature-pipeline`, is a *portable guide/index* that sequences the flow (it points to each skill; it is not a hard sub-agent-spawning orchestrator, so it works cross-tool). |
 | Target reader | **A very weak LLM** that defaults to hallucinating vanilla Haskell. Every skill must be self-contained, with copy-paste templates and explicit DO/DON'T tables. |
 | Reference apps | Patterns may be *learned* from private apps but examples are **public-only** (Counter, Cart/Stock). |
 | Auth API | The newer `Service.AccessControl` / `AccessError` API. |
@@ -399,12 +399,22 @@ See [`SPEC.md` §6](./SPEC.md#6-the-two-review-skills) for the full spec of both
 
 Both are adapted (MIT) from jwilger's `tdd-constraints` / `domain-modeling`; the SDLC red/green/domain **sub-agents + orchestrator** are **not** adopted — the flat skills encode the discipline and `neohaskell-code-review` enforces the phase boundaries.
 
+### 5.6 Entry point
+
+| Skill | Model | One-liner | Inputs → Outputs |
+| --- | --- | --- | --- |
+| `neohaskell-feature-pipeline` | Opus | the "start here" that drives the whole flow end-to-end and points to each specialized skill in order (incl. the deployed-fix V2, new-project, expand-entity, and inbound branches) | a feature request or bug → a fully built, wired, tested feature (all green) |
+
+Portable **guide/index**, not a hard orchestrator — it sequences the flat set and works across tools.
+
 ---
 
 ## 6. `skills/` folder tree
 
 ```
 skills/
+  # entry point (start here)
+  neohaskell-feature-pipeline/SKILL.md
   # language cheatsheets
   neohaskell-core-prelude/SKILL.md
   neohaskell-collections/SKILL.md

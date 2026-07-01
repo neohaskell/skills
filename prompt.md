@@ -124,7 +124,7 @@ JSON default for old snapshots). Full rules in **BLUEPRINT §8**.
 
 ## Skills to create
 
-The **25 skills** (5 language cheatsheets, 4 tooling, 13 pipeline, 1 process = `neohaskell-outside-in-tdd`, 2 review), with each one's
+The **26 skills** (1 entry point = `neohaskell-feature-pipeline`, 5 language cheatsheets, 4 tooling, 13 pipeline, 1 process = `neohaskell-outside-in-tdd`, 2 review), with each one's
 Inputs/Outputs/Next, model tier, and applied fixes, are specified in **[`SPEC.md`](./SPEC.md)** (the
 Phase-0 decomposition); the summary inventory is in **BLUEPRINT §5**, the folder tree in
 **BLUEPRINT §6**, and the build/review process + model-tier policy in **BLUEPRINT §10**. Frontmatter
