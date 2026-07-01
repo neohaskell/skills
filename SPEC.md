@@ -5,8 +5,13 @@ its consistency/gap critic, with every critique finding resolved. This is the **
 before Phase 1 (drafting the `SKILL.md` files). Companion to [`BLUEPRINT.md`](./BLUEPRINT.md)
 (ground truth) and [`prompt.md`](./prompt.md) (build directive).
 
-> **Public examples only.** Every template is grounded in public NeoHaskell repos (the `neo`
-> test-project `Counter`; the `testbed` `Cart`/`Stock`). Privacy sweep across all skeletons: **clean**.
+> **Public examples only.** Core mechanics are grounded in compiling public NeoHaskell sources (the
+> `neo` test-project `Counter`; the `testbed` `Cart`/`Stock`). For richer patterns that lack a
+> compiling public source — **multi-entity queries, inbound (Translation), lifecycle outbound, a
+> worked automation, `expand-entity`, and a `V2`** — use one consistent, neutral **illustrative**
+> domain: **`Library`** (`BookTitle` / `Member` / `Loan`), clearly labelled as illustrative (not
+> copied from a compiling source). It is deliberately unlike any client domain (no payments,
+> invoicing, clients, products, proposals). Privacy sweep across all skeletons: **clean**.
 
 ## Table of contents
 1. [Skill matrix](#1-skill-matrix)
@@ -60,6 +65,19 @@ before Phase 1 (drafting the `SKILL.md` files). Companion to [`BLUEPRINT.md`](./
 `skill-audit` invocation-pattern convention — a skill step that delegates its work to a sub-agent
 **spawns that Agent with the matching `model:`** (`opus`/`sonnet`/`haiku`). Planning skills therefore
 run their reasoning on Opus regardless of the consumer's session model.
+
+**Portability (cross-tool) & graceful degradation.** The set is installed by `neo skills setup` into
+Claude Code (`.claude/skills/`), Codex (`.agents/skills/`), Kiro, Cursor (a single `.cursor/rules/<name>.mdc`),
+or a managed `AGENTS.md` block. Only Claude Code can spawn tiered sub-agents — so the **flat design
+and the `model:` tiering are enhancements that degrade gracefully**: every skill must be usable
+**standalone** (no orchestrator, no required sub-agent spawning), with the tier as *advisory* where
+the host can't honor it. `neohaskell-outside-in-tdd` doubles as the portable, human/agent-readable
+**process index** ("start here"), not a hard orchestrator.
+
+**Cheatsheet role.** The Haiku cheatsheet + tooling skills are **reference/lookup** (and at most
+template-stamping, e.g. `module-layout`); they are *loaded as context*, never asked to reason out a
+`decide`/`combine`. All reasoning-heavy code generation lives in the **Sonnet** implementer/domain
+skills, which cite the cheatsheets.
 
 ## 3. Pipeline chaining
 
@@ -224,7 +242,7 @@ Each block: **purpose** · **frontmatter description (condensed)** · **In → O
 ### 17 · `implement-integration` — Sonnet
 - **Purpose:** integration handlers for a context. **Outbound-per-trigger:** nullary marker + `EntityOf` + pure `handleEvent :: E -> Ev -> Integration.Outbound` + `outboundIntegration ''H`. **Inbound:** `withInbound`/`Integration.Timer` (timer/webhook) source. **Lifecycle:** stateful `withOutboundLifecycle`.
 - **In:** a verified integration node (`kind` inbound/outbound; stateful?). **Out:** the `Integrations/<H>.hs` module(s). **Next:** wire-feature, implement-command (if the emitted command is new), write-unit-tests.
-- **DO:** one handler **per trigger**; emit cross-aggregate commands via `Integration.outbound Command.Emit {…}`; stub with `panic "TODO: not implemented"`. **DON'T:** `Task`/`IO`/HTTP inside `handleEvent`; hand-write the `OutboundIntegration` class; invent `todo`.
+- **DO:** one handler **per trigger**; emit cross-aggregate commands via `Integration.outbound Command.Emit {…}`; stub an unbuilt handler with **`Integration.none` + a `-- TODO:` comment**. **DON'T:** `panic` inside a pure `handleEvent` (it crashes the dispatcher when that event fires — use `Integration.none`); `Task`/`IO`/HTTP inside `handleEvent`; hand-write the `OutboundIntegration` class; invent `todo`.
 - **Acceptance:** `outboundIntegration`/inbound macros resolve; `neo build` compiles.
 - **Notes/fixes:** **scoped in: inbound + lifecycle** (owner decision); teach the **new** thin-barrel import path (`<Context>.Core` re-exporting Entity+Event), noting the source was verified against the testbed's legacy combined `Core.hs`.
 
@@ -267,7 +285,7 @@ Each block: **purpose** · **frontmatter description (condensed)** · **In → O
 ### 25 · `neohaskell-domain-modeling` — **Sonnet** (new)
 - **Purpose:** the **DOMAIN phase** — turn a red test's implied types into precise NeoHaskell: value objects + smart constructors, ADTs that **make illegal states unrepresentable**, parse-don't-validate, and `panic "TODO"` stubs so it compiles-then-fails-on-assertion.
 - **In:** a red `write-unit-tests`/acceptance spec referencing not-yet-existing types. **Out:** the type definitions (event payload fields, entity fields, value objects/enums, `Result`/`Maybe` error types) with stubbed bodies. **Next:** `implement-command/event/query/integration` (GREEN).
-- **DO:** replace primitives with domain types (`Natural`, `Decimal`, `Redacted`, `Uuid`, bespoke `newtype`/enums); parse at the edge into a valid type; smart constructors returning `Result`/`Maybe`; `panic "TODO: not implemented"` bodies. **DON'T:** primitive obsession (`Text`/`Int` where a value object belongs); representable invalid states; validation scattered through logic; put real logic here (that's GREEN).
+- **DO:** replace primitives with domain types (`Natural`, `Decimal`, `Redacted`, `Uuid`, bespoke `newtype`/enums); parse at the edge into a valid type; smart constructors returning `Result`/`Maybe`; stub bodies with `panic "TODO: not implemented"` (pure/`Task`) **or `Integration.none` for an outbound `handleEvent`**. **DON'T:** primitive obsession (`Text`/`Int` where a value object belongs); representable invalid states; validation scattered through logic; put real logic here (that's GREEN).
 - **Acceptance:** module compiles with stubbed bodies; the red spec now fails on the **assertion**, not a type error; no primitive-obsession flags from `neohaskell-code-review`.
 - **Notes/fixes:** grounded in `references/domain-modeling-principles.md` (adapted from jwilger's `domain-modeling` principles, MIT); fits NeoHaskell's type-driven idioms (this is where "illegal states unrepresentable" is applied).
 

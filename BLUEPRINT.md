@@ -50,7 +50,7 @@ NeoHaskell project **incrementally**, while respecting NeoHaskell's core philoso
 | Target reader | **A very weak LLM** that defaults to hallucinating vanilla Haskell. Every skill must be self-contained, with copy-paste templates and explicit DO/DON'T tables. |
 | Reference apps | Patterns may be *learned* from private apps but examples are **public-only** (Counter, Cart/Stock). |
 | Auth API | The newer `Service.AccessControl` / `AccessError` API. |
-| Stub convention | `panic "TODO: not implemented"` everywhere — loud fail-fast (NeoHaskell has **no** `todo`). |
+| Stub convention | Pure functions and `Task` bodies → `panic "TODO: not implemented"` (loud fail-fast; NeoHaskell has **no** `todo`). **Outbound integration `handleEvent` → `Integration.none` + a `-- TODO:` comment** (a `panic` in a pure handler crashes the dispatcher when that event fires). |
 | Outbound integrations | **One handler type per trigger** (e.g. `ReserveStockOnItemAdded`). |
 | Tests | **Full pyramid** — Decider + Projection + Outbound + Acceptance + Property (Hspec/QuickCheck) plus hurl e2e. |
 | `Core.hs` barrel | **Thin** — re-export `Entity` + `Event` only (add value-object/enum modules only when a context has them). |
@@ -375,7 +375,7 @@ flat set chains without an orchestrator.
 | `implement-event-and-update-entity` | `Events/<E>.hs` payload + `Event.hs` ADT variant + `getEventEntityId` + `update` fold case | event node → event modules + entity update → tests |
 | `expand-entity` | add a field to an entity backward-compatibly (record + `initialState` + `update` + JSON default) | new field → edited `Entity.hs` → tests |
 | `implement-query` | read model + `deriveQuery` + hand-written `QueryOf` `combine` + access control | query node → `Queries/<Q>.hs` → tests |
-| `implement-integration` | per-trigger outbound handler + `outboundIntegration ''H`, stubbed with `panic "TODO"` | integration node → `Integrations/<H>.hs` → `wire-feature` |
+| `implement-integration` | per-trigger outbound handler + `outboundIntegration ''H`, stubbed with `Integration.none` + `-- TODO:` | integration node → `Integrations/<H>.hs` → `wire-feature` |
 | `wire-feature` | register commands in `Service.hs`; add `withService`/`withQuery`/`withOutbound` to `App.hs` | new blocks → edited `Service.hs`/`App.hs` → tests |
 | `write-unit-tests` | Decider (command), Projection (query), Outbound (integration) Hspec specs | a building block → `test/<Layer>/…Spec.hs` |
 | `write-feature-tests` | Acceptance (in-domain flow) + Property (QuickCheck `update` replay) specs | a feature → `test/Acceptance/…`, `test/Property/…` |
