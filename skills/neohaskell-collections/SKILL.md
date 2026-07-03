@@ -361,14 +361,14 @@ availableTitles catalog =
 addLoan :: Text -> Text -> Map Text (Array Text) -> Map Text (Array Text)
 addLoan memberId title index = do
   let existing = Map.getOrElse memberId Array.empty index
-  Map.set memberId (Array.push title existing) index
+  Map.set memberId (existing |> Array.push title) index
 
 
 -- | Count loans per member across the index.
 -- Map.reduce: accumulator comes FIRST (unlike Array.reduce).
 totalLoans :: Map Text (Array Text) -> Int
 totalLoans index =
-  Map.reduce 0 (\_ loans acc -> acc + Array.length loans) index
+  Map.reduce 0 (\_ loans acc -> acc + (loans |> Array.length)) index
 
 
 -- | Interpolate a summary sentence for a loan.

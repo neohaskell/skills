@@ -21,6 +21,13 @@ These hold across every task, even before a specific skill is consulted:
   `Task err a` (not `IO`), `Result`/`Ok`/`Err` (not `Either`), `|>` (not `$`), `++` or
   `[fmt|…#{x}…|]` (not `<>`), `!=` (not `/=`), `panic` (not `error`; there is no `todo`),
   and dot access (`rec.field`, not field-selector functions).
+- **Data-last means pipe-first.** Every `Core` collection / `Text` / `Task` function takes its
+  subject (the `Array`, `Text`, or `Task`) as the **last** argument — even `Array.map` /
+  `Array.foldl` / `Task.andThen`, which take the function or accumulator first but the data last.
+  Thread the subject through `|>` (`xs |> Array.push x`, `xs |> Array.length`,
+  `txt |> Text.contains sub`, `task |> Task.andThen f`) rather than nesting application
+  (`Array.push x xs`). The one intentional exception is the entity-replay fold, written applied as
+  `Array.foldl update initialState events`.
 - **Deployed code is immutable.** Never edit, rename, or delete a file under `Commands/`,
   `Events/`, or `Queries/` once it is locked/deployed — `neo build` refuses it. A fix is a
   new `V2`/`V3` sibling (see `neo-immutability-and-versioning`). Entities evolve **add-only**

@@ -7,8 +7,9 @@ description: >-
   outboundIntegration macro, stubbed with Integration.none plus a TODO); inbound timer or
   webhook via Integration.Inbound and Integration.Timer; and stateful lifecycle outbound via
   withOutboundLifecycle. Use when asked to fire a cross-aggregate command from an event,
-  wire a periodic timer, add a stateful worker, or safely stub an outbound handler. Never
-  panic inside handleEvent — use Integration.none. Do NOT use for a command's decide
+  wire a periodic timer, add a stateful worker, run a real side effect (decode the event and
+  shell out via Subprocess), or safely stub an outbound handler. Never panic inside
+  handleEvent — use Integration.none. Do NOT use for a command's decide
   (implement-command), event payload (implement-event-and-update-entity), query/combine
   (implement-query), or registering the integration in App.hs (wire-feature). This is
   NeoHaskell — IO, Either, pure, and dollar-sign application are all wrong here.
@@ -75,8 +76,10 @@ or a stateful automation node.
 - **Emit a cross-aggregate command → Template 1 (pure).**
   `Integration.batch [ Integration.outbound Command.Emit { command = … } ]`.
 - **Do a real side effect (run `git worktree add`, POST to an API, watch a
-  file) → Template 4 (Task-based lifecycle).** `processEvent :: state -> Event
-  Json.Value -> Task Text (Array CommandPayload)`.
+  file) → Template 5 (decode the event + shell out).** A lifecycle
+  `processEvent :: state -> Event Json.Value -> Task Text (Array CommandPayload)`
+  that decodes the payload and runs the effect. (Template 4 is the minimal
+  stateful worker; Template 5 is the real, event-decoding side effect.)
 
 A real side effect **cannot** live in a per-trigger outbound `handleEvent`: its
 type `Entity -> Event -> Integration.Outbound` is **pure** and can only emit
@@ -266,11 +269,122 @@ loanNotifierIntegration = Lifecycle.OutboundConfig
 `state -> Event Json.Value -> Task Text (Array Integration.CommandPayload)` — the
 element type is the framework wrapper `Integration.CommandPayload`, not a raw
 command. Lifecycle `processEvent` is for side-effecting work (incrementing
-counters, sending notifications, writing to external stores); in practice always
-return `Task.yield []` as the testbed `EventCounter` does. Cross-aggregate command
-dispatch belongs in a per-trigger outbound handler (Template 1), not in a
-lifecycle `processEvent`. `cleanup` runs when the worker is reaped; it returns
-`Task Text Unit`.
+counters, sending notifications, writing to external stores); the testbed
+`EventCounter` just returns `Task.yield []` without touching the payload. For a
+**real** side effect that decodes the event and shells out, see **Template 5**.
+Cross-aggregate command dispatch belongs in a per-trigger outbound handler
+(Template 1), not in a lifecycle `processEvent`. `cleanup` runs when the worker is
+reaped; it returns `Task Text Unit`.
+
+---
+
+## Template 5 — Real outbound side effect (Subprocess: decode the event + shell out)
+
+Templates 1 and 4 never touch the event *payload* — Template 1's `handleEvent` is
+pure, and the Template 4 counter returns `Task.yield []` without decoding. A
+**real** side effect (run `git worktree add`, POST to an API) must (a) decode the
+triggering `Event Json.Value` into your typed event ADT, (b) act on a specific
+variant, and (c) run the effect — all inside a lifecycle `processEvent`. Every
+signature below is grounded in NeoHaskell source (file:line in the comments).
+
+```haskell
+-- src/App/Context/Integrations/GitWorktreeProvisioner.hs
+module App.Context.Integrations.GitWorktreeProvisioner (
+  gitWorktreeProvisioner,
+) where
+
+import Array qualified
+import Core
+import Integration qualified                        -- Integration.CommandPayload
+import Integration.Lifecycle qualified as Lifecycle  -- Lifecycle.OutboundConfig
+import Json qualified                               -- Json.decode :: Json.Value -> Result Text a
+import Path qualified                               -- Path.fromText :: Text -> Maybe Path
+import Service.Event (Event)                        -- the Event record; theEvent.event :: Json.Value
+import Subprocess qualified                         -- Subprocess.run / .Error / .Completion
+import Task qualified                               -- Task.yield / .throw / .mapError
+import App.Context.Core (WorktreeEvent (..))        -- your event ADT (derives FromJSON)
+
+
+-- | processEvent :: state -> Event Json.Value -> Task Text (Array Integration.CommandPayload)
+--   (Integration.Lifecycle.OutboundConfig, core/service/Integration/Lifecycle.hs:74)
+processEvent :: Unit -> Event Json.Value -> Task Text (Array Integration.CommandPayload)
+processEvent _state theEvent =
+  -- theEvent.event :: Json.Value                        (core/service/Service/Event.hs:33)
+  -- Json.decode :: Json.Value -> Result Text WorktreeEvent  (core/json/Json.hs:71)
+  --   — a RESULT (Ok/Err), NOT the bare event; your ADT derives FromJSON.
+  case Json.decode theEvent.event of
+    Err _ -> Task.yield Array.empty                      -- undecodable / unrelated → no effect
+    Ok decoded -> case decoded of
+      WorktreeCreated {repoPath, worktreePath, branch} -> do
+        -- Path.fromText :: Text -> Maybe Path            (core/system/Path.hs:47)
+        dir <- case Path.fromText repoPath of
+          Nothing   -> Task.throw [fmt|Invalid repo path: #{repoPath}|]
+          Just aDir -> Task.yield aDir
+        -- Subprocess.run :: Text -> Array Text -> Path -> Task Subprocess.Error Subprocess.Completion
+        --   (core/system/Subprocess.hs:83). Task.mapError bridges Subprocess.Error → the
+        --   Text error channel processEvent requires (core/core/Task.hs:89).
+        _completion <-
+          Subprocess.run "git" ["worktree", "add", "-b", branch, worktreePath] dir
+            |> Task.mapError (\err -> [fmt|git worktree add failed: #{err}|])
+        Task.yield Array.empty                            -- pure side effect, no follow-up command
+      _ -> Task.yield Array.empty                         -- other variants: nothing to do
+
+
+-- Stateless config (state = Unit). Field types: Lifecycle.hs:68/74/83.
+gitWorktreeProvisioner :: Lifecycle.OutboundConfig Unit
+gitWorktreeProvisioner =
+  Lifecycle.OutboundConfig
+    { initialize   = \_streamId -> Task.yield unit
+    , processEvent = processEvent
+    , cleanup      = \_state -> Task.yield unit
+    }
+```
+
+Wire it (see **Wiring in App.hs** below):
+`Application.withOutboundLifecycle @() @WorktreeEntity (\_ -> gitWorktreeProvisioner)`.
+
+**Exact primitives (so no source grep is ever needed):**
+
+| Need | API (grounded) |
+|---|---|
+| The event payload | `Event { entityName :: EntityName, streamId :: StreamId, event :: eventType, metadata :: EventMetadata }` (`Service.Event`). In `processEvent`, `theEvent.event :: Json.Value`; `theEvent.entityName` identifies the source entity. |
+| Decode payload → typed event | `Json.decode :: (FromJSON a) => Json.Value -> Result Text a` (`Json.hs:71`). Returns a **`Result`** — match `Ok`/`Err`; do **not** expect the bare event. |
+| Run a command | `Subprocess.run :: Text -> Array Text -> Path -> Task Subprocess.Error Subprocess.Completion`; `Completion { exitCode :: Int, stdout :: Text, stderr :: Text }`. Also `which`, `runWithTimeout` (timeout `Int` is its **first** arg), `open`. |
+| Working-dir `Path` | `Path.fromText :: Text -> Maybe Path` (`Path.hs:47`). |
+| Error channel | `Subprocess.Error = ProcessError Text \| TimeoutError Text \| ToolNotFound Text` (Show, Eq). `processEvent` is `Task Text …`, so bridge with `Task.mapError` (`Task.hs:89`). |
+| No follow-up command | return `Array.empty :: Array Integration.CommandPayload`. To emit one, build it with `Integration.makeCommandPayload yourCommand`. |
+| Wire it | `Application.withOutboundLifecycle @() @WorktreeEntity (\_ -> provisioner)`. |
+
+> **⚠️ `Subprocess.run` does not fail on a non-zero exit code.** It returns a
+> `Completion` even when `git` exits non-zero, and only fails the `Task` on
+> spawn/IO errors (e.g. the tool is missing). If a non-zero exit should be an
+> error, inspect `_completion.exitCode` yourself and `Task.throw`. Also: the wired
+> entity type (`WorktreeEntity`) needs a `TypeName.Inspectable` instance, and the
+> `@()` config form is required for `Application.runWith`.
+
+### Testing a real side effect — NOT with `Test.AppSpec`
+
+**`Test.AppSpec` is currently a structural spec-*builder* skeleton, not a runner —
+do not reach for it to test integrations.** On the pinned toolchain, `verifyAppSpec`
+is wired to `panic "verifyScenario: not implemented"` and crashes on any non-empty
+spec, and the scenario combinators (`given`, `expect`, `and`, `receivedCommand`,
+`registeredEvent`, `executedTask`) are all `panic "… not implemented"`
+(`core/testlib/Test/AppSpec/*`). The only thing that works today is building an
+`AppSpec` record with `specificationFor`/`scenario` and comparing it via `shouldBe`;
+nothing executes an app, dispatches a command, or mocks/captures a task. It does
+**not** "run the app with integrations mocked." Treat the
+`given → expect … executedTask` surface as aspirational/WIP.
+
+So test a real side effect at the layers that *do* run:
+
+- **Keep the side effect thin; unit-test the pure part directly.** Factor decoding +
+  variant selection into a pure helper (e.g. `Event Json.Value -> Maybe GitPlan`) and
+  unit-test that with sample payloads (`write-unit-tests`). Assert the *intent* — the
+  decoded plan / the exact args you would pass to `git` — not the OS effect.
+- **Hurl smoke for the real spawn** (`write-hurl-e2e`): drive the command that emits
+  the triggering event against the running app and assert the observable outcome (the
+  worktree exists, the endpoint reports it). This is the only end-to-end coverage of
+  the actual process spawn.
 
 ---
 
@@ -286,7 +400,7 @@ After writing the integration file, `wire-feature` adds the registration to
 -- Template 3: inbound timer (factory lambda; @() = no config dependency)
 |> Application.withInbound @() (\_ -> periodicCartCreator)
 
--- Template 4: lifecycle outbound (factory lambda; @() @CartEntity = config + entity type)
+-- Template 4 / Template 5: lifecycle outbound (factory lambda; @() @CartEntity = config + entity type)
 |> Application.withOutboundLifecycle @() @CartEntity (\_ -> EventCounter.eventCounterIntegration)
 ```
 
