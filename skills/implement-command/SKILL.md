@@ -261,6 +261,8 @@ decide _cmd _entity _ctx =
 
 ## Auth policy
 
+For commands that create protected values or request erasure, also use [neo-protected-erasure](../neo-protected-erasure/SKILL.md). It owns the authorization, reference, and pending-request decisions.
+
 Commands are **secure by default**: if you omit `canAccess`, the `command` macro falls back to `authenticatedAccess` (login required). This is enforced only when the application wires `Application.withAuth`. Without `withAuth`, every command is reachable unauthenticated and returns 200 — so `write-hurl-e2e` happy-path tests work without a token.
 
 To open a command to unauthenticated callers explicitly:

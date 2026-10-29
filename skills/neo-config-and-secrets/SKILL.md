@@ -203,6 +203,8 @@ API_TOKEN=sk-actual-secret-value
 
 ## Verify
 
+For PostgreSQL protected-value storage and application-scoped erasure, also use [neo-protected-erasure](../neo-protected-erasure/SKILL.md). Configure a stable scope and keep the PostgreSQL password secret.
+
 ```bash
 neo build
 ```
