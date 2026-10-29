@@ -357,6 +357,8 @@ Rules:
 
 ## Verify
 
+For a query that reads protected values or reports an erasure request, also use [neo-protected-erasure](../neo-protected-erasure/SKILL.md). Make `Available`, `Erased`, pending, and failure visible according to the application's authorization policy.
+
 ```
 neo build
 ```

@@ -431,6 +431,8 @@ integration reads from application configuration.
 
 ## Verify
 
+For an outbound erasure effect, also use [neo-protected-erasure](../neo-protected-erasure/SKILL.md). Its result command and explicit retry are part of application completion.
+
 ```
 neo build
 ```

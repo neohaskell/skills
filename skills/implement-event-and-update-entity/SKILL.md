@@ -292,6 +292,8 @@ Wrong V2 naming forms (reject these): `Events/foo_v2.hs`, `Events/Foo.V2.hs`, `E
 
 ## Verify
 
+For events and entities that retain business facts while protected values may be erased, also use [neo-protected-erasure](../neo-protected-erasure/SKILL.md). Review derivatives and metadata before choosing the retained fields.
+
 After writing the three changes, run:
 
 ```

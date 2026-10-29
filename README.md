@@ -51,7 +51,7 @@ flowchart TD
 
 Reference **language** skills (`neohaskell-core-prelude`, `-collections`, `-effects-and-errors`, `-records-and-json`, `-module-layout`) and **tooling** skills (`neo-cli`, `neo-immutability-and-versioning`, `neo-config-and-secrets`, `neo-run-and-inspect`) are pulled in by any step as needed. **PR review** (`neohaskell-code-review` + `neohaskell-code-review-ci`) is a separate track.
 
-## Skill catalog (26)
+## Skill catalog (27)
 
 | Family | Skills | Tier |
 | --- | --- | --- |
@@ -62,6 +62,7 @@ Reference **language** skills (`neohaskell-core-prelude`, `-collections`, `-effe
 | **Test (RED-first)** | `write-hurl-e2e`, `write-feature-tests`, `write-unit-tests` | Sonnet |
 | **Language cheatsheets** | `neohaskell-core-prelude`, `neohaskell-collections`, `neohaskell-effects-and-errors`, `neohaskell-records-and-json`, `neohaskell-module-layout` | Haiku |
 | **Tooling** | `neo-cli`, `neo-immutability-and-versioning`, `neo-config-and-secrets`, `neo-run-and-inspect` | Haiku |
+| **Protected data** | `neo-protected-erasure` | On demand |
 | **PR review** | `neohaskell-code-review` (Opus), `neohaskell-code-review-ci` (Sonnet) | Opus / Sonnet |
 
 **Model tiers** match cognitive load: **Opus** for planning / verification / review, **Sonnet** for template-driven implementation and tests, **Haiku** for reference lookup. The tier lives in each skill's `metadata.model`; a Claude Code skill delegates its heavy step to a sub-agent on that model, and degrades to inline (advisory) in hosts without sub-agents.
