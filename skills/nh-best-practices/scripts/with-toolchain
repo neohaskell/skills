@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Adapted for consumer applications from the public NeoHaskell project.
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
+if [ "$#" -eq 0 ]; then
+  echo 'usage: with-toolchain <command> [args...]' >&2
+  exit 2
+fi
+NH_APP_ROOT="$("$SCRIPT_DIR/repo-root")"
+export NH_APP_ROOT
+cd "$NH_APP_ROOT"
+mode="${NH_TOOLCHAIN:-auto}"
+case "$mode" in
+  auto) if [ -f flake.nix ]; then mode=nix; else mode=host; fi ;;
+  nix|host) ;;
+  *) echo 'with-toolchain: NH_TOOLCHAIN must be auto, nix, or host' >&2; exit 2 ;;
+esac
+if [ "$mode" = nix ]; then
+  if [ ! -f flake.nix ] || ! command -v nix >/dev/null 2>&1; then
+    echo 'with-toolchain: the selected Nix toolchain needs flake.nix and an available nix executable' >&2
+    exit 2
+  fi
+  export NEOHASKELL_TOOLCHAIN_MODE=nix-develop
+  exec nix develop --command "$@"
+fi
+export NEOHASKELL_TOOLCHAIN_MODE=host
+echo 'with-toolchain: using the selected host toolchain; versions follow the consumer environment' >&2
+exec "$@"

@@ -1,0 +1,12 @@
+# Include only from a protected review pipeline configuration.
+application-review:
+  image: python:3.12-bookworm
+  variables:
+    FAIL_ON_BLOCKERS: 'false'
+  script:
+    - .ci/prepare-review "$REVIEW_BASE_SHA" "$REVIEW_HEAD_SHA" "$CI_PROJECT_DIR/review-input"
+    - bash .agents/skills/neohaskell-code-review-ci/scripts/run-review.sh "$CI_PROJECT_DIR/.ci/review" "$CI_PROJECT_DIR/review-input/patch.diff" "$CI_PROJECT_DIR/review-input/context.txt" "$CI_PROJECT_DIR/review-output"
+  artifacts:
+    when: always
+    paths:
+      - review-output/result.json

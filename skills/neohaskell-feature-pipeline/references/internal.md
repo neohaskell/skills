@@ -1,0 +1,3 @@
+# Internal behavior route
+
+Find the smallest observable behavior that captures the request. Reproduce the bug with the existing runner, implement the correction, and rerun the relevant regression. Use [outside-in TDD](../../neohaskell-outside-in-tdd/SKILL.md) for the loop and [nh-regression-evidence](../../nh-regression-evidence/SKILL.md) when evidence must survive a handoff. Add domain modeling or API/client work only if those boundaries change. Compilation is preparation evidence; the behavioral assertion establishes the fix. Browser work is required only when browser behavior is part of the request.

@@ -18,7 +18,7 @@
 1. [Why outside-in (the double loop)](#1-why-outside-in-the-double-loop)
 2. [The five phases](#2-the-five-phases)
 3. [Phase boundaries — what each phase may touch](#3-phase-boundaries--what-each-phase-may-touch)
-4. [One behavior, one assertion, Given-When-Then](#4-one-behavior-one-assertion-given-when-then)
+4. [One behavior, Given-When-Then](#4-one-behavior-given-when-then)
 5. [The compiler is your first RED](#5-the-compiler-is-your-first-red)
 6. [The pyramid, not the ice-cream-cone (order vs ratio)](#6-the-pyramid-not-the-ice-cream-cone-order-vs-ratio)
 7. [NeoHaskell realization of each phase](#7-neohaskell-realization-of-each-phase)
@@ -127,10 +127,9 @@ Two practical tells that a boundary was crossed:
 
 ---
 
-## 4. One behavior, one assertion, Given-When-Then
+## 4. One behavior, Given-When-Then
 
-Each test pins **one** behavior and makes **one** meaningful assertion. Multiple assertions in a
-single `it` couple unrelated failures and blur the diagnosis when the bar goes red. Name the test as a
+Each test pins **one** behavior. Use as many assertions as that behavior needs to establish its observable result; separate unrelated behaviors so failures remain diagnostic. Name the test as a
 fact ("rejects adding an item to a cart that does not exist") and structure the body Given-When-Then.
 
 Grounded in the framework testlib (`core/testlib/Test/Service/Command/Decide/Spec.hs`) and specs like
@@ -355,7 +354,7 @@ See `neo-immutability-and-versioning` and `expand-entity` for the exact rules.
 | Real logic during DOMAIN | Loses the "fails on the assertion" checkpoint | DOMAIN bodies are only `panic "TODO: not implemented"` / `Integration.none` |
 | `undefined` / `error "TODO"` / `todo` stubs | Not NeoHaskell; `todo` doesn't exist; `error`/`undefined` aren't the convention | `panic "TODO: not implemented"` (pure/`Task`) |
 | `panic` inside an outbound `handleEvent` | Crashes the dispatcher when that event fires in production | `Integration.none` (with `-- TODO:`) until GREEN |
-| Several assertions per `it` | Couples unrelated failures; unclear diagnosis | One behavior, one assertion, GWT name |
+| Several assertions per `it` | Couples unrelated failures; unclear diagnosis | One behavior, one behavior, GWT name |
 | Vanilla Hspec idioms (`import Test.Hspec`, `IO ()`, `shouldBe actual expected`) | Won't compile / wrong arg order | `import Test`, `Spec Unit`, `actual |> shouldBe expected` |
 | Proving every rule through hurl | Ice-cream-cone: slow, no line-level diagnosis | Pin rules with pure decider/projection specs; one hurl per path |
 | `decide` `do` ending in a bare value or `pure` | Throws at runtime — not a valid decision | End in `Decider.reject` / `acceptNew` / `acceptExisting` |

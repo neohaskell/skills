@@ -1,94 +1,65 @@
-# NeoHaskell Skills
+# NeoHaskell Application Skills
 
-A set of **user-level** [Agent Skills](https://agentskills.io) that teach an AI agent how to build features in a **NeoHaskell** app — the event-sourced / CQRS framework and its custom `Core` prelude. They are designed for a *weak* model (the `.hs` extension is shared with Haskell, and models love to hallucinate vanilla Haskell), so every skill ships copy-paste templates grounded in real source plus explicit DO / DON'T tables.
+A complete collection of **96 skills** for developing consumer applications with NeoHaskell: the 27 established application skills, 65 adapted shared skills, and four new capabilities for application context, API clients, frontend delivery, and collection maintenance.
 
-Installed into a project with `neo skills setup` (→ `.claude/skills/`, `.agents/skills/`, `.cursor/rules/`, …). The skills are **flat and independent** — each is usable standalone and declares its own Inputs / Outputs / Next — with one **entry-point** skill that drives the whole flow.
+The collection follows the application's technology and requested outcome. A UI copy change uses context and frontend guidance; a business change reaches commands, events, projections, integrations, and any requested client/UI. Complete examples and resources live inside the skill that owns them. No framework checkout is required.
 
-## Quick start
+## Install the complete collection
 
-```bash
-neo skills setup            # installs these skills into your project
-```
+Use Node **22.20.0 or newer** and the fixed installer **skills@1.7.6**. Run from the consumer application's Git root only when installation there is authorized. Existing managed content or path collisions must first go through [nh-skills](skills/nh-skills/SKILL.md).
 
-Then, in your agent: **"add a feature to my NeoHaskell app"** (or start a new project, or fix a deployed bug). That triggers **`neohaskell-feature-pipeline`**, the entry point, which sequences everything below.
+1. Open the [v1.0.0 release](https://github.com/neohaskell/skills/releases/tag/v1.0.0) and read its changes and full commit SHA. An absent release means publication is still pending; do not substitute `main`.
+2. Resolve the immutable annotated tag to its full commit SHA:
 
-## Philosophy
+   ```sh
+   NH_SKILLS_SHA=$(git ls-remote https://github.com/neohaskell/skills.git 'refs/tags/v1.0.0^{}' | cut -f1)
+   ```
 
-NeoHaskell treats software as **immutable, append-only** and develops **incrementally**:
+3. Check that the value is exactly 40 hexadecimal characters, then install all skills for both hosts:
 
-- **Deployed code is frozen.** Once a file under `Commands/`, `Events/`, or `Queries/` is locked (deployed), it is never edited — a fix is a **`V2` sibling**. `neo build` refuses a changed locked file (via `.locked-files`).
-- **Entities evolve add-only.** Aggregates aren't locked, but fields are only ever *added* (never removed, renamed, or retyped) so the event log still replays.
-- **Constant greenfield.** Each feature builds on existing **entities** but treats events / commands / queries / integrations as new.
-- **Outside-in TDD.** Design the events first, then build each slice **test-first** (jwilger-style): `RED → DOMAIN → GREEN → REFACTOR`.
+   ```sh
+   case "$NH_SKILLS_SHA" in
+     ''|*[!0-9a-f]*) echo 'Release SHA is unavailable or invalid';;
+     *)
+       if [ "${#NH_SKILLS_SHA}" -eq 40 ]; then
+         npx --yes skills@1.7.6 add "neohaskell/skills#$NH_SKILLS_SHA" --skill '*' --agent codex claude-code --yes
+       else
+         echo 'Expected a full 40-character release SHA'
+       fi
+       ;;
+   esac
+   ```
 
-## The pipeline
+4. Review and commit canonical content under `.agents/skills/`, `skills-lock.json`, and the relative Claude links under `.claude/skills/`. Keep application extensions separate from managed skill folders.
 
-Design once, then build each vertical slice outside-in. Tests are written **first** (outside-in *order*), while the resulting test distribution stays **pyramid-shaped** (many fast unit/property tests, few slow e2e).
+The installer does not resolve inter-skill dependencies. Install the whole collection, not selected entries. Resources are ordinary files inside their owner's folder; sibling skills use relative links. The lockfile alone does not promise reconstruction of both host destinations or recovery of removed/renamed skills.
 
-```mermaid
-flowchart TD
-    R(["feature request"]) --> A["augment-feature-request · Opus<br/>hybrid discovery → Feature Brief"]
-    A --> M["event-modeling · Opus<br/>7 steps + 4 patterns → event-model.json"]
-    M --> V["verify-event-model · Opus<br/>schema + referential + methodology"]
-    V -->|fails| M
+## Use the collection
 
-    subgraph SLICE ["per verified slice — outside-in TDD (neohaskell-outside-in-tdd)"]
-      direction TB
-      HE["① write-hurl-e2e — RED outer"] --> FT["② write-feature-tests / acceptance — RED"]
-      FT --> UT["③ write-unit-tests — RED (1 assertion, GWT)"]
-      UT --> DM["④ neohaskell-domain-modeling — DOMAIN types"]
-      DM --> IM["⑤ implement-command / event+entity / query / integration — GREEN<br/>(+ expand-entity for a new field)"]
-      IM --> W["⑥ wire-feature — GREEN (endpoint exists)"]
-      W --> RF["⑦ refactor + property test"]
-    end
+Start with [neohaskell-feature-pipeline](skills/neohaskell-feature-pipeline/SKILL.md) for an application change, or invoke a specialist directly when its prerequisites are known.
 
-    V -->|per slice| HE
-    RF -.->|next slice| HE
-    RF -->|all green| DONE(["neo test green — hspec under tests/ + hurl"])
+| Need | Entry |
+|---|---|
+| Locate components, effective revision, compatible API guidance, and tools | [nh-app-context](skills/nh-app-context/SKILL.md) |
+| Align backend JSON/schema and client consumers | [nh-api-client](skills/nh-api-client/SKILL.md) |
+| Complete the requested interface journey in the existing stack | [nh-frontend](skills/nh-frontend/SKILL.md) |
+| Design business behavior and implement NeoHaskell slices | [neohaskell-feature-pipeline](skills/neohaskell-feature-pipeline/SKILL.md) |
+| Install, explicitly upgrade, or recover the collection | [nh-skills](skills/nh-skills/SKILL.md) |
 
-    FIX(["bug in DEPLOYED code"]) -.->|V2 sibling, fresh TDD cycle| IM
-```
+Shared principles and procedures use `nh-` names. The 27 historical identifiers remain unchanged. [nh-roles](skills/nh-roles/SKILL.md) owns role guidance; the host's real tools, user instructions, configured models, and delegation permissions take precedence. Skills load their detailed branches conditionally instead of loading the whole installed collection.
 
-Reference **language** skills (`neohaskell-core-prelude`, `-collections`, `-effects-and-errors`, `-records-and-json`, `-module-layout`) and **tooling** skills (`neo-cli`, `neo-immutability-and-versioning`, `neo-config-and-secrets`, `neo-run-and-inspect`) are pulled in by any step as needed. **PR review** (`neohaskell-code-review` + `neohaskell-code-review-ci`) is a separate track.
+## Versions and maintenance
 
-## Skill catalog (27)
+Collection versions, installer versions, and framework revisions are separate identities. The compatible API guide for the application's effective framework revision remains authoritative.
 
-| Family | Skills | Tier |
-| --- | --- | --- |
-| **Entry point** | `neohaskell-feature-pipeline` | Opus |
-| **Design** | `augment-feature-request`, `event-modeling`, `verify-event-model` | Opus |
-| **Process / domain** | `neohaskell-outside-in-tdd` (Opus), `neohaskell-domain-modeling` (Sonnet) | Opus / Sonnet |
-| **Implement (GREEN)** | `implement-command`, `implement-event-and-update-entity`, `expand-entity`, `implement-query`, `implement-integration`, `wire-feature` | Sonnet |
-| **Test (RED-first)** | `write-hurl-e2e`, `write-feature-tests`, `write-unit-tests` | Sonnet |
-| **Language cheatsheets** | `neohaskell-core-prelude`, `neohaskell-collections`, `neohaskell-effects-and-errors`, `neohaskell-records-and-json`, `neohaskell-module-layout` | Haiku |
-| **Tooling** | `neo-cli`, `neo-immutability-and-versioning`, `neo-config-and-secrets`, `neo-run-and-inspect` | Haiku |
-| **Protected data** | `neo-protected-erasure` | On demand |
-| **PR review** | `neohaskell-code-review` (Opus), `neohaskell-code-review-ci` (Sonnet) | Opus / Sonnet |
+Releases use immutable semantic-version tags: compatible fixes are patches, compatible capabilities are minor releases, and renames, removals, or breaking changes are major releases. [nh-skills](skills/nh-skills/SKILL.md) compares installed files against the identified old release before replacement, detects committed and uncommitted customizations, preserves unrelated skills/extensions, reconciles owned additions/removals/renames, and keeps an update in its own reviewable commit. Rollback reverts that whole commit, including content, resources, lockfile, and links.
 
-**Model tiers** match cognitive load: **Opus** for planning / verification / review, **Sonnet** for template-driven implementation and tests, **Haiku** for reference lookup. The tier lives in each skill's `metadata.model`; a Claude Code skill delegates its heavy step to a sub-agent on that model, and degrades to inline (advisory) in hosts without sub-agents.
+Use `add` with the explicit target release SHA for a release change. `update -p` retains its reference and is not a release-jump mechanism. Clean Git status does not prove that managed files have no committed customizations. No silent updates or extra public maintenance CLI are part of this contract.
 
-## Conventions & edge cases
+## Documentation and scope
 
-- **Tests live under `tests/`** — both Hspec/QuickCheck specs *and* `.hurl` files. `neo` discovers and compiles the Haskell specs there; **never** use a `test/` directory.
-- **Stub convention** — pure functions and `Task` bodies use `panic "TODO: not implemented"`; an **outbound `handleEvent`** uses `Integration.none` + a `-- TODO:` comment (a `panic` in a pure handler crashes the dispatcher). There is **no** `todo` in NeoHaskell.
-- **Auth** — commands are secure-by-default (`authenticatedAccess`) but only enforced when `Application.withAuth` wires JWT; queries **must** declare `canAccess` + `canView`. Uses `Service.AccessControl`; `RequestContext` comes from `Service.Auth`.
-- **Event naming** — past-tense, specific business facts (`CopyBorrowed`, `MemberRegistered`). Creation facts (`*Created`) are fine; the smell is present-tense / RPC-echo (`ProcessPayment`) and vague (`CartUpdated`).
-- **Integrations** — outbound (one handler per trigger), inbound (timers/webhooks via `withInbound` / `Timer`), and stateful lifecycle (`withOutboundLifecycle`).
-- **Test suite** assumes [neohaskell/neo#2](https://github.com/neohaskell/neo/issues/2) (Haskell `test-suite` generation) is in place.
-- **Examples** are public-only — the `Counter` starter, the `Cart`/`Stock` testbed, and a neutral illustrative `Library` domain (`BookTitle` / `Member` / `Loan`) for richer patterns.
+All persisted prose and filenames are English; see [AGENTS.md](AGENTS.md). Domain vocabulary lives in [GLOSSARY.md](GLOSSARY.md), and agreed decisions live in [docs/adr](docs/adr). Git records content and history without an additional provenance or catalog manifest.
 
-## Methodology & attribution
+This batch excludes an evaluation campaign, synthetic-consumer certification, and Jev. Test and review skills remain reusable product content. Their inclusion does not claim those recipes have been executed or authorize installing CI or automation in a consumer.
 
-The design skills adapt the **Event Modeling** methodology (Adam Dymitruk / [eventmodeling.org](https://eventmodeling.org), Martin Dilger's *Understanding Eventsourcing*) and the **outside-in TDD** discipline, both drawn from [jwilger/claude-code-plugins](https://github.com/jwilger/claude-code-plugins) (MIT) — **retargeted** to emit `event-model.json` and NeoHaskell code. The surrounding SDLC-plugin machinery (its red/green/domain sub-agents, task manager, personality) is **not** adopted.
-
-## The always-on primer (`neohaskell.md`)
-
-The repo ships [`neohaskell.md`](./neohaskell.md) — an always-on primer that gives an agent the
-baseline it needs *before* any specific skill triggers: this is NeoHaskell (not vanilla Haskell),
-start from `neohaskell-feature-pipeline`, and the non-negotiable invariants (immutability/V2,
-`tests/`, `import Core`, `Integration.none` stubs).
-
-It is deliberately **not** named `AGENTS.md`, so it isn't auto-loaded as agent instructions for
-anyone working *on the skills repo itself*. Instead, `neo skills setup` installs it into the consumer
-project (e.g. `.claude/neohaskell.md`) and wires it into the project's `CLAUDE.md` / `AGENTS.md` via a
-managed **`@`-import** — and the user can also `@`-import it manually. See the setup contract below.
+The design methodology adapts Event Modeling and outside-in TDD material from [jwilger/claude-code-plugins](https://github.com/jwilger/claude-code-plugins), retaining applicable attribution. Shared procedures are adapted from the public [NeoHaskell repository](https://github.com/neohaskell/NeoHaskell). Original applicable notices accompany their resources.

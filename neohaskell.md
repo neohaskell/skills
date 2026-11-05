@@ -1,54 +1,17 @@
-# Working in a NeoHaskell project
+# Working in a NeoHaskell application
 
-This project is built with **NeoHaskell** — an event-sourced / CQRS framework with a
-custom `Core` prelude, driven by the `neo` CLI. The `.hs` extension is shared with
-Haskell, but **this is NOT vanilla Haskell.** The `neohaskell-*` / `neo-*` skills
-installed in this project carry the details; this primer is the baseline that always applies.
+Start an application change with [neohaskell-feature-pipeline](skills/neohaskell-feature-pipeline/SKILL.md). It selects the relevant route for the requested outcome. A UI copy change needs context and frontend work; a business behavior change may require domain design, commands, events, projections, and integrations. Backend wiring does not finish a requested client/UI or external effect.
 
-## Start here
+Use [nh-app-context](skills/nh-app-context/SKILL.md) to locate actual component roots, the effective framework revision, a compatible API guide, and the consumer's toolchain. The guide matched to that revision determines available signatures and markers. This collection's release and the installer version do not identify the framework revision.
 
-To **add, build, change, or design a feature**, **start a new project**, or **fix a bug in
-deployed code**, use the **`neohaskell-feature-pipeline`** skill — it drives the whole flow
-(augment → event-model → verify → outside-in TDD per slice) and routes to the right
-specialized skill at each step. When unsure which skill applies, start there.
+NeoHaskell application modules commonly use `Core`, data-last pipelines, `Text`, `Array`, `Result error value`, and `Task error value`. Consult the relevant language skill for the construct being changed, preserving justified foreign-library or test interoperability. Discover module layout, effective extensions, runner, and generated instances from the actual component rather than imposing a historical skeleton.
 
-## Non-negotiable invariants
+Preserve deployed and persisted contracts under [compatibility guidance](skills/neo-immutability-and-versioning/SKILL.md). Separate product compatibility policy from technical CLI locks. Do not discard user changes. Historical decoding and replay fixtures establish the compatibility they actually exercise.
 
-These hold across every task, even before a specific skill is consulted:
+Follow [outside-in TDD](skills/neohaskell-outside-in-tdd/SKILL.md) for its selected development route, choosing browser, API, or internal behavior as the appropriate outer boundary. A behavior can need multiple assertions. A failing test does not require an already completed feature, and commit contents alone do not establish test-writing order.
 
-- **`import Core`, not `Prelude`.** `NoImplicitPrelude` is on project-wide. Use `Text` (not
-  `String`), `Array a` (not `[a]`; there is no `Array.filter` — use `takeIf`/`dropIf`),
-  `Task err a` (not `IO`), `Result`/`Ok`/`Err` (not `Either`), `|>` (not `$`), `++` or
-  `[fmt|…#{x}…|]` (not `<>`), `!=` (not `/=`), `panic` (not `error`; there is no `todo`),
-  and dot access (`rec.field`, not field-selector functions).
-- **Data-last means pipe-first.** Every `Core` collection / `Text` / `Task` function takes its
-  subject (the `Array`, `Text`, or `Task`) as the **last** argument — even `Array.map` /
-  `Array.foldl` / `Task.andThen`, which take the function or accumulator first but the data last.
-  Thread the subject through `|>` (`xs |> Array.push x`, `xs |> Array.length`,
-  `txt |> Text.contains sub`, `task |> Task.andThen f`) rather than nesting application
-  (`Array.push x xs`). The one intentional exception is the entity-replay fold, written applied as
-  `Array.foldl update initialState events`.
-- **Deployed code is immutable.** Never edit, rename, or delete a file under `Commands/`,
-  `Events/`, or `Queries/` once it is locked/deployed — `neo build` refuses it. A fix is a
-  new `V2`/`V3` sibling (see `neo-immutability-and-versioning`). Entities evolve **add-only**
-  (never remove, rename, or retype a field).
-- **Outside-in, test-first.** Build each vertical slice tests-first (hurl → acceptance →
-  unit → domain types → minimal implementation → wire → refactor). Write the failing test
-  before the code.
-- **All tests live under `tests/`** — both Hspec/QuickCheck specs *and* `.hurl` files. Never
-  use a `test/` directory; `neo` won't discover it.
-- **Stub outbound integrations with `Integration.none` + a `-- TODO:` comment** — never
-  `panic` a pure `handleEvent` (it crashes the dispatcher when that event fires). `panic
-  "TODO: not implemented"` is only for pure functions and `Task` bodies.
-- **Drive the toolchain through `neo`** (`neo build` / `run` / `test`), which wraps the
-  Haskell toolchain in Nix — never call `cabal`, `stack`, or `ghc` directly.
+A pure event handler can describe actions whose executor performs effects. Select the supported integration mechanism by capability and resource ownership. A stub or `Integration.none` does not deliver a requested effect. Observe acceptance, pending work, and completion separately. Use the consumer's real authentication policy, and treat browser-provided identifiers as untrusted.
 
-## The skills
+Keep server secrets out of logs and frontend bundles. Record redaction does not protect an extracted field. Discover actual run configuration and readiness instead of assuming a port or anonymous access.
 
-Installed by `neo skills setup`: an entry point (`neohaskell-feature-pipeline`), the design
-skills (`augment-feature-request`, `event-modeling`, `verify-event-model`), the outside-in
-TDD discipline + domain modeling, the implementers (`implement-*`, `expand-entity`,
-`wire-feature`), the test writers (`write-*`), the language cheatsheets (`neohaskell-*`) and
-tooling (`neo-*`), and PR review (`neohaskell-code-review`, `neohaskell-code-review-ci`).
-Consult the relevant skill for any non-trivial step — its templates are grounded in real
-NeoHaskell source, which the models tend to hallucinate otherwise.
+Install the complete collection for Codex and Claude Code through the pinned `npx skills` contract in [README.md](README.md). Use [nh-skills](skills/nh-skills/SKILL.md) for explicit upgrades and whole-commit recovery. All persisted prose and filenames are English under [AGENTS.md](AGENTS.md).

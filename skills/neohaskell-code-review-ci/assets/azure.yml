@@ -1,0 +1,16 @@
+# Run this template from the protected base revision.
+steps:
+  - checkout: self
+    persistCredentials: false
+    fetchDepth: 0
+  - bash: .ci/prepare-review "$REVIEW_BASE_SHA" "$REVIEW_HEAD_SHA" "$BUILD_ARTIFACTSTAGINGDIRECTORY/review-input"
+    env:
+      REVIEW_BASE_SHA: $(ReviewBaseSha)
+      REVIEW_HEAD_SHA: $(ReviewHeadSha)
+  - bash: bash .agents/skills/neohaskell-code-review-ci/scripts/run-review.sh "$PWD/.ci/review" "$BUILD_ARTIFACTSTAGINGDIRECTORY/review-input/patch.diff" "$BUILD_ARTIFACTSTAGINGDIRECTORY/review-input/context.txt" "$BUILD_ARTIFACTSTAGINGDIRECTORY/review-output"
+    env:
+      REVIEW_API_KEY: $(ReviewApiKey)
+      FAIL_ON_BLOCKERS: 'false'
+  - publish: $(Build.ArtifactStagingDirectory)/review-output/result.json
+    artifact: review-result
+    condition: always()

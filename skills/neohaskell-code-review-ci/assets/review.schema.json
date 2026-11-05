@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["summary", "findings"],
+  "properties": {
+    "summary": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["severity", "file", "line", "message", "fix"],
+        "properties": {
+          "severity": {"enum": ["blocker", "major", "minor", "nit"]},
+          "file": {"type": "string", "minLength": 1, "pattern": "\\S"},
+          "line": {"type": "integer", "minimum": 1},
+          "message": {"type": "string", "minLength": 1, "pattern": "\\S"},
+          "fix": {"type": "string", "minLength": 1, "pattern": "\\S"}
+        }
+      }
+    }
+  }
+}

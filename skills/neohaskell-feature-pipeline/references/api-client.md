@@ -1,0 +1,3 @@
+# API and client route
+
+Follow [nh-api-client](../../nh-api-client/SKILL.md) from the authoritative backend serialization to its schema and every affected consumer. Use the relevant command/query implementation skill for backend changes; use [nh-frontend](../../nh-frontend/SKILL.md) when UI behavior changes. Check optional versus null fields, enums, error responses, authentication, URLs, transport, and uploads where applicable. Simulated transport proves client behavior against fixtures. Claim real interoperability only after exercising the corresponding backend revision. Evolve published contracts through [neo-immutability-and-versioning](../../neo-immutability-and-versioning/SKILL.md).

@@ -1,0 +1,16 @@
+# Launch this custom pipeline on the protected base ref only.
+image: python:3.12-bookworm
+pipelines:
+  custom:
+    application-review:
+      - variables:
+          - name: REVIEW_BASE_SHA
+          - name: REVIEW_HEAD_SHA
+      - step:
+          name: Review inert PR input
+          script:
+            - .ci/prepare-review "$REVIEW_BASE_SHA" "$REVIEW_HEAD_SHA" "$BITBUCKET_CLONE_DIR/review-input"
+            - export FAIL_ON_BLOCKERS=false
+            - bash .agents/skills/neohaskell-code-review-ci/scripts/run-review.sh "$BITBUCKET_CLONE_DIR/.ci/review" "$BITBUCKET_CLONE_DIR/review-input/patch.diff" "$BITBUCKET_CLONE_DIR/review-input/context.txt" "$BITBUCKET_CLONE_DIR/review-output"
+          artifacts:
+            - review-output/result.json

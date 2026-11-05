@@ -1,0 +1,30 @@
+name: Application review
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+permissions:
+  contents: read
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Prepare inert review input from trusted base code
+        env:
+          REVIEW_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          REVIEW_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: .ci/prepare-review "$REVIEW_BASE_SHA" "$REVIEW_HEAD_SHA" "$RUNNER_TEMP/review-input"
+      - name: Run configured reviewer
+        env:
+          REVIEW_API_KEY: ${{ secrets.REVIEW_API_KEY }}
+          FAIL_ON_BLOCKERS: 'false'
+        run: bash .agents/skills/neohaskell-code-review-ci/scripts/run-review.sh "$PWD/.ci/review" "$RUNNER_TEMP/review-input/patch.diff" "$RUNNER_TEMP/review-input/context.txt" "$RUNNER_TEMP/review-output"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: review-result
+          path: ${{ runner.temp }}/review-output/result.json

@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Adapted for consumer applications from the public NeoHaskell project.
+set -euo pipefail
+candidate="${NH_APP_ROOT:-$PWD}"
+if [ ! -d "$candidate" ]; then
+  echo 'repo-root: NH_APP_ROOT must name an existing application component' >&2
+  exit 2
+fi
+candidate="$(cd "$candidate" && pwd -P)"
+if [ -n "${NH_APP_ROOT:-}" ]; then
+  printf '%s\n' "$candidate"
+  exit 0
+fi
+while :; do
+  if [ -f "$candidate/cabal.project" ] || [ -f "$candidate/neo.json" ] || [ -f "$candidate/flake.nix" ] || compgen -G "$candidate/*.cabal" >/dev/null; then
+    printf '%s\n' "$candidate"
+    exit 0
+  fi
+  if [ -e "$candidate/.git" ] || [ "$candidate" = / ]; then break; fi
+  candidate="$(dirname "$candidate")"
+done
+echo 'repo-root: select the application component with NH_APP_ROOT; no project marker found from the working directory' >&2
+exit 2

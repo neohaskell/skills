@@ -1,0 +1,1 @@
+{"summary":"Resource permission is missing.","findings":[{"severity":"blocker","file":"src/Document/Commands/ReadDocument.hs","line":20,"message":"The caller can read another owner's document.","fix":"Check the authenticated caller's resource permission before returning document content."}]}

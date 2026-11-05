@@ -7,7 +7,7 @@ emit a GO / NO-GO verdict with `file:node-id`-scoped findings.
 > Adapted (MIT) from the Event Modeling methodology (Martin Dilger's *Understanding Eventsourcing* /
 > eventmodeling.org), retargeted from markdown docs to `event-model.json`. Schema and referential
 > rules mirror the public `neo` repo (`assets/ide/src/model/event-model.schema.json`, `types.ts`,
-> `src/ide/validate.rs`) as captured in `BLUEPRINT.md` section 4.
+> `src/ide/validate.rs`) at the researched public source revision.
 
 ## Table of contents
 
@@ -26,15 +26,13 @@ emit a GO / NO-GO verdict with `file:node-id`-scoped findings.
 Verification is a gate, not a rewrite. You never reorder or edit the model here — you produce a verdict
 and a fix list; the fixes go back through `event-modeling`.
 
-- **PASS 1 — schema shape.** Mechanical. Run offline against the vendored `event-model.schema.json`
-  (this folder) with a JSON-Schema validator, or walk section 2 by eye. Any failure ⇒ **NO-GO**;
+- **PASS 1 — schema shape.** Mechanical. Run offline against the canonical schema in `../../event-modeling/references/event-model.schema.json` with a JSON-Schema validator, and use the bundled validator for missing mechanical coverage. Any failure ⇒ **NO-GO**;
   stop and report — passes 2 and 3 assume a well-formed shape.
 - **PASS 2 — referential integrity.** Mechanical. Mirrors what neo's `validate.rs` checks after the
   shape check, **plus** a duplicate-id check and edge-endpoint-type check that v1 neo does not do. Run
   the `jq` recipes in section 3. Any dangling reference ⇒ **NO-GO**.
 - **PASS 3 — methodology best practices.** Judgment. neo never machine-checks these. Read every node
-  name and every read-model field and apply section 4. Naming smells and traceability gaps are
-  usually **major** (fix before coding), not blockers.
+  name and every read-model field and apply section 4. Traceability gaps can be functional defects. Naming recommendations alone are advisory unless a concrete ambiguity or contract defect makes them significant.
 
 Run `neo validate` (or `neo validate path/to/event-model.json`, `--json` for a machine result) to run
 PASS 1 (schema) + PASS 2 (referential) read-only — exit **0** valid, **2** invalid, **3** malformed
@@ -108,13 +106,12 @@ failure.
 ### 2.6 Running PASS 1
 
 Primary: `neo validate` (runs PASS 1 + PASS 2). The commands below are the **offline fallback** when
-`neo` is unavailable — from the project root (adjust the schema path to wherever `neo skills setup`
-installed this skill):
+`neo` is unavailable — from the project root (adjust the schema path to the project-local collection install):
 
 ```sh
 # Offline fallback for PASS 1: check-jsonschema (pip install check-jsonschema) — supports draft 2020-12
 check-jsonschema \
-  --schemafile .claude/skills/verify-event-model/references/event-model.schema.json \
+  --schemafile .agents/skills/event-modeling/references/event-model.schema.json \
   event-model.json
 ```
 
@@ -123,7 +120,7 @@ check-jsonschema \
 python3 - <<'PY'
 import json
 from jsonschema import Draft202012Validator
-schema = json.load(open(".claude/skills/verify-event-model/references/event-model.schema.json"))
+schema = json.load(open(".agents/skills/event-modeling/references/event-model.schema.json"))
 doc    = json.load(open("event-model.json"))
 errs   = sorted(Draft202012Validator(schema).iter_errors(doc), key=lambda e: list(e.path))
 for e in errs:
@@ -132,7 +129,7 @@ print("PASS 1 clean" if not errs else f"PASS 1: {len(errs)} schema error(s)")
 PY
 ```
 
-If no validator is installed, walk sections 2.1–2.5 by eye — the schema is small.
+If no validator is available, report the mechanical check as not run. Inspection can find defects but cannot be reported as an executed schema check.
 
 ---
 
@@ -141,7 +138,7 @@ If no validator is installed, walk sections 2.1–2.5 by eye — the schema is s
 neo's `validate.rs` checks, after the shape check: every `edge.sourceId`/`targetId` exists in `nodes`;
 `node.entityId` (when a string) exists in `entities`; `slice.chapterId` (when a string) exists in
 `chapters`; `chapter.submodelId` (when a string) exists in `submodels`. `null` is always allowed.
-**v1 neo does NOT flag duplicate ids and does NOT check edge-endpoint types** — so this pass adds both.
+**Some older CLI revisions do not flag duplicate ids or edge-endpoint types; discover actual coverage** — so this pass adds both.
 
 Every recipe below prints an **empty array `[]` when clean**. A non-empty result is a **NO-GO** finding.
 
@@ -162,7 +159,7 @@ jq -c '[.entities[].id] as $e
 
 # (d) slice.chapterId and chapter.submodelId dangling
 jq -c '[.chapters[].id]  as $c | [ .slices[]   | select(.chapterId!=null  and (.chapterId|IN($c[])|not))  | .id ]' event-model.json
-jq -c '[.submodels[].id] as $s | [ .chapters[] | select(.submodelId!=null and (.submodelId|IN($s[])|not)) | .id ]' event-model.json
+jq -c '[.submodels[]?.id] as $s | [ .chapters[] | select(.submodelId!=null and (.submodelId|IN($s[])|not)) | .id ]' event-model.json
 
 # (e) edge-endpoint TYPE mismatch — the edge's ends are the wrong node kinds (neo v1 does not catch this)
 jq -c '(reduce .nodes[] as $n ({}; .[$n.id]=$n.type)) as $t
@@ -354,13 +351,10 @@ Findings:
     → move the relationship into an eventFeedsQuery edge; delete entityId
 - [PASS 2][blocker] edge x2 (commandProducesEvent) — targetId "n-nope" not in nodes
     → point it at the real event node id, or drop the edge
-- [PASS 3][major] node n3 (event "CartUpdated") — vague name, hides the business fact
+- [PASS 3][minor] node n3 (event "CartUpdated") — vague name, hides the business fact
     → rename to the specific past-tense fact, e.g. ItemRemovedFromCart
 - [PASS 3][major] node n9 (integration "ReserveAlways", outbound) — unconditional automation
     → fold into the ItemAddedToCart State-Change slice; delete the integration node
 ```
 
-Severity guide: **blocker** = won't pass schema/referential (PASS 1/2 failures); **major** = ES
-methodology violation (naming smell, missing command→event / event→query, fake automation, infra node,
-untraceable field); **minor** = style; **nit**. Any blocker ⇒ **NO-GO**. A best-practice-only failure
-is a **NO-GO for coding** — fix the model first, because every node name becomes a NeoHaskell type.
+Severity guide: **blocker** = schema/referential failure or a concrete functional contradiction; **major** = a methodology defect that changes behavior or leaves a necessary flow ambiguous; **minor** = a naming or clarity recommendation; **nit** = optional style. Functional blockers produce **NO-GO**. A naming preference alone does not block implementation. Explain the concrete consequence of each severity.

@@ -1,0 +1,11 @@
+# Reproducible consumer recipe
+
+Use the consumer's actual command/query runner and the supported erasure API. No framework testbed checkout is required. Keep synthetic fixtures in that consumer's test tree, separate from this reusable recipe.
+
+1. Configure an isolated PostgreSQL database and a stable nonempty `PostgresEventStore.erasableApplicationScope` if supported by the effective revision. Use application configuration for connection/TLS/pool settings and mark the password secret. Record the framework revision, runtime command, base URL, and two synthetic identities (owner and denied caller).
+2. Create one case with a synthetic protected value such as `nh-erasure-fixture-001` and an explicitly retained status. Use a distinct `Erasable.new` call for every independently erasable value. Capture its entity ID and reference through the authorized application flow. Assert `Available` for the owner and the policy-correct denial for the other caller.
+3. Request erasure and poll that entity's application request state with a deadline. Assert the result command committed completion, the protected value reads `Erased`, and the chosen retained status remains. Repeat the request to exercise `AlreadyErased`. Keep unknown-reference and wrong-owner cases separate.
+4. In the consumer's effect adapter fixture, inject one operational failure and one rejected result callback. Assert the visible unresolved state, then exercise owner-authorized retry. Distinguish simulated callback handling from a real PostgreSQL key deletion.
+5. Restart the owned process, reconnect with independent pools, and rebuild the projection from persisted events. Assert the erased input stays unreadable and retained facts replay without it. Exercise concurrent requests against the same target to confirm the application's idempotency behavior.
+
+Persist the exact synthetic requests, historical payload shapes, expected responses, and runnable commands with the consumer tests. Generate payloads from that revision's schema instead of copying fictional field signatures. Clean up only the isolated resources owned by the run. Backup/restore policy remains a separate deployment responsibility; restoring old keys can restore access to old data.
