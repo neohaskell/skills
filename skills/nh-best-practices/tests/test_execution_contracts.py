@@ -19,16 +19,10 @@ sys.dont_write_bytecode = True
 SKILLS = Path(__file__).resolve().parents[2]
 BEST_PRACTICES = SKILLS / "nh-best-practices/scripts"
 NEOHASKELL_TEST = SKILLS / "nh-test/scripts"
-TDD = SKILLS / "tdd/scripts"
-REGRESSION_EVIDENCE = SKILLS / "regression-evidence/scripts"
-VALIDATE = SKILLS / "validate-skills/scripts"
-ROOT = Path(__file__).resolve()
-while not (ROOT / ".git").exists():
-    if ROOT.parent == ROOT:
-        raise RuntimeError("Tests need a repository")
-    ROOT = ROOT.parent
-FIXTURES = ROOT / ".agents-state/execution-contract-tests"
-FIXTURES.mkdir(parents=True, exist_ok=True)
+TDD = SKILLS / "nh-tdd/scripts"
+REGRESSION_EVIDENCE = SKILLS / "nh-regression-evidence/scripts"
+VALIDATE = SKILLS / "nh-validate-skills/scripts"
+FIXTURES = Path(tempfile.gettempdir())
 sys.path[:0] = [str(BEST_PRACTICES), str(NEOHASKELL_TEST), str(TDD), str(REGRESSION_EVIDENCE), str(VALIDATE)]
 
 
@@ -81,7 +75,7 @@ class CorrectnessRegressionTests(unittest.TestCase):
             root,
             self.root / "runtime.log",
             4,
-            {**os.environ, "NEOHASKELL_ROOT": str(root)},
+            {**os.environ, "NH_APP_ROOT": str(root)},
         )
         self.assertEqual(result.returncode, 1)
         self.assertEqual(result.process_outcome, "exited")
@@ -307,6 +301,7 @@ class CorrectnessRegressionTests(unittest.TestCase):
         self.assertTrue(ready.exists())
         self.assertEqual(observed_signals, [signal.SIGTERM])
         self.assertIsNotNone(launched["process"].returncode)
+        self.assertTrue(launched["process"].stdout.closed)
         before = heartbeat.read_text()
         time.sleep(0.15)
         self.assertEqual(heartbeat.read_text(), before)

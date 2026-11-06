@@ -128,7 +128,7 @@ def _read_runner_outcome(path):
     except OSError:
         return None
     rows = re.findall(r'^outcome: ([a-z-]+)$', header, re.MULTILINE)
-    if len(rows) != 1 or rows[0] not in {'passed', 'assertion-failure', 'timed-out', 'output-limited', 'process-failure', 'setup-error', 'invalid-summary', 'empty-selection'}:
+    if len(rows) != 1 or rows[0] not in {'passed', 'assertion-failure', 'timed-out', 'output-limited', 'process-failure', 'setup-error', 'invalid-summary', 'empty-selection', 'incomplete'}:
         return None
     return rows[0]
 

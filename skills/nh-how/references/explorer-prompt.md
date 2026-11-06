@@ -6,9 +6,9 @@ Build each explorer subagent's prompt from this template. Fill in the placeholde
 
 ---
 
-Other explorers are investigating different slices of the same subsystem in parallel. Don't try to cover everything. Focus on your assigned angle and go deep. Investigate maintained NeoHaskell framework, language, and toolchain source only, without editing files.
+When other explorers are assigned, they own different slices of the same question. Focus on your assigned angle. Investigate the affected consumer components, actual callers, and revision-compatible API guidance without editing files. Framework source is optional supporting evidence for the matching revision, not a required checkout or the exclusive search scope.
 
-For local navigation, use the owner command from the repository root as needed:
+For local Haskell navigation, resolve the installed `nh-how/scripts/codemap.py` path and run it from the chosen component, or set `CODEMAP_ROOT` to that component. These paths illustrate installation at the consumer Git root:
 
     python3 .agents/skills/nh-how/scripts/codemap.py map TOPIC
     python3 .agents/skills/nh-how/scripts/codemap.py symbol NAME

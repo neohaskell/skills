@@ -20,7 +20,7 @@ Look for these signs:
 
 Information leakage makes multiple modules depend on the same internal decision. A representation, policy, or protocol detail appears in more than one place, so changing it requires coordinated edits.
 
-Exposing a boundary's private transport, storage, or wire representation is leakage. Parse external data into domain types behind the owning interface. Framework types and intentional interoperability types may be public contracts; evaluate them by their promised semantics and ownership, per **boundary-discipline**.
+Exposing a boundary's private transport, storage, or wire representation is leakage. Parse external data into domain types behind the owning interface. Framework types and intentional interoperability types may be public contracts; evaluate them by their promised semantics and ownership, per **nh-principle-boundary-discipline**.
 
 ## Temporal decomposition
 
@@ -38,13 +38,13 @@ Remove it or move responsibility to the module that can complete the operation. 
 
 More than one module writes the same state or keeps its own copy of it. An agent that edits one writer can't see the others, so their rules diverge.
 
-Give each shared-state invariant and worker lifetime an owning subsystem. Other modules use its operations. Keep required atomic transitions or coordination at that boundary, using the appropriate existing NeoHaskell concurrency primitives, per **separate-before-serializing-shared-state**.
+Give each shared-state invariant and worker lifetime an owning subsystem. Other modules use its operations. Keep required atomic transitions or coordination at that boundary, using the appropriate existing NeoHaskell concurrency primitives, per **nh-principle-separate-before-serializing-shared-state**.
 
 ## Two ways to do one task
 
 The design supports more than one way to do the same task. An agent copies whichever way it finds first, so every way keeps gaining callers.
 
-For redundant internal APIs where no external compatibility obligation exists and coordinated breaking changes are feasible, migrate callers and remove the old path in the same refactor wave, per **migrate-callers-then-delete-legacy-apis**. Distinct operations or implementations with different contracts are not duplicate paths merely because their shapes resemble each other.
+For redundant internal APIs where no external compatibility obligation exists and coordinated breaking changes are feasible, migrate callers and remove the old path in the same refactor wave, per **nh-principle-migrate-callers-then-delete-legacy-apis**. Distinct operations or implementations with different contracts are not duplicate paths merely because their shapes resemble each other.
 
 ## Importable internals
 

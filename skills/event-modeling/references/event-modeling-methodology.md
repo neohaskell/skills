@@ -210,7 +210,9 @@ schema's required-keys set) and then append into it:
 }
 ```
 
-### 6b. Append the feature (additive — never rewrite existing arrays, only push to them)
+### 6b. Extend the feature model while preserving existing identities
+
+Add new elements without replacing unrelated arrays. For an authorized correction or redesign, update the affected elements and their references in place, preserve stable IDs where the meaning is unchanged, and validate the complete model. The design model is editable; append-only rules for persisted event streams do not make this planning file immutable.
 
 ```json
 {

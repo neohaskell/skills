@@ -1,9 +1,11 @@
 ---
 name: nh-why
-description: "Use for 'why does X work this way', 'why we picked Y', design rationale, regressions, postmortems, or data-backed thresholds. Discovers available evidence sources and queries each evidence category (source control, issue tracker, long-form docs, real-time chat, infrastructure observability, error tracking, product analytics warehouse) in parallel, then returns a cited read on decisions and tradeoffs. Use how for runtime behavior."
+description: "Use for 'why does X work this way', 'why we picked Y', design rationale, regressions, postmortems, or data-backed thresholds. Discovers available evidence sources and queries each evidence category (source control, issue tracker, long-form docs, real-time chat, infrastructure observability, error tracking, product analytics warehouse) in parallel, then returns a cited read on decisions and tradeoffs. Use nh-how for runtime behavior."
 ---
 
 > Adapted for consumer applications from the public NeoHaskell project.
+
+Resolve authorized delegation through [nh-roles](../nh-roles/SKILL.md). Host and consumer instructions govern the parallel steps below. If delegation is unavailable, perform eligible work inline and explicitly report missing independence or comparison coverage.
 
 # Why
 
@@ -25,7 +27,7 @@ If the target is vague ("why do we do it this way?" with no clear referent), mak
 
 ## Step 2. Establish the Code Anchor
 
-For this repository, investigate the internal NeoHaskell framework, language, and toolchain. Before spawning investigators, build the seed context inline: file paths and line ranges in the maintained implementation, key Haskell symbols (types, functions, service records and their operations, typeclasses or instances where relevant), the last few commits touching the target, PR numbers from merge commits (pattern `(#1234)` in the subject line), and any linked ticket IDs. Run `git blame -L <start>,<end> <file>` for last-touch commits, `git log --follow -p -- <file>` for full history with patches through renames, `git log --oneline -20 -- <file>` for recent commits with PR numbers visible, and `git log -1 --format=%B <commit>` to extract PR numbers. When the hosting interface is available and authenticated, pull the PR bodies and discussion for any substantive commit: `gh pr view <number> --json title,body,author,createdAt,mergedAt,labels,closingIssuesReferences,comments,reviews`. Confirm the repository and hosting provider from the available checkout and configuration; record unavailable history or PR access as a gap. Follow generated declarations back to their generator or source types only when relevant to the question. This anchor goes to every investigator and to the synthesizer.
+Use [nh-app-context](../nh-app-context/SKILL.md) to locate the affected application component and revision-compatible dependencies. Investigate framework or toolchain internals only when they own the decision being explained. Before spawning investigators, build the seed context inline: file paths and line ranges in the maintained implementation, key symbols in the component’s language (types, functions, components, services and their operations where relevant), the last few commits touching the target, PR numbers from merge commits (pattern `(#1234)` in the subject line), and any linked ticket IDs. Run `git blame -L <start>,<end> <file>` for last-touch commits, `git log --follow -p -- <file>` for full history with patches through renames, `git log --oneline -20 -- <file>` for recent commits with PR numbers visible, and `git log -1 --format=%B <commit>` to extract PR numbers. When the hosting interface is available and authenticated, pull the PR bodies and discussion for any substantive commit: `gh pr view <number> --json title,body,author,createdAt,mergedAt,labels,closingIssuesReferences,comments,reviews`. Confirm the repository and hosting provider from the available checkout and configuration; record unavailable history or PR access as a gap. Follow generated declarations back to their generator or source types only when relevant to the question. This anchor goes to every investigator and to the synthesizer.
 
 ## Step 3. Spawn Parallel Investigators
 

@@ -97,10 +97,7 @@ future slice.
 ### REFACTOR — improve structure with the bar green
 
 With every test green, improve names, remove duplication, and extract helpers **without changing
-behavior** (no new assertions in this phase). This is also where you add the **property** test — the
-QuickCheck replay that folds the whole event log through the entity `update` (`Array.foldl update
-initialState events`) to assert an invariant holds for *any* ordering/quantity, widening the base of
-the pyramid.
+behavior** (no new assertions in this phase). Add a new **property** assertion in a separate RED → DOMAIN → GREEN cycle. A QuickCheck replay can fold a valid generated event log through the entity `update` (`Array.foldl update initialState events`) and assert its invariant. Generate only histories allowed by the contract; arbitrary reorderings are valid only when that contract permits them.
 
 ---
 
@@ -111,7 +108,7 @@ everything then add a few tests," and the compiler-as-RED signal is lost.
 
 | Phase | May create/edit | Must NOT touch |
 |---|---|---|
-| **RED** | test files only: `tests/**/*.hurl`, `test/**/*Spec.hs` | any `src/**/*.hs` implementation |
+| **RED** | test files only, in the consumer’s declared test directories (for example `tests/**/*.hurl` and `tests/**/*Spec.hs`) | any `src/**/*.hs` implementation |
 | **DOMAIN** | type definitions and instances (`data`, `newtype`, `type instance`, `instance …`), and **stubbed** bodies (`panic "TODO: not implemented"` / `Integration.none`) | real logic inside any body |
 | **GREEN** | implementation **bodies** only | new types, new fields, new tests |
 | **REFACTOR** | any file — **but only with all tests green** | behavior changes; new assertions |
@@ -123,7 +120,7 @@ Two practical tells that a boundary was crossed:
 - You wrote real branching logic while in DOMAIN → you skipped the "fails on the assertion" checkpoint
   and can no longer tell whether the test actually drives the body.
 
-`neohaskell-code-review` treats a phase-boundary violation in a diff as a finding.
+`neohaskell-code-review` can report a phase-boundary violation when observed execution evidence establishes it. A final diff or a single commit cannot establish test-writing order.
 
 ---
 
@@ -208,7 +205,7 @@ Outside-in dictates the **order** you *write* tests (boundary first). It says no
 **ratio** you should *end up* with — and the healthy ratio is a **pyramid**:
 
 ```
-        /\        few    e2e (hurl on :8080) — one observable path per slice
+        /\        few    e2e (consumer HTTP runner) — one observable path per slice
        /  \       some   in-domain acceptance (decide → update → combine)
       /____\      many   decider / projection / outbound / property (pure, fast)
 ```
@@ -222,8 +219,7 @@ The **ice-cream-cone** is the inversion — everything asserted through hurl, al
        \/
 ```
 
-Why the ice-cream-cone is a trap in NeoHaskell specifically: `neo test` boots the full app and runs
-every `tests/**/*.hurl` against `:8080`; hurl assertions read JSON paths and cannot tell you *which*
+HTTP end-to-end tests typically boot the app and its dependencies. Discover the consumer’s runner, scenario paths and configured port rather than assuming a `neo test` version or port. Hurl assertions read JSON paths and cannot tell you *which*
 branch of a `decide` was wrong. A pure decider spec fails in milliseconds and points at the exact rule.
 So: pin each business rule (`reject` reasons, accept conditions, projection math) with a **pure** test,
 and keep hurl for **one** end-to-end path that proves the wiring and the eventual-consistency read.
@@ -349,7 +345,7 @@ See `neo-immutability-and-versioning` and `expand-entity` for the exact rules.
 | Anti-pattern | Why it breaks outside-in | Correct move |
 |---|---|---|
 | Implementation before a red test | No proof the code is driven by a requirement; dead/gold-plated code creeps in | Write the one failing test first; run it; watch it fail |
-| Test written after the code "to get coverage" | The test can only encode what the code already does; it never had a chance to fail | RED strictly precedes DOMAIN/GREEN |
+| Test written after the code "to get coverage" | The test may detect defects, but an observed pre-change RED is missing; a diff alone cannot establish the order | RED strictly precedes DOMAIN/GREEN |
 | Adding a type or field during GREEN | Skips the design pressure DOMAIN creates; primitive obsession leaks in | Return to DOMAIN, define the type, re-stub, resume |
 | Real logic during DOMAIN | Loses the "fails on the assertion" checkpoint | DOMAIN bodies are only `panic "TODO: not implemented"` / `Integration.none` |
 | `undefined` / `error "TODO"` / `todo` stubs | Not NeoHaskell; `todo` doesn't exist; `error`/`undefined` aren't the convention | `panic "TODO: not implemented"` (pure/`Task`) |

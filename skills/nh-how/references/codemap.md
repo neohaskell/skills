@@ -2,7 +2,7 @@
 
 # Codemap
 
-Run the owner command from the chosen application component (or set `CODEMAP_ROOT` to it):
+Resolve the installed script path first. Run it from the chosen application component, or set `CODEMAP_ROOT` to that component. The commands below assume the invocation directory is the consumer Git root; in a nested component use the resolved absolute script path:
 
     python3 .agents/skills/nh-how/scripts/codemap.py map
     python3 .agents/skills/nh-how/scripts/codemap.py map "service transport"

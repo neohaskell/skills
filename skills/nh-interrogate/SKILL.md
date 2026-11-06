@@ -5,6 +5,8 @@ description: "Use for \"interrogate\", \"adversarial review\", \"independent rev
 
 > Adapted for consumer applications from the public NeoHaskell project.
 
+Resolve authorized delegation through [nh-roles](../nh-roles/SKILL.md). Host and consumer instructions govern the parallel steps below. If delegation is unavailable, perform eligible work inline and explicitly report missing independence or comparison coverage.
+
 # Interrogate
 
 Use independent reviewers to adversarially review code changes. Use the configured reviewer roles; assigned personas alone do not provide independent review. The deliverable is a synthesized verdict. Do NOT auto-apply changes.

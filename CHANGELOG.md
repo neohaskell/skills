@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.0.1 — 2026-11-06
+
+Correct consumer/frontend guidance, verification examples, skill references, domain-documentation layout, and contradictory TDD and comment-review instructions. Preserve the 96 public skill names and the immutable v1.0.0 release.
+
+Fix published-layout resource checking, unfiltered codemap inventory, pending Hspec verdicts, ambiguous Cabal suite accounting, and output-pipe cleanup when a process is cancelled during launch. Replace framework-checkout-dependent helper tests with portable checks of the supported consumer behavior.
+
+Validation: 113 local helper tests pass. All 96 skills pass native metadata validation, and all 235 skill documents pass the resource checker. Public skill paths are unchanged. No consumer evaluation campaign or host certification was run.
+
 ## v1.0.0 — 2026-11-05
 
 First stable release of the complete 96-skill application collection: 27 historical entries retain their names, 65 shared procedures/principles are adapted with `nh-` names, and four application capabilities are added.

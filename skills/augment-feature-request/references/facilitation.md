@@ -9,7 +9,7 @@ Use only the branch needed by the task. Resolve the application revision and cap
 Detect by **reading files**, never by running `neo`:
 
 - Is there an `event-model.json` whose `entities` array is non-empty?
-- Is there a written domain overview (e.g. `docs/domain-overview.md`)?
+- Is there an established domain map in the consumer’s glossary, ADRs, or other domain documentation?
 
 | What you find | Mode | Output |
 | --- | --- | --- |

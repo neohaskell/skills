@@ -1,13 +1,13 @@
 > Adapted for consumer applications from the public NeoHaskell project.
 
-# Framework verification map example
+# Application verification map example
 
-This illustrates a verification map for NeoHaskell internals using maintained consumer fixtures. It is a teaching example, not a generated or executed verification skill. A generator must discover and prove literal setup, driving, evidence and cleanup recipes for the selected checkout before delivering its output.
+This illustrates a verification map for a Cart/Stock application using NeoHaskell. Names, routes, values and assertions below are illustrative contracts, not claims about files installed in a consumer. It is a teaching example, not a generated or executed verification skill. A generator must discover and prove literal setup, driving, evidence and cleanup recipes for the selected checkout before delivering its output.
 
 ## Baseline preconditions
 
 - Identify the exact revision, toolchain, build configuration, selected fixture and required dependencies from current declarations and source.
-- Own the runtime instance and its disposable database/upload state. The current HTTP recipes assume port 8080; prove ownership or report the unmet prerequisite rather than driving another instance.
+- Own the runtime instance and its disposable database/upload state. Discover the actual runtime URL, port and readiness probe; prove ownership or report the unmet prerequisite rather than driving another instance.
 - Use the generated skill's Launch and Doctor recipes. A ready query subsystem still does not establish completion of a later integration command.
 - Put run state under `.agents-state/verification/<run>/scratch/` and retained proof under `.agents-state/verification/<run>/evidence/`. These example paths must become concrete paths in generated output.
 - Establish each feature's baseline predicates before mutations and record the returned identifiers.

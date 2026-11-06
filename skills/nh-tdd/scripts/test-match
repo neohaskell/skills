@@ -45,6 +45,7 @@ SUITE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:+-]*$")
 
 class MatchOutcome(str, Enum):
     PASSED = "passed"
+    INCOMPLETE = "incomplete"
     ASSERTION_FAILURE = "assertion-failure"
     TIMED_OUT = "timed-out"
     OUTPUT_LIMITED = "output-limited"
@@ -196,6 +197,8 @@ def classify(result: ProcessResult) -> MatchClassification:
         return MatchClassification(MatchOutcome.EMPTY_SELECTION, "FAIL", f"no Hspec examples matched; {summary}")
     if failures != 0:
         return MatchClassification(MatchOutcome.ASSERTION_FAILURE, "FAIL", f"Hspec reported failures; {summary}")
+    if pending:
+        return MatchClassification(MatchOutcome.INCOMPLETE, "INCOMPLETE", f"selected Hspec examples are pending; {summary}")
     return MatchClassification(MatchOutcome.PASSED, "PASS", summary)
 
 

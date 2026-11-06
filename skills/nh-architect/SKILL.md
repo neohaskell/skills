@@ -7,7 +7,7 @@ description: "Sketch types, signatures, and module structure before code, then s
 
 # Architect
 
-Sketch Haskell types, function signatures, service records, relevant typeclass or instance shapes, and module boundaries for the consumer application and its component boundaries. State the semantic contract alongside the types, including evaluation or representation behavior when relevant. Mark incomplete bodies and logic explicitly in the sketch. Compare independent candidate perspectives, then fill in code against the chosen sketch within the caller's requested scope.
+Sketch public types, signatures, module boundaries, and caller interactions in the affected component's language. For Haskell components, include relevant service records, typeclasses, and instances. State the semantic contract alongside the types, including evaluation or representation behavior when relevant. Mark incomplete bodies and logic explicitly in the sketch. Compare candidate designs, then fill in code against the chosen sketch within the caller's requested scope.
 
 ## Start
 
@@ -31,9 +31,9 @@ Skip Phase A only when the work is genuinely greenfield with no surrounding syst
 
 Run the **nh-arena** skill with the design-sketch task and the Phase A grounding artifacts. Pass `references/runner-prompt.md` as each runner's prompt.
 
-Use the current environment's configured architecture runner roles through **nh-arena** and its available delegation interface. Inherit supported runtime defaults when no role override is configured; report unsupported overrides rather than inventing fallback identifiers. Use only supported reasoning and speed settings. Centralized role configuration is managed separately; keep candidate investigations independent within the available delegation capacity.
+Resolve authorized roles through [nh-roles](../nh-roles/SKILL.md). When delegation is available, use **nh-arena** and keep candidate investigations independent within that capacity. Otherwise compare distinct designs inline and label them as one author's alternatives. Inherit configured provider/model/effort; report unsupported overrides rather than inventing identifiers. A required independent assessment remains unavailable until a separate authorized reviewer exists.
 
-Design it twice. Require at least two structurally distinct candidates before synthesis, even when the first looks sufficient. This is the **exhaust-the-design-space** principle skill made concrete. Whole-shape alternatives, not point fixes inside one shape.
+Design it twice. Require at least two structurally distinct candidates before synthesis, even when the first looks sufficient. This is the **nh-principle-exhaust-the-design-space** principle skill made concrete. Whole-shape alternatives, not point fixes inside one shape.
 
 Screen every candidate against [`references/design-red-flags.md`](references/design-red-flags.md) before synthesis. Apply [Security by Construction](../nh-principle-security-by-construction/SKILL.md) and [Design for Throughput](../nh-principle-design-for-throughput/SKILL.md) to each candidate: identify relevant trust/authority boundaries, safe defaults and whole-flow costs. Carry assumptions, tradeoffs and required evidence into the rationale; keep the treatment proportionate to the affected path. Assume the next contributor is an agent that sees only the files it opened, copies the nearest example, and takes the shortest path that compiles. Prefer the design where a change that looks right from one file is right for the whole repo.
 
@@ -47,7 +47,7 @@ Default for an implementation request: proceed directly to implementation with t
 
 Opt in to a checkpoint when the invoker explicitly asks: "/nh-architect with checkpoint," "stop and show me before implementing," or similar. Then surface the synthesized design and pause for sign-off.
 
-The synthesis can ship as its own commit either way, as the "scaffold first" mode of the **foundational-thinking** principle skill. Planned and scoped breakage during fill-in is fine, per the **outcome-oriented-execution** principle skill. For adversarial pressure on the design before implementing, run the **nh-interrogate** skill on the synthesized sketch.
+The synthesis can ship as its own commit either way, as the "scaffold first" mode of the **nh-principle-foundational-thinking** principle skill. Planned and scoped breakage during fill-in is fine, per the **nh-principle-outcome-oriented-execution** principle skill. For adversarial pressure on the design before implementing, run the **nh-interrogate** skill on the synthesized sketch.
 
 If the human pushes back on the shape (in a checkpoint or after the fact), treat that as Phase A evidence. Re-ground and re-run Phase B before writing more code.
 
@@ -57,7 +57,7 @@ Replace explicitly incomplete sketch bodies and pseudocode with implementations 
 
 ## Phase E: Scrap when the architecture is wrong
 
-If implementation keeps producing friction the sketch can't absorb, throw the sketch out. Don't bolt fixes onto a wrong design, per the **redesign-from-first-principles** and **fix-root-causes** principle skills.
+If implementation keeps producing friction the sketch can't absorb, throw the sketch out. Don't bolt fixes onto a wrong design, per the **nh-principle-redesign-from-first-principles** and **nh-principle-fix-root-causes** principle skills.
 
 The signal is a *pattern*, not single instances. Tells:
 
@@ -74,7 +74,7 @@ When you scrap:
 
 1. Re-run the **nh-how** skill over what's been built.
 2. Redesign as if the new constraints had been day-one assumptions, per redesign-from-first-principles.
-3. Subtract before adding, per the **subtract-before-you-add** principle skill. The new sketch should be smaller than the old one before it grows.
+3. Subtract before adding, per the **nh-principle-subtract-before-you-add** principle skill. The new sketch should be smaller than the old one before it grows.
 4. Return to Phase B and re-run arena.
 
 ## Outputs

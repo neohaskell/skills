@@ -1,6 +1,6 @@
 ---
 name: nh-module-docs
-description: Write and verify top-level Haddock for every new Haskell module, including application-owned generated module templates and complete fixture modules. Use when creating or reviewing new modules.
+description: Write and review top-level Haddock for public application modules and other Haskell modules covered by the consumer's documentation policy, including generated templates and fixtures when applicable.
 ---
 
 > Adapted for consumer applications from the public NeoHaskell project.
@@ -16,7 +16,7 @@ communicate what calls do under [Name for the reader](../nh-principle-name-for-t
    `git diff --name-status --diff-filter=A <owning-base> -- '*.hs'`.
    Include staged and untracked additions, application-owned generated module templates, and
    complete fixture modules that the diff command cannot enumerate.
-2. Write the header when creating the module. Describe what it owns and how a
+2. Apply the consumer's policy to each entry. Write a required header when creating the module. Describe what it owns and how a
    caller normally uses it. Omit change history, implementation narration, and
    instructions to future agents.
 3. Check every inventory entry before review. Read the exported contract and

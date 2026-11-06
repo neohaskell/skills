@@ -33,49 +33,7 @@ yield value = value
 """
 
 
-def catalog_data():
-    return {
-        "schema_version": 1,
-        "source_roots": [{"path": "core", "extensions": [".hs"]}],
-        "capabilities": [
-            {
-                "id": "core",
-                "name": "Core",
-                "aliases": ["Task"],
-                "paths": ["core"],
-            },
-            {
-                "id": "stale",
-                "name": "Stale record",
-                "aliases": ["missing"],
-                "paths": ["core/deleted"],
-            },
-        ],
-        "extension_points": [
-            {
-                "id": "yield",
-                "name": "Yield function",
-                "aliases": ["yield"],
-                "paths": ["core/Task.hs"],
-                "symbols": ["yield"],
-                "hint": "Yield a value.",
-            },
-            {
-                "id": "stale-extension",
-                "name": "Stale extension",
-                "aliases": ["missing"],
-                "paths": ["core/deleted.hs"],
-                "symbols": ["removed"],
-                "hint": "No longer present.",
-            },
-        ],
-    }
-
-
 def make_repo(root, sources):
-    catalog_path = root / ".agents-state/test-catalog.json"
-    catalog_path.parent.mkdir(parents=True, exist_ok=True)
-    catalog_path.write_text(json.dumps(catalog_data()), encoding="utf-8")
     for relative, body in sources.items():
         path = root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -154,14 +112,14 @@ oldSymbol = unit
         skill_text = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
         self.assertTrue(skill_text.startswith("---\n"))
         frontmatter = skill_text.split("---", 2)[1]
-        self.assertRegex(frontmatter, r"(?m)^name:\s*how\s*$")
+        self.assertRegex(frontmatter, r"(?m)^name:\s*nh-how\s*$")
         self.assertRegex(frontmatter, r"(?m)^description:\s*.+$")
         for target in re.findall(r"\]\(([^)]+)\)", skill_text):
             if "://" in target:
                 continue
             self.assertTrue((skill_dir / target.split("#", 1)[0]).is_file(), target)
 
-    def test_multiline_signature_duplicate_modules_and_curated_filter(self):
+    def test_multiline_signature_duplicate_modules_and_inventory(self):
         symbol = self.invoke("symbol", "Task.yield")
         self.assertEqual(symbol["results"][0]["path"], "core/Task.hs")
         self.assertIn("Task _ value", symbol["results"][0]["signature"])
@@ -184,8 +142,10 @@ oldSymbol = unit
             any(item["path"] == "core/Service.hs" and item["kind"] == "indented-signature" for item in service_fields["results"])
         )
         mapped = self.invoke("map")
-        self.assertEqual([item["id"] for item in mapped["capabilities"]], ["core"])
-        self.assertEqual([item["id"] for item in mapped["extension_points"]], ["yield"])
+        self.assertEqual(mapped["capabilities"], [])
+        self.assertEqual(mapped["extension_points"], [])
+        self.assertTrue(CODEMAP.module_matches("", "Task", "core/Task.hs", set()))
+        self.assertGreater(sum(item["source_files"] for item in mapped["roots"]), 0)
 
     def test_callers_are_current_lexical_candidates(self):
         result = self.invoke("callers", "Task.yield")

@@ -7,7 +7,7 @@ description: Review scoped comments, delete unprotected prose, and identify requ
 
 # Comment reviewer
 
-Use the parent-scoped files or diff. Otherwise use the current diff against the base branch, default `main`, including the working tree. Follow the delegation instructions in `AGENTS.md`.
+Use the parent-scoped files or diff. Otherwise discover the PR base or configured upstream base and include the working tree in the scoped diff. If the base is unresolved, report it and review only the explicitly identified files; do not assume `main`. Follow the delegation instructions in `AGENTS.md`.
 
 Delete prose comments unless one of these exceptions is proven:
 

@@ -56,7 +56,12 @@ class RuntimeProofTests(unittest.TestCase):
     def temporary_root(self):
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
-        return Path(directory.name)
+        root = Path(directory.name)
+        installed_script = root / ".agents/skills/nh-regression-evidence/scripts/evidence.py"
+        patcher = mock.patch.object(evidence, "__file__", str(installed_script))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        return root
 
     def test_runtime_command_capture_rejects_source_drift_and_keeps_evidence(self):
         root = self.temporary_root()
@@ -106,7 +111,7 @@ class RuntimeProofTests(unittest.TestCase):
         helper.chmod(0o755)
         for name in ['Positive.hs', 'Negative.hs']:
             (root / name).write_text('compiler orchestration fixture')
-        args = argparse.Namespace(repo=root, mode='compiler', input=[], command=[], positive=Path('Positive.hs'), negative=Path('Negative.hs'), diagnostic='EXPECTED_TYPE', timeout=0.5)
+        args = argparse.Namespace(repo=root, mode='compiler', input=[], command=[], positive=Path('Positive.hs'), negative=Path('Negative.hs'), diagnostic='EXPECTED_TYPE', timeout=2)
         with self.assertRaisesRegex(ValueError, 'process outcome `timed-out`'):
             evidence.capture(args)
         receipt_path = next((root / '.agents-state/regression-evidence').glob('*/receipt.json'))

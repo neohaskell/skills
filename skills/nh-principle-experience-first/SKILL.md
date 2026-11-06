@@ -15,6 +15,6 @@ When implementation convenience conflicts with user delight, choose delight.
 - Get the details right (clear API names, predictable behavior, actionable errors, documentation, and visual details where relevant)
 - Tighten the core loop (every feature should serve the central workflow or get out of the way)
 
-The user is whoever consumes the work. For a UI that is the end user. For a library or an internal API it is the colleague who imports it. The engineer who maintains the code next is a user too. For NeoHaskell's framework, language, and toolchain, prioritize Jess: a junior TypeScript developer with limited time who wants to build a working project without deep prerequisite learning. Consider maintainers' experience too, and explain the impact on both Jess and maintainers.
+The user is whoever consumes the work. For a UI that is the end user. For a library or an internal API it is the colleague who imports it. The engineer who maintains the code next is a user too. Discover the application's actual users, tasks, and constraints from its product context rather than inheriting the framework's developer persona. Consider maintainers' experience too, and explain the impact on the relevant readers and users.
 
 Foundations should serve the experience. Foundational thinking governs the *sequence* of work. This principle governs the *target*.

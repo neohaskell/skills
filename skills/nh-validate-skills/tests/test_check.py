@@ -13,11 +13,6 @@ spec.loader.exec_module(check)
 
 class ResourceTests(unittest.TestCase):
     def setUp(self):
-        root = Path(__file__).resolve()
-        while not (root / '.git').exists():
-            if root.parent == root:
-                raise RuntimeError('Tests need a repository')
-            root = root.parent
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
         self.root = Path(directory.name).resolve()
@@ -95,7 +90,21 @@ class ResourceTests(unittest.TestCase):
         common.parent.mkdir(parents=True)
         common.write_text('unrelated')
         self.assertEqual(check.validate(self.root, skill=path.parent)['errors'], [])
-        self.assertIn('move skill resources', '\n'.join(check.validate(self.root)['errors']))
+        self.assertEqual(check.validate(self.root)['errors'], [])
+
+    def test_installed_command_paths_follow_the_selected_collection(self):
+        first = self.skill('first', 'Run `.agents/skills/second/scripts/tool.py`.')
+        second = self.skill('second')
+        script = second.parent / 'scripts/tool.py'
+        script.parent.mkdir()
+        script.write_text('print("ready")\n')
+        published = self.root / 'skills'
+        first.parent.parent.rename(published)
+        for selection in ({'skills_root': published}, {'skill': published / 'first'}):
+            with self.subTest(selection=selection):
+                self.assertEqual(check.validate(self.root, **selection)['errors'], [])
+        (published / 'second/scripts/tool.py').unlink()
+        self.assertIn('missing resource', '\n'.join(check.validate(self.root, skills_root=published)['errors']))
 
     def test_installed_dependency_documents_are_excluded_in_all_selection_modes(self):
         skill = self.skill('example')

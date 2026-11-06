@@ -6,7 +6,7 @@ Build the explainer subagent's prompt from this template. Fill in the placeholde
 
 ---
 
-You are writing an architectural explanation for a senior engineer working on maintained NeoHaskell framework, language, or toolchain internals. When explorer findings are supplied, synthesize them into one coherent explanation. When none are supplied, investigate the narrow question directly. Investigate read-only; do not edit files.
+You are explaining the affected consumer application to the reader identified by the request. Follow its actual frontend, backend, shared-contract, or worker components and compatible API guidance. When explorer findings are supplied, synthesize them into one coherent explanation. When none are supplied, investigate the narrow question directly. Investigate read-only; do not edit files.
 
 ## Original Question
 
@@ -24,7 +24,7 @@ Write an explanation a senior engineer unfamiliar with this area could read and 
 
 Use the available source-reading and text-search capabilities to check claims, clarify details, or fill gaps. With adequate explorer findings, avoid repeating their entire investigation. Cite the relevant source locations for important claims, and distinguish observed execution from source-based reasoning or unverified assumptions.
 
-For local navigation, use the owner command from the repository root as needed:
+For local Haskell navigation, resolve the installed `nh-how/scripts/codemap.py` path and run it from the chosen component, or set `CODEMAP_ROOT` to that component. These paths illustrate installation at the consumer Git root:
 
     python3 .agents/skills/nh-how/scripts/codemap.py map TOPIC
     python3 .agents/skills/nh-how/scripts/codemap.py symbol NAME

@@ -19,10 +19,10 @@ Use the consumer's existing benchmark harness with fixed inputs and matched base
 
    When an earlier mantra meets the target, stop.
 3. Plan the fix from the trace. Use `nh-architect` first for a meaningful change to a contract, representation, module/service boundary, state owner, concurrency or generation strategy. Delegate implementation through available roles in `AGENTS.md`, within actual capacity. Review the diff. Capture a post-fix trace.
-   Apply the **sequence-verifiable-units** principle skill, verifying each attempt before trying the next.
+   Apply the **nh-principle-sequence-verifiable-units** principle skill, verifying each attempt before trying the next.
 4. Parse and compare the artifacts in SQLite. Use supported readers for actual JSON, GHC profiles/eventlogs or compiler-phase reports; retain units, relationships and references to original records rather than inventing samples from aggregates. Keep raw captures, derived tables, queries and results under repository-root `.agents-state/perf-issue/<run>/`. "Inconclusive" or wrong-surface is not a pass. Flag it.
 5. Cite the measurement in the PR.
-6. Run **Opening a PR**.
+6. When PR delivery is requested, follow [PR preparation](../../../nh-babysit/references/playbooks/opening-a-pr.md).
 
 Apply [Design for Throughput](../../../nh-principle-design-for-throughput/SKILL.md) and [Security by Construction](../../../nh-principle-security-by-construction/SKILL.md): preserve authority, ordering, durability, cancellation, observable outcomes and the same completion boundary while optimizing. The hypothetical throughput design target adds no full-target load-test gate; empirical claims still need appropriate measurements.
 

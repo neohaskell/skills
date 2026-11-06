@@ -2,215 +2,126 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 import shutil
 import subprocess
 import tempfile
-import sys
 import unittest
-from pathlib import Path
-
-sys.dont_write_bytecode = True
-REPOSITORY = next(path for path in Path(__file__).resolve().parents if (path / ".git").exists())
-TEST_STATE = REPOSITORY / ".agents-state" / "owned-test-fixtures"
-TEST_STATE.mkdir(parents=True, exist_ok=True)
-
 
 SOURCE = Path(__file__).resolve().parents[1] / "scripts"
 
 
 class ToolchainTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.temporary = tempfile.TemporaryDirectory(dir=TEST_STATE)
-        self.base = Path(self.temporary.name)
-        self.root = self.base / "project"
-        self.script_dir = self.root / ".agents/skills/nh-best-practices/scripts"
-        self.script_dir.mkdir(parents=True)
-        (self.root / "nix").mkdir()
-        (self.root / "core").mkdir()
-        (self.root / "cabal.project").write_text("packages: core/*.cabal\n")
-        (self.root / "cabal.project.dev").write_text("import: cabal.project\noptimization: 0\n")
-        (self.root / "nix/hix.nix").write_text("compiler-nix-name = ghc98;\n")
-        (self.root / "flake.nix").write_text("inputs = {};\n")
-        (self.root / "flake.lock").write_text("{}\n")
-        (self.root / "core/nhcore.cabal").write_text("name: nhcore\nbuild-depends: base\n")
-        for name in ("repo-root", "toolchain-fp", "with-toolchain"):
-            destination = self.script_dir / name
-            if name == "with-toolchain":
-                absent_profile = self.base / "absent-nix-profile/bin"
-                source = (SOURCE / name).read_text().replace(
-                    'NIX_PROFILE_BIN="/nix/var/nix/profiles/default/bin"',
-                    f'NIX_PROFILE_BIN="{absent_profile}"',
-                )
-                destination.write_text(source)
-            else:
-                shutil.copy2(SOURCE / name, destination)
-            destination.chmod(0o755)
-
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.base = Path(temporary.name).resolve()
+        self.root = self.base / "application"
+        self.root.mkdir()
+        (self.root / "cabal.project").write_text("packages: backend/*.cabal\n")
+        (self.root / "backend").mkdir()
+        (self.root / "backend/app.cabal").write_text("name: app\nbuild-depends: base\n")
         self.tools = self.base / "tools"
         self.tools.mkdir()
-        for name in ("bash", "dirname", "cat", "cut"):
-            self.link_tool(name, self.tools)
-        hasher = shutil.which("sha256sum") or shutil.which("shasum")
-        if hasher is None:
-            self.skipTest("sha256sum and shasum are unavailable")
-        self.link_tool(Path(hasher).name, self.tools)
-        self.env = {
-            "PATH": str(self.tools),
-            "HOME": str(self.base),
-            "NEOHASKELL_ROOT": str(self.root),
-        }
+        for name in ("bash", "dirname", "cat", "cut", "sha256sum", "shasum"):
+            executable = shutil.which(name)
+            if executable:
+                (self.tools / name).symlink_to(executable)
+        self.env = {**os.environ, "PATH": str(self.tools), "NH_APP_ROOT": str(self.root)}
+        self.env.pop("NH_TOOLCHAIN", None)
 
-    def tearDown(self) -> None:
-        self.temporary.cleanup()
+    def command(self, name, body):
+        target = self.tools / name
+        target.write_text("#!/usr/bin/env bash\n" + body)
+        target.chmod(0o755)
 
-    @staticmethod
-    def link_tool(name: str, directory: Path) -> None:
-        tool = shutil.which(name)
-        if tool:
-            destination = directory / name
-            if not destination.exists():
-                destination.symlink_to(tool)
+    def run_script(self, name, *args, env=None, cwd=None):
+        environment = self.env.copy()
+        for key, value in (env or {}).items():
+            if value is None:
+                environment.pop(key, None)
+            else:
+                environment[key] = value
+        return subprocess.run([str(SOURCE / name), *args], cwd=cwd or self.root,
+                              env=environment, text=True, capture_output=True, timeout=10)
 
-    def make_command(self, directory: Path, name: str, body: str) -> Path:
-        directory.mkdir(parents=True, exist_ok=True)
-        path = directory / name
-        path.write_text("#!/usr/bin/env bash\n" + body)
-        path.chmod(0o755)
-        self.link_tool("bash", directory)
-        return path
-
-    def run_script(self, name: str, *args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
-        merged = self.env.copy()
-        if env:
-            merged.update(env)
-        return subprocess.run(
-            [str(self.tools / "bash"), str(self.script_dir / name), *args],
-            cwd=self.base,
-            env=merged,
-            text=True,
-            capture_output=True,
-            check=False,
-            timeout=10,
-        )
-
-    def fingerprint(self) -> str:
-        result = self.run_script("toolchain-fp")
+    def test_discovery_uses_invocation_component_not_installed_script_location(self):
+        component = self.root / "frontend"
+        nested = component / "src"
+        nested.mkdir(parents=True)
+        (component / "neo.json").write_text("{}")
+        result = self.run_script("repo-root", env={"NH_APP_ROOT": None}, cwd=nested)
         self.assertEqual(result.returncode, 0, result.stderr)
-        return result.stdout.strip()
+        self.assertEqual(result.stdout.strip(), str(component))
 
-    def test_root_discovery_uses_script_ancestors_without_a_root_scripts_directory(self) -> None:
-        env = self.env.copy()
-        env.pop("NEOHASKELL_ROOT")
-        result = self.run_script("repo-root", env=env)
+    def test_explicit_root_accepts_a_component_without_framework_layout(self):
+        component = self.base / "worker"
+        component.mkdir()
+        result = self.run_script("repo-root", env={"NH_APP_ROOT": str(component)})
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(result.stdout.strip(), str(self.root.resolve()))
+        self.assertEqual(result.stdout.strip(), str(component))
 
-    def test_explicit_root_is_checked(self) -> None:
-        result = self.run_script("repo-root", env={"NEOHASKELL_ROOT": str(self.base)})
+    def test_explicit_root_must_exist(self):
+        result = self.run_script("repo-root", env={"NH_APP_ROOT": str(self.base / "missing")})
         self.assertEqual(result.returncode, 2)
-        self.assertIn("must contain cabal.project and nix/hix.nix", result.stderr)
+        self.assertIn("existing application component", result.stderr)
 
-    def test_fingerprint_changes_when_a_cabal_dependency_changes(self) -> None:
-        before = self.fingerprint()
-        cabal_file = self.root / "core/nhcore.cabal"
-        cabal_file.write_text(cabal_file.read_text() + "  text,\n")
-        after = self.fingerprint()
-        self.assertNotEqual(before, after)
-
-    def test_fingerprint_changes_when_a_nix_module_changes(self) -> None:
-        before = self.fingerprint()
-        (self.root / "nix/extra.nix").write_text("shell.tools = {};\n")
-        after = self.fingerprint()
-        self.assertNotEqual(before, after)
-
-    def test_path_witness_restores_pinned_commands_and_preserves_argv(self) -> None:
-        witness = self.base / "witness"
-        mutated = self.base / "mutated"
-        self.make_command(witness, "host-tool", "printf 'witness:%s\\n' \"$@\"\nexit 23\n")
-        self.make_command(mutated, "host-tool", "printf 'mutated:%s\\n' \"$@\"\nexit 24\n")
-        current_path = f"{mutated}:{self.tools}"
-        result = self.run_script(
-            "with-toolchain",
-            "host-tool",
-            "argument with spaces",
-            "",
-            env={
-                "PATH": current_path,
-                "NEOHASKELL_SHELL_FP": self.fingerprint(),
-                "NEOHASKELL_SHELL_PATH": str(witness),
-            },
-        )
-        self.assertEqual(result.returncode, 23, result)
-        self.assertEqual(result.stdout.splitlines(), ["witness:argument with spaces", "witness:"])
-        self.assertNotIn("mutated:", result.stdout)
-
-    def test_stale_fingerprint_enters_nix_develop(self) -> None:
-        self.make_command(self.tools, "nix", "printf 'nix:%s\\n' \"$@\"\nexit 37\n")
-        self.make_command(self.tools, "host-tool", "printf 'host\\n'\n")
-        result = self.run_script(
-            "with-toolchain",
-            "host-tool",
-            "arg",
-            env={"NEOHASKELL_SHELL_FP": "stale", "NEOHASKELL_SHELL_PATH": str(self.tools)},
-        )
-        self.assertEqual(result.returncode, 37, result)
-        self.assertEqual(result.stdout.splitlines(), ["nix:develop", "nix:--command", "nix:host-tool", "nix:arg"])
-
-    def test_changed_dependency_rejects_a_previously_matching_fingerprint(self) -> None:
-        fingerprint = self.fingerprint()
-        cabal_file = self.root / "core/nhcore.cabal"
-        cabal_file.write_text(cabal_file.read_text() + "  bytestring,\n")
-        self.make_command(self.tools, "nix", "printf 'nix:%s\\n' \"$@\"\n")
-        result = self.run_script(
-            "with-toolchain",
-            "host-tool",
-            env={"NEOHASKELL_SHELL_FP": fingerprint, "NEOHASKELL_SHELL_PATH": str(self.tools)},
-        )
-        self.assertEqual(result.returncode, 0, result)
-        self.assertIn("nix:develop", result.stdout)
-
-    def test_missing_witness_command_enters_nix(self) -> None:
-        self.make_command(self.tools, "nix", "printf 'nix:%s\\n' \"$@\"\n")
-        result = self.run_script(
-            "with-toolchain",
-            "host-tool",
-            env={
-                "NEOHASKELL_SHELL_FP": self.fingerprint(),
-                "NEOHASKELL_SHELL_PATH": str(self.base / "empty-witness"),
-            },
-        )
-        self.assertEqual(result.returncode, 0, result)
-        self.assertIn("nix:develop", result.stdout)
-
-    def test_profile_only_nix_is_found(self) -> None:
-        profile = self.base / "profile/bin"
-        profile.mkdir(parents=True)
-        copied = self.script_dir / "with-toolchain-profile-test"
-        source = (self.script_dir / "with-toolchain").read_text()
-        source = source.replace(
-            f'NIX_PROFILE_BIN="{self.base / "absent-nix-profile/bin"}"',
-            f'NIX_PROFILE_BIN="{profile}"',
-        )
-        copied.write_text(source)
-        copied.chmod(0o755)
-        self.make_command(profile, "nix", "printf 'profile:%s\\n' \"$@\"\nexit 37\n")
-        self.make_command(self.tools, "host-tool", "printf 'host\\n'\n")
-        result = self.run_script("with-toolchain-profile-test", "host-tool", env={"NEOHASKELL_ROOT": str(self.root)})
-        self.assertEqual(result.returncode, 37, result)
-        self.assertEqual(result.stdout.splitlines(), ["profile:develop", "profile:--command", "profile:host-tool"])
-
-    def test_no_nix_uses_loud_host_fallback_and_preserves_exit_status(self) -> None:
-        self.make_command(self.tools, "host-tool", "printf 'host:%s:%s\\n' \"$NEOHASKELL_TOOLCHAIN_MODE\" \"$@\"\nexit 23\n")
-        result = self.run_script("with-toolchain", "host-tool", "arg", env={"NEOHASKELL_ROOT": str(self.root)})
-        self.assertEqual(result.returncode, 23, result)
-        self.assertEqual(result.stdout, "host:host:arg\n")
-        self.assertIn("using unpinned host tools", result.stderr)
-
-    def test_no_command_fails_with_usage(self) -> None:
-        result = self.run_script("with-toolchain")
+    def test_discovery_stops_at_the_consumer_git_boundary(self):
+        (self.base / "flake.nix").write_text("{}")
+        isolated = self.base / "other-app"
+        (isolated / ".git").mkdir(parents=True)
+        result = self.run_script("repo-root", env={"NH_APP_ROOT": None}, cwd=isolated)
         self.assertEqual(result.returncode, 2)
-        self.assertIn("usage:", result.stderr)
+
+    def test_host_selection_preserves_arguments_and_exit_status(self):
+        self.command("selected-tool", 'printf "<%s>\\n" "$@"; exit 23\n')
+        result = self.run_script("with-toolchain", "selected-tool", "argument with spaces", "")
+        self.assertEqual(result.returncode, 23)
+        self.assertEqual(result.stdout.splitlines(), ["<argument with spaces>", "<>"])
+        self.assertIn("selected host toolchain", result.stderr)
+
+    def test_declared_flake_uses_nix_without_running_host_fallback(self):
+        (self.root / "flake.nix").write_text("{}")
+        self.command("nix", 'printf "<%s>\\n" "$@"; exit 37\n')
+        self.command("selected-tool", 'printf "unexpected host fallback\\n"\n')
+        result = self.run_script("with-toolchain", "selected-tool", "argument with spaces")
+        self.assertEqual(result.returncode, 37)
+        self.assertEqual(result.stdout.splitlines(), ["<develop>", "<--command>", "<selected-tool>", "<argument with spaces>"])
+
+    def test_missing_declared_nix_fails_without_host_fallback(self):
+        (self.root / "flake.nix").write_text("{}")
+        self.command("selected-tool", 'printf "unexpected host fallback\\n"\n')
+        result = self.run_script("with-toolchain", "selected-tool")
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(result.stdout, "")
+
+    def test_explicit_host_selection_does_not_invoke_nix(self):
+        (self.root / "flake.nix").write_text("{}")
+        self.command("nix", 'exit 99\n')
+        self.command("selected-tool", 'printf "host selected\\n"\n')
+        result = self.run_script("with-toolchain", "selected-tool", env={"NH_TOOLCHAIN": "host"})
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.strip(), "host selected")
+
+    def test_invalid_mode_and_missing_nix_declaration_fail(self):
+        for mode in ("invalid", "nix"):
+            with self.subTest(mode=mode):
+                result = self.run_script("with-toolchain", "selected-tool", env={"NH_TOOLCHAIN": mode})
+                self.assertEqual(result.returncode, 2)
+
+    def test_fingerprint_tracks_component_cabal_and_nix_inputs(self):
+        if not (self.tools / "sha256sum").exists() and not (self.tools / "shasum").exists():
+            self.skipTest("SHA-256 utility unavailable")
+        first = self.run_script("toolchain-fp")
+        self.assertEqual(first.returncode, 0, first.stderr)
+        (self.root / "app.cabal").write_text("name: root-app\n")
+        second = self.run_script("toolchain-fp")
+        self.assertNotEqual(first.stdout, second.stdout)
+        (self.root / "nix").mkdir()
+        (self.root / "nix/environment.nix").write_text("{}")
+        third = self.run_script("toolchain-fp")
+        self.assertNotEqual(second.stdout, third.stdout)
 
 
 if __name__ == "__main__":
-    unittest.main(verbosity=2)
+    unittest.main()

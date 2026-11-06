@@ -37,7 +37,6 @@ MAX_RESULTS = 80
 MAX_LINE_CHARS = 240
 SCHEMA_VERSION = 1
 INDEXER_VERSION = 3
-CATALOG_RELATIVE_PATH = ".agents/skills/nh-how/references/codemap-catalog.json"
 DATABASE_RELATIVE_PATH = ".agents-state/how/codemap.sqlite3"
 HIE_DATABASE_RELATIVE_PATH = ".agents-state/how/compiler.hiedb"
 EXCLUDED_DIRS = {
@@ -1551,6 +1550,8 @@ def sql_results(
 
 
 def module_matches(query: str, name: str, path: str, query_terms: set[str]) -> bool:
+    if not query.strip():
+        return True
     exact_parts = {part.casefold() for part in name.split(".")}
     exact_parts.update(part.casefold() for part in Path(path).with_suffix("").parts)
     if query.casefold() in exact_parts:
@@ -1613,7 +1614,8 @@ def current_root_counts(inventory: Inventory, catalog: dict[str, Any]) -> list[d
         root_path = source_root.get("path", "")
         if root_path == ".":
             exact_paths = set(source_root.get("files", []))
-            count = sum(1 for path in inventory.files if path in exact_paths)
+            count = sum(1 for path in inventory.files
+                        if path in exact_paths or relative_matches_catalog(path, {"source_roots": [source_root]}))
         else:
             prefix = root_path.rstrip("/") + "/"
             count = sum(1 for path in inventory.files if path.startswith(prefix))

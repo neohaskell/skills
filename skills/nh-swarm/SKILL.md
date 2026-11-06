@@ -5,6 +5,8 @@ description: "Fan out N parallel workers, drain them, and return one report. Use
 
 > Adapted for consumer applications from the public NeoHaskell project.
 
+Resolve authorized delegation through [nh-roles](../nh-roles/SKILL.md). Host and consumer instructions govern the parallel steps below. If delegation is unavailable, perform eligible work inline and explicitly report missing independence or comparison coverage.
+
 # Swarm
 
 Fan out N independent parallel workers. They may cover separate slices, race the same brief, or mix both. The parent waits, aggregates, and returns one report.

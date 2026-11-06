@@ -10,7 +10,7 @@ description: "Use only when the user explicitly asks for TDD, a failing test, or
 When fixing a bug with a clear, cheap test path, make the broken behavior executable before changing production code. The goal is a focused regression test that fails before the fix and passes after it.
 
 Do not force a test when it would be impractical. If the available test would require broad harness setup, brittle mocks, slow end-to-end infrastructure, production-only state, vague reproduction steps, or large unrelated fixture churn, skip adding a new test and use the closest useful verification instead.
-Run the application's existing focused runner first. For an Hspec/Cabal component, the optional helper is `.agents/skills/nh-tdd/scripts/test-match <pattern> <suite>` from that component, with `NH_APP_ROOT` when ambiguous. Select the actual suite and, if necessary, `--project-file`. It rejects empty selections and retains a bounded transcript. Follow [toolchain selection](../nh-nix-haskell-tools/SKILL.md), [regression evidence](../nh-regression-evidence/SKILL.md), and [application tests](../nh-test/SKILL.md). A framework-internal testbed is not required.
+Run the application's existing focused runner first. For an Hspec/Cabal component, the optional helper is `.agents/skills/nh-tdd/scripts/test-match <pattern> <suite>` from that component, with `NH_APP_ROOT` when ambiguous. Select the actual suite and, if necessary, `--project-file`. It rejects empty selections, reports pending examples as incomplete, and retains a bounded transcript. Follow [toolchain selection](../nh-nix-haskell-tools/SKILL.md), [regression evidence](../nh-regression-evidence/SKILL.md), and [application tests](../nh-test/SKILL.md). A framework-internal testbed is not required.
 
 ## Workflow
 

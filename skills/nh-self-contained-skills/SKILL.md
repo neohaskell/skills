@@ -14,3 +14,5 @@ Write reusable instructions that remain useful when implementation code moves or
 3. Put one-run reports, reviews, logs, transcripts, handoffs, and validation evidence under `.agents-state/<task>/`. Retain their source revision and paths when needed to interpret historical findings. Reusable skills must work without that local evidence.
 4. Keep durable policy, generic scripts, fixtures, templates, and required configuration with their owning skill. Give scripts explicit inputs that work across runs. Put concrete cleanup queues and remaining work in the issue tracker. Keep observed findings, revision snapshots, and ticket state out of reusable skill resources.
 5. Audit each changed instruction and resource. A reader must understand every example without source navigation. Every retained dependency must have an operational purpose. Remove snapshot claims and evidence links from reusable guidance, then run [Validate skills](../nh-validate-skills/SKILL.md).
+
+For a complete authoring workflow, use the [skill authoring playbook](references/playbooks/authoring-a-skill.md).

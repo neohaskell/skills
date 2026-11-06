@@ -5,6 +5,8 @@ description: "Spawn N parallel candidates at the same task, pick a base, graft t
 
 > Adapted for consumer applications from the public NeoHaskell project.
 
+Resolve authorized delegation through [nh-roles](../nh-roles/SKILL.md). Host and consumer instructions govern the parallel steps below. If delegation is unavailable, perform eligible work inline and explicitly report missing independence or comparison coverage.
+
 # Arena
 
 Open a todolist with one entry per phase (Frame, Fan out, Cross-judge, Pick, Graft, Verify) before launching anything.
@@ -16,7 +18,7 @@ Every candidate gets the same prompt, so the prompt is the contract.
 1. State the artifact each candidate is producing.
 2. Derive the rubric, 3-6 concrete gradeable criteria for what success looks like on *this* task. It is the picker's tool in Phase D. Candidates only see the task.
 3. Follow the delegation instructions in `AGENTS.md`. Pick the runners through the current environment's configured candidate roles and available delegation interface. Use independent perspectives for judgment-sensitive work; the same supported execution configuration may run several candidates when appropriate. Inherit supported runtime defaults when no override is configured; report unsupported overrides rather than inventing fallback identifiers. Select only reasoning and speed settings supported by the environment. Centralized role configuration is managed separately. Preserve any candidate count or structural-diversity requirement supplied by the caller. When neither the caller nor configuration specifies a count, start with two candidates. Add runners when multiple design directions warrant them.
-4. Give each candidate an isolated working area and output location under the project's intermediate-work directory (`.agents-state/` in this repository). Use a git worktree when available and suitable; otherwise use a per-candidate subdirectory that keeps candidate writes independent, per **separate-before-serializing-shared-state**. Candidate writes stay within their assigned working areas; do not overwrite another candidate's artifacts.
+4. Give each candidate an isolated working area and output location under the project's intermediate-work directory (`.agents-state/` in this repository). Use a git worktree when available and suitable; otherwise use a per-candidate subdirectory that keeps candidate writes independent, per **nh-principle-separate-before-serializing-shared-state**. Candidate writes stay within their assigned working areas; do not overwrite another candidate's artifacts.
 
 ## Phase B: Fan out
 
@@ -36,13 +38,13 @@ Pick the base a future maintainer can extend most easily without breaking invari
 
 ## Phase E: Graft
 
-Walk each losing candidate once more for what is worth porting into the base, usually one or two things per candidate, not most of it. Fold each graft in by hand, per the **redesign-from-first-principles** principle skill, so the result stays coherent under one mental model. Don't paste mechanically.
+Walk each losing candidate once more for what is worth porting into the base, usually one or two things per candidate, not most of it. Fold each graft in by hand, per the **nh-principle-redesign-from-first-principles** principle skill, so the result stays coherent under one mental model. Don't paste mechanically.
 
 If the candidates converge on one shape, note the agreement. Ship the consensus shape without grafting when the caller's structural-diversity requirements are satisfied; otherwise obtain the required distinct alternatives before final synthesis. If they wildly diverge, Phase A was under-specified. Reframe and re-run rather than averaging the divergence.
 
 ## Phase F: Verify
 
-Verify the synthesized artifact like any other output, per the **prove-it-works** principle skill. If verification finds a problem the arena missed, either Phase A was wrong (re-frame and re-run) or a candidate caught it and you missed the graft (go back to Phase E). Don't paper over it.
+Verify the synthesized artifact like any other output, per the **nh-principle-prove-it-works** principle skill. If verification finds a problem the arena missed, either Phase A was wrong (re-frame and re-run) or a candidate caught it and you missed the graft (go back to Phase E). Don't paper over it.
 
 ## Outputs
 

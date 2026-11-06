@@ -5,24 +5,24 @@ description: NeoHaskell code style guidelines for writing and reviewing .hs code
 
 > Adapted for consumer applications from the public NeoHaskell project.
 
-| Use | Never |
+| Prefer in application code | Avoid unless the consumer contract requires it |
 |---|---|
 | `x \|> foo \|> bar` | `bar $ foo x`, `$` |
 | `do let y = expr` | `let..in`, `where` |
 | `case x of` | patterns in function head |
 | `if cond then a else b` | `case cond of True -> …` |
 | Named helpers with one abstraction level; orchestration reads top-to-bottom | nested control-flow pyramids, orchestration mixed with branch mechanics |
-| Comments that explain constraints or intent | comments narrating what code does; extract a named function instead |
+| Required public contracts and proven exceptions under [comment review](../nh-no-comments/SKILL.md) | comments narrating what code does; extract a named function instead |
 | Early-exit sentinel guards in `Task` validation | nested if/case pyramids |
-| `[fmt\|Hello #{name}!\|]` | `<>` / `++` for strings |
+| `[fmt\|Hello #{name}!\|]` for interpolation; Core `++` for supported concatenation | foreign `<>` when the Core operation serves the contract |
 | `Result err val`; convert foreign `Either` with `Result.fromEither`, then match `Ok`/`Err` | matching foreign `Left`/`Right` outside the Result conversion owner |
 | `Task err val` | `IO` |
 | `Task.yield v` | `pure`, `return` |
 | `forall element result.` | single-letter type params |
-| `import Foo (Foo); import Foo qualified` | unqualified imports |
+| `import Core`; explicit type imports such as `import Foo (Foo)` and qualified operations | broad unqualified imports outside the consumer dialect |
 | nhcore Core modules (`Text`, `Array`, `Char`, `File`, `Path`…) | raw `Data.*` / `System.*` / `Ghc*` imports |
 
-For every new Haskell module, follow [module documentation](../nh-module-docs/SKILL.md). Before changing source pragmas or Cabal extension settings, follow [language extensions](../nh-language-extensions/SKILL.md).
+For module headers and their scope, follow [module documentation](../nh-module-docs/SKILL.md). Before changing source pragmas or Cabal extension settings, follow [language extensions](../nh-language-extensions/SKILL.md).
 
 ## Readable service code
 

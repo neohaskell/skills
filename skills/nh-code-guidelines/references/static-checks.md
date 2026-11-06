@@ -18,6 +18,6 @@ Read [language extensions](../../nh-language-extensions/SKILL.md) before changin
 
 ## Coverage boundaries
 
-[source_rules.py](../scripts/source_rules.py) supports layout-based modules and a finite set of known constructor imports, signature shapes, and formatting expressions. It does not infer types, expand aliases, or establish runtime semantics. Any framework-specific conversion exceptions in that scanner are inert unless the optional dialect rule is selected and the exact source identity matches. Never copy framework owner exceptions into application policy without a concrete reason.
+[source_rules.py](../scripts/source_rules.py) supports layout-based modules and a finite set of known constructor imports, signature shapes, and formatting expressions. It does not infer types, expand aliases, or establish runtime semantics. The optional signature rule has no framework-path exemptions. If a component owns a deliberate foreign conversion API, use its maintained lint policy rather than enabling this blanket signature rule for that component.
 
 For design questions, consult [reader-oriented names](../../nh-principle-name-for-the-reader/SKILL.md) and [service design](../../nh-best-practices/references/readable-services.md). Do not equate a clean static check with delivery of an application feature.

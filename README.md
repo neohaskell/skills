@@ -8,11 +8,11 @@ The collection follows the application's technology and requested outcome. A UI 
 
 Use Node **22.20.0 or newer** and the fixed installer **skills@1.7.6**. Run from the consumer application's Git root only when installation there is authorized. Existing managed content or path collisions must first go through [nh-skills](skills/nh-skills/SKILL.md).
 
-1. Open the [v1.0.0 release](https://github.com/neohaskell/skills/releases/tag/v1.0.0) and read its changes and full commit SHA. An absent release means publication is still pending; do not substitute `main`.
+1. Open the [v1.0.1 release](https://github.com/neohaskell/skills/releases/tag/v1.0.1) and read its changes and full commit SHA. An absent release means publication is still pending; do not substitute `main`.
 2. Resolve the immutable annotated tag to its full commit SHA:
 
    ```sh
-   NH_SKILLS_SHA=$(git ls-remote https://github.com/neohaskell/skills.git 'refs/tags/v1.0.0^{}' | cut -f1)
+   NH_SKILLS_SHA=$(git ls-remote https://github.com/neohaskell/skills.git 'refs/tags/v1.0.1^{}' | cut -f1)
    ```
 
 3. Check that the value is exactly 40 hexadecimal characters, then install all skills for both hosts:

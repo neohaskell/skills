@@ -54,11 +54,11 @@ RPC-shaped event stream forever.
 Detect the situation by **reading files** (never by running `neo`):
 
 - Is there an `event-model.json` with a non-empty `entities` array?
-- Is there a written domain overview (e.g. `docs/domain-overview.md`)?
+- Is there an established domain map in the consumer’s glossary, ADRs, or other domain documentation?
 
 | Situation | Mode | Extra output |
 | --- | --- | --- |
-| Neither exists (new / greenfield project) | **Full-domain discovery**, once | Also write a `domain-overview.md` |
+| Neither exists (new / greenfield project) | **Full-domain discovery**, once | Update the established domain documentation |
 | An overview and/or populated `event-model.json` already exists | **Feature-scoped discovery** | Feature Brief only |
 
 Full-domain discovery is *not* "model the whole app in detail." It is a single, broad
@@ -209,8 +209,7 @@ Run this **once**, on a greenfield project, before the first Feature Brief. Goal
 the streams and their lifecycles — broad, not deep. Use the loop in §4 but stay at the
 level of "what are the main things, and what are the headline facts in each thing's life?"
 
-Write the result to `docs/domain-overview.md` (a planning artifact — **not** read by
-`neo`, not `event-model.json`). Template:
+Write the result into the consumer’s established domain documentation: normally `GLOSSARY.md` for terms and `docs/adr/` for decisions. If it already owns a separate domain overview, update that artifact. Do not create a competing context layout. The following is a planning template, not input read by `neo` or a replacement for `event-model.json`:
 
 ```markdown
 # Domain Overview — <ProjectName>

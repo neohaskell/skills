@@ -5,6 +5,8 @@ description: Spawn three parallel review subagents over the active transcript, s
 
 > Adapted for consumer applications from the public NeoHaskell project.
 
+Resolve authorized delegation through [nh-roles](../nh-roles/SKILL.md). Host and consumer instructions govern the parallel steps below. If delegation is unavailable, perform eligible work inline and explicitly report missing independence or comparison coverage.
+
 # Reflect
 
 Mine the current conversation for durable learnings, then route them into skill edits.
@@ -33,7 +35,7 @@ Delegate to a separate synthesizer following `AGENTS.md`. It may spot-verify cit
 
 ## 4. Structural enforcement check
 
-Move any Accepted item that a Haskell type, owning API, lint rule, script, metadata flag, or runtime check would enforce more reliably to Backlog. See the **encode-lessons-in-structure** principle skill.
+Move any Accepted item that a Haskell type, owning API, lint rule, script, metadata flag, or runtime check would enforce more reliably to Backlog. See the **nh-principle-encode-lessons-in-structure** principle skill.
 
 ## 5. Apply
 

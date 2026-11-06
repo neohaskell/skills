@@ -13,13 +13,7 @@ sys.path.insert(0, str(SCRIPTS))
 from bounded_process import ProcessOutcome, run_bounded
 
 
-ROOT = Path(__file__).resolve()
-while not (ROOT / ".git").exists():
-    if ROOT.parent == ROOT:
-        raise RuntimeError("Tests need a repository")
-    ROOT = ROOT.parent
-FIXTURES = ROOT / ".agents-state/bounded-process-tests"
-FIXTURES.mkdir(parents=True, exist_ok=True)
+FIXTURES = Path(tempfile.gettempdir())
 
 
 class BoundedProcessTests(unittest.TestCase):

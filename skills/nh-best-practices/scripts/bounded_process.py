@@ -183,12 +183,12 @@ def run_bounded(
                     stderr=subprocess.STDOUT,
                     start_new_session=True,
                 )
+                stdout = process.stdout
             finally:
                 cancellation["launching"] = False
             if cancellation["signum"] is not None:
                 raise _Cancellation(int(cancellation["signum"]))
 
-            stdout = process.stdout
             if stdout is None:
                 raise RuntimeError("bounded process did not expose captured output")
             selector = selectors.DefaultSelector()

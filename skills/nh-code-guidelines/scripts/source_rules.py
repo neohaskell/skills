@@ -20,10 +20,6 @@ PROVIDERS = {
     "False": {"Basics", "Core", "Prelude", "GHC.Types", "Data.Bool"},
     "fmt": {"Basics", "Core"},
 }
-CONVERSIONS = {
-    ("core/core/Text.hs", "Text", "fromLinkedList"),
-    ("core/system/Path.hs", "Path", "fromLinkedList"),
-}
 
 
 def code_source(source, path):
@@ -224,8 +220,7 @@ def signature_violations(source, path):
         signature = " ".join(parts).split(";", 1)[0]
         if bad_input(TOKEN.findall(signature), names):
             for declaration in declarations:
-                if (path, names.module, declaration) not in CONVERSIONS:
-                    yield declaration, index + 1, signature.strip()
+                yield declaration, index + 1, signature.strip()
 
 
 def candidate_rule(idea, names):

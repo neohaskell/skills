@@ -15,7 +15,7 @@ description: Discover and run the consumer application's relevant Haskell, HTTP,
 
 ## Optional Haskell helpers
 
-Use the consumer's runner first. For an ordinary Cabal project these bundled helpers provide bounded output and transcripts; they are not a replacement for custom project configuration.
+Use the consumer's runner first. For an ordinary Cabal project with a local `cabal.project`, these bundled helpers provide bounded output and transcripts; they are not a replacement for custom project configuration. The full-suite helper requires distinct suite names across packages because Cabal's result lines identify suites by name. Use a package-qualified consumer runner when names overlap.
 
 | Need | Invocation from the component root |
 |---|---|

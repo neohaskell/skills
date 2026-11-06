@@ -34,7 +34,7 @@ def prose(text):
     return '\n'.join(lines)
 
 
-def link_errors(path, root):
+def link_errors(path, root, collection=None):
     text = prose(path.read_text())
     errors = []
     for match in LINK.finditer(text):
@@ -55,7 +55,10 @@ def link_errors(path, root):
         if not destination.exists():
             errors.append(f'{path}: missing link {target}')
     for target in RESOURCE.findall(text):
-        if not (root / target).exists():
+        # Installed examples keep their canonical path in publishing checkouts.
+        destination = ((collection / target.removeprefix('.agents/skills/'))
+                       if collection is not None else root / target)
+        if not destination.exists():
             errors.append(f'{path}: missing resource {target}')
     return errors
 
@@ -70,7 +73,8 @@ def markdown_files(root):
 
 def validate(root, skills_root=None, skill=None):
     root = root.resolve()
-    collection = skills_root.resolve() if skills_root else root / '.agents/skills'
+    collection = (skills_root.resolve() if skills_root else
+                  skill.resolve().parent if skill else root / '.agents/skills')
     files = [skill.resolve() / 'SKILL.md'] if skill else sorted(collection.glob('*/SKILL.md'))
     errors = []
     names = {}
@@ -98,7 +102,7 @@ def validate(root, skills_root=None, skill=None):
     documents = sorted({path for entry in files if entry.is_file() for path in markdown_files(entry.parent)})
     for path in documents:
         try:
-            errors.extend(link_errors(path, root))
+            errors.extend(link_errors(path, root, collection))
         except (OSError, ValueError) as error:
             errors.append(f'{path}: {error}')
     return {'skills': len(files), 'documents': len(documents), 'errors': errors}

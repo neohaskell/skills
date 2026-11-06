@@ -9,7 +9,7 @@ description: Build or adapt a local browser/CDP harness to drive and inspect a w
 
 Use local browser automation to verify UI behavior with evidence. First reuse the repo's own Playwright, browser, or Electron harness if it exists; otherwise assemble a temporary local harness around the app's dev server or Chromium debug port.
 
-For NeoHaskell visual work, first inspect the existing Playwright configuration and tests under `neo/assets/ide/`. Reuse their installed dependencies and current setup rather than creating a parallel harness. Match the running surface to the claim: a frontend preview can verify browser interactions, while IPC, persistence, and source-synchronization claims need the relevant `neo ide` backend and disposable workspace. Confirm the served frontend contains the changes under test, including the embedded bundle when testing a release binary.
+Locate the affected application's frontend root and existing harness through [nh-app-context](../nh-app-context/SKILL.md). Reuse its installed dependencies and setup. Match the running surface to the claim: a frontend preview can establish browser interactions; persistence, backend effects, or desktop IPC require the corresponding application services and owned test state. Confirm the served assets contain the changes under inspection, including any embedded bundle when testing a packaged application.
 
 Keep temporary probes, profiles, logs, traces, and screenshots under a task-specific directory in `.agents-state/control-ui/`. Resolve these paths from the repository root and create the output directory before capture. Configure harness output paths accordingly, including outputs written explicitly by individual tests.
 
@@ -25,7 +25,7 @@ Keep temporary probes, profiles, logs, traces, and screenshots under a task-spec
 
 1. Start the app locally using the repo's documented dev command.
 2. Discover existing local harnesses: Playwright tests, Cypress specs, Storybook, browser scripts, Electron launch scripts, or snapshot tools.
-3. For a web app, connect to the local URL with the existing browser tooling.
+3. For a web app, discover its actual local URL, required identity, and useful readiness predicate, then connect with the existing browser tooling.
 4. For Electron/Chromium, enable a remote debugging port when supported.
 5. Select the correct page by stable app markers, not by tab order alone.
 6. Prefer accessibility roles, labels, and stable `data-*` selectors over coordinates.
@@ -85,7 +85,7 @@ Replace `<app-root-selector>` with a stable marker from the current repo, such a
 3. Perform exactly one structural action: click, type, keypress, drag, scroll, navigate, or resize.
 4. Capture a fresh snapshot/screenshot.
 5. Verify the expected state change.
-6. Save artifacts for before/after comparisons when the user asked for proof.
+6. Save artifacts for before/after comparisons when the user asked for proof. For a task that explicitly requires pixel equivalence, follow [visual parity](references/playbooks/visual-parity.md); ordinary UI improvements do not require a zero-difference image.
 
 ## CDP Capabilities
 

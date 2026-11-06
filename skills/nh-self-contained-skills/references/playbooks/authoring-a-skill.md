@@ -8,7 +8,7 @@
 2. Validate the skill: frontmatter has `name` and `description`, referenced files exist, cross-skill links resolve. Keep owned scripts, references, assets, tests and dependency configuration inside the skill folder; link to another skill's owned resource when sharing is required.
 Run [Validate skills](../../../nh-validate-skills/SKILL.md) for repository metadata, resource ownership and links, alongside the available authoring tool's native validator.
 3. Test cases if structural. Skip if subjective.
-4. Run **Opening a PR**.
+4. When PR delivery is requested, follow [PR preparation](../../../nh-babysit/references/playbooks/opening-a-pr.md).
 
 When in doubt, delete. Keep only prose that changes a decision. Tell it to do the thing and skip the reason. Explain only when the rule is confusing without one. Match tone to scope. Link operational dependencies through their owning skill. Delegate to other skills by path. Don't restate. A workflow you keep hitting but isn't captured → propose a new skill.
 
