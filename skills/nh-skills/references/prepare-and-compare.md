@@ -1,5 +1,7 @@
 # Prepare and compare
 
+This procedure applies to explicit release-pinned installations for both Codex and Claude Code. For the default first installation or other agent selections, use the corresponding branch in [nh-skills](../SKILL.md).
+
 Read the release on `https://github.com/neohaskell/skills/releases` and verify the annotated tag's peeled commit with `git ls-remote`. Releases start at `v1.0.0`; never substitute a guessed SHA or `main`. Use immutable full SHAs for both old and new identities. A mutable ref or mixed collection refs require reconciliation from Git history before replacement.
 
 Obtain a temporary clone of the official publishing repository outside the consumer. Fetch the selected commits without switching the consumer's branch. Verify its origin is `https://github.com/neohaskell/skills.git` or the corresponding SSH URL. The helper reads commit trees from this clone, not its current working files.

@@ -1,5 +1,7 @@
 # Apply and reconcile
 
+This procedure applies to explicit release-pinned installations for both Codex and Claude Code. The default first installation is documented in [nh-skills](../SKILL.md).
+
 The comparison must be clear immediately before installation. Avoid concurrent writers to the managed directories. Resolve every placeholder below to the selected immutable release; never run a placeholder or a truncated SHA.
 
 ```sh
@@ -22,4 +24,4 @@ Run the same helper with `after` and the same consumer, source repository, old/n
 
 Inspect `git diff` and stage only the resulting owned content, lock, links, and explicitly migrated references. Ensure all additions and deletions are included, no application edits are staged, and no temporary snapshot/log is staged. Commit the collection change separately. Record the actual commit in the result so recovery has a concrete unit.
 
-An initial installation has the same collision and preservation requirements. No lock-only restore is promised: the lock is not a complete description of both host destinations or removal history. For recovery of an existing committed installation, prefer its recorded whole-tree Git state.
+An initial installation using this pinned procedure has the same collision and preservation requirements. No lock-only restore is promised: the lock is not a complete description of both host destinations or removal history. For recovery of an existing committed installation, prefer its recorded whole-tree Git state.

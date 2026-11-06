@@ -1,5 +1,32 @@
 # Changelog
 
+## v1.1.0 — 2026-11-06
+
+Add `nh-frontend-setup`, bringing the complete collection to 97 skills while
+preserving all 96 existing names. The feature pipeline now delivers full-stack
+features by default and automatically establishes a missing frontend or completes
+missing API-generation tooling. Explicitly narrower requests retain their scope.
+
+Initial frontend setup uses React, TypeScript, and Orval while preserving existing
+application tools and handwritten content. The configured service URL supplies
+the OpenAPI contract. Generation must succeed before every frontend build and
+the development command's initial compilation; generated SDK files remain out of
+Git, and unavailable services or generation failures cannot fall back to an old SDK.
+
+Clarify ownership across application discovery, setup, client alignment, and UI
+delivery. Application features touching UI require observation of the real
+UI-to-API journey through the requested result.
+
+Simplify first installation to `npx skills add neohaskell/skills --skill '*'` with
+the user's chosen agent. Preserve optional release-pinned installation and
+customization-aware update/recovery procedures. Repository delivery now includes
+automatic push and verified GitHub release publication.
+
+Validation: all 97 skills pass native metadata validation, all 236 skill documents
+pass the resource checker, root documentation links pass, and diff whitespace
+checks pass. No executable helper changed. No consumer build, runtime journey,
+deployment, evaluation campaign, or host certification was performed.
+
 ## v1.0.1 — 2026-11-06
 
 Correct consumer/frontend guidance, verification examples, skill references, domain-documentation layout, and contradictory TDD and comment-review instructions. Preserve the 96 public skill names and the immutable v1.0.0 release.

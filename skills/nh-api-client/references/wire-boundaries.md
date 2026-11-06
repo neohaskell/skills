@@ -26,4 +26,4 @@ Discover whether the flow uses multipart, direct upload, signed URLs, or another
 
 ## Evidence boundaries
 
-A decoder fixture establishes acceptance of that fixture. A mocked transport can establish the request method/path/body and client reactions. A real backend run establishes only the observed revision, identity, configuration, and outcome. Browser evidence additionally shows the exercised interface path. Keep those claims separate and use the smallest boundary needed for the requested change.
+A decoder fixture establishes acceptance of that fixture. A mocked transport can establish the request method/path/body and client reactions. A real backend run establishes behavior for the exercised service, identity, configuration, and outcome; it does not by itself establish a deployment revision. Browser evidence additionally shows the exercised interface path. Keep those claims separate and use the boundary needed for the requested change.

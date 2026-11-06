@@ -24,6 +24,10 @@ Vocabulary for the collection of skills used to develop full stack applications 
 
 **Application extension**: An instruction or procedure maintained by a consumer application to complement managed skills.
 
+**Application API setup**: The application-owned arrangement that connects frontend SDK generation to the API contract served at the application's configured URL. The setup skill establishes this arrangement; recurring generation belongs to the application's executable tooling.
+
+**Frontend setup skill**: An application skill that establishes a missing frontend or completes missing API-generation tooling so a full-stack application journey can proceed.
+
 **Collection maintenance skill**: The single skill responsible for guiding explicit collection version changes and recovery in a consumer application. It is distinct from application feature-development skills.
 
 **Application journey**: The capabilities needed to complete a requested consumer application change. Its scope follows the requested result and may include UI, client, backend, or integrations.
